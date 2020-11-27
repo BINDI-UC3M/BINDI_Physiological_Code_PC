@@ -173,8 +173,14 @@ function Results_BBDDLab_Bindi = EMP_DTE_Physio_BBDDLab_Bindi(data_in, response_
   %...TBD
   
   %% Stage 5: Give back results
-  Results_BBDDLab_Bindi.features.bvp.values = BVP_feats;
-  Results_BBDDLab_Bindi.features.bvp.names = BVP_feats_names;
+  Results_BBDDLab_Bindi.features = data_features;
   %...TBD
-
+  
+  %% Stage 6: Perform EDA (exploratory data analysis)
+  %Example given by HR=60/IBI
+  c_1=60./data_features{1, 1}.BINDI.Neutro.BVP_feats(:,3);        % Generate group 1
+  c_2=60./data_features{1, 1}.BINDI.Recovery.BVP_feats(:,3);       % Generate group 2
+  C = {c_1(:); c_2(:)};  % <--- Just vertically stack all of your groups here
+  grp = cell2mat(arrayfun(@(i){i*ones(numel(C{i}),1)},(1:numel(C))')); 
+  boxplot(vertcat(C{:}),grp, 'Labels',{'Neutro LFHF','Video LFHF'});
 end

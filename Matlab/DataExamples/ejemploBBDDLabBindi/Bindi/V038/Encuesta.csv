@@ -1,0 +1,16 @@
+Video;Arousal;Valencia;Dominancia;Liking;Fam1;Fam2;Fam3;Emociones;TiempoDesc
+DEMO;6;5;4;NEUTRO;7;2;NO;Sorpresa;
+VIDEO 1;6;7;6;SI;7;3;SI;Alegria;00:41
+VIDEO 2;9;2;1;NO;2;1;NO;Miedo;00:39
+VIDEO 3;4;3;5;NEUTRO;4;1;SI;Tristeza;00:39
+VIDEO 4;8;3;3;NO;2;2;NO;Miedo;00:52
+VIDEO 5;7;3;4;NO;3;1;NO;Miedo;00:45
+VIDEO 6;2;8;6;SI;6;8;NO;Gratitud;00:39
+VIDEO 7;7;2;3;NO;1;1;NO;Miedo;00:42
+VIDEO 8;7;3;4;NO;2;1;NO;Miedo;
+VIDEO 9;7;2;4;NO;5;1;NO;Asco;00:46
+VIDEO 10;9;1;1;NO;1;1;NO;Miedo;
+VIDEO 11;6;7;5;NEUTRO;6;1;NO;Alegria;00:45
+VIDEO 12;6;5;5;NO;3;1;NO;Ira;00:50
+VIDEO 13;3;7;6;NEUTRO;6;2;NO;Gratitud;00:43
+VIDEO 14;8;2;2;NO;6;1;NO;Asco;00:47
