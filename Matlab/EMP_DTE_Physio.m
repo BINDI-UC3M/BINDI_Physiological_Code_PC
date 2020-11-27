@@ -182,5 +182,5 @@ function Results_BBDDLab_Bindi = EMP_DTE_Physio_BBDDLab_Bindi(data_in, response_
   c_2=60./data_features{1, 1}.BINDI.Recovery.BVP_feats(:,3);       % Generate group 2
   C = {c_1(:); c_2(:)};  % <--- Just vertically stack all of your groups here
   grp = cell2mat(arrayfun(@(i){i*ones(numel(C{i}),1)},(1:numel(C))')); 
-  boxplot(vertcat(C{:}),grp, 'Labels',{'Neutro LFHF','Video LFHF'});
+  boxplot(vertcat(C{:}),grp, 'Labels',{'Neutro','Video'});
 end
