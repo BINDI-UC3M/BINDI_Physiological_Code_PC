@@ -86,7 +86,10 @@ function Results_BBDDLab_Bindi = EMP_DTE_Physio_BBDDLab_Bindi(data_in, response_
       bvp_sig_recovery = BVP_create_signal(data_in{i,k}.BINDI.Recovery.raw.bvp_filt, samprate_bbddlab);
       
       %Create the GSR signals
-      %TBD...
+      gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered, samprate_bbddlab);
+      gsr_sig_video    = GSR_create_signal(data_in{i,k}.GSR.Video.raw.gsr_uS_filtered, samprate_bbddlab);
+      gsr_sig_labels   = GSR_create_signal(data_in{i,k}.GSR.Labels.raw.gsr_uS_filtered, samprate_bbddlab);
+      gsr_sig_recovery = GSR_create_signal(data_in{i,k}.GSR.Recovery.raw.gsr_uS_filtered, samprate_bbddlab);
       
       %% Stage 2: Extracting Features %%
       % Deal with window and overlapping
@@ -99,12 +102,18 @@ function Results_BBDDLab_Bindi = EMP_DTE_Physio_BBDDLab_Bindi(data_in, response_
       overlap =  overlapin_window*samprate_bbddlab;
       window_num = 1;
       bvp_sig_cpy = bvp_sig_neutro;
+      gsr_sig_cpy   = gsr_sig_neutro;
       while(stop<length(bvp_sig_neutro.raw))
+         %BVP processing
         bvp_sig_cpy.raw = bvp_sig_neutro.raw(start:stop);
         [data_features{i,k}.BINDI.Neutro.BVP_feats(window_num,:), ...
          data_features{i,k}.BINDI.Neutro.BVP_feats_names] = ...
             BVP_features_extr(bvp_sig_cpy);
-        %TBD...        
+        %GSR processing
+         gsr_sig_cpy.raw = gsr_sig_neutro.raw(start:stop);
+        [data_features{i,k}.BINDI.Neutro.GSR_feats(window_num,:), ...
+         data_features{i,k}.BINDI.Neutro.GSR_feats_names] = ...
+            GSR_features_extr(gsr_sig_cpy);    
         start = start + overlap;
         stop  = stop  + overlap;
         window_num = window_num + 1;
