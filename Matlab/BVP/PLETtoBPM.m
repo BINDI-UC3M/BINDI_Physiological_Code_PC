@@ -39,7 +39,7 @@
 function [bpm, delta_t, t, listePic] = PLETtoBPM(data, fe, methodPeak, SizeWindow, verbose)
 
 if(nargin < 3)
-    methodPeak = 'first';
+    methodPeak = 'max';
 end
 if(nargin < 4)
    SizeWindow = round(fe/50);
@@ -371,11 +371,11 @@ elseif delineation == 2
         listePic = [];
         listeValley = [];
      end
-     hold off;
-    plot(data);
-    hold on;plot(sysPeaks,data(round(sysPeaks)),'+');
-    plot(dicNotch(2:end),data(round(dicNotch(2:end))),'*')
-    plot(dicPeaks(2:end),data(round(dicPeaks(2:end))),'o')
+%      hold off;
+%     plot(data);
+%     hold on;plot(sysPeaks,data(round(sysPeaks)),'+');
+%     plot(dicNotch(2:end),data(round(dicNotch(2:end))),'*')
+%     plot(dicPeaks(2:end),data(round(dicPeaks(2:end))),'o')
    end
     listePic=sysPeaks(2:end);
     temp = diff(listePic);

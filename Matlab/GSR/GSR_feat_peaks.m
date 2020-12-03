@@ -34,10 +34,10 @@ function [nbPeaks, ampPeaks, riseTime, recoveryTime, aup, stdSCR, posPeaks, phas
 %Make sure we have a GSR signal
 GSRsignal = GSR__assert_type(GSRsignal);
 
-if(~Signal__has_preproc_lowpass(GSRsignal))
-	warning(['For the function to work well, you should low-pass the signal' ...
-	         '. Preferably with a median filter']);
-end
+% if(~Signal__has_preproc_lowpass(GSRsignal))
+% 	warning(['For the function to work well, you should low-pass the signal' ...
+% 	         '. Preferably with a median filter']);
+% end
 
 if(nargin < 2)
 % 	ampThresh = 100;%Ohm

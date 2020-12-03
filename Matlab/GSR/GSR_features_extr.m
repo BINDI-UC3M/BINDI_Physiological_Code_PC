@@ -91,13 +91,13 @@ if(~isempty(GSR_feats_names))
             aup = 0;
           end
         else
-          nbPeaks = nbPeaks;%/(length(GSRsignal.raw)/samprate);
-		  ampPeaks = mean(ampPeaks);
+          nbPeaks = nbPeaks/(length(GSRsignal.raw)/samprate);
+		  ampPeaks = mean(ampPeaks)/(length(GSRsignal.raw)/samprate);
           if any(strcmp('riseTime',GSR_feats_names)) || any(strcmp('recoveryTime',GSR_feats_names)) || any(strcmp('aup',GSR_feats_names))
             %absAmpPeaks = mean(absAmpPeaks);
-		    riseTime = mean(riseTime)/samprate;  
-            recoveryTime = mean(recoveryTime)/samprate;
-            aup = sum(aup);
+		    riseTime = mean(riseTime)/(length(GSRsignal.raw)/samprate);
+            recoveryTime = mean(recoveryTime)/(length(GSRsignal.raw)/samprate);
+            aup = sum(aup)/(length(GSRsignal.raw)/samprate);
           end
         end
 		

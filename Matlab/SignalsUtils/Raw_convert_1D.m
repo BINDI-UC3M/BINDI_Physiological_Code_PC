@@ -26,7 +26,7 @@ if(y ~= 1) %If somewhat vertical
 	end
 	%Auto reshape with warning
 	Raw = reshape(Raw, 1, length(Raw));
-	warning('Signal should be [1xN] (aka horizontal). Automaticly reshaped');
+	%warning('Signal should be [1xN] (aka horizontal). Automaticly reshaped');
 end
 
 

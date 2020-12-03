@@ -71,6 +71,10 @@ function  [result] = trainModels_tvt(features, labels, varargin)
         patients_open = [1,2,3,4,5];
         patients = 15;
         trials   = 5;        
+      otherwise
+        patients_open = [1];
+        patients = 1;
+        trials   = 1; 
   end
 
   %check model option
@@ -278,11 +282,11 @@ function  [result] = trainModels_tvt(features, labels, varargin)
 end
 
 function [results]=binaryModels(features, labels)
-  st = 801;
-  sp = 900;
+%   st = 801;
+%   sp = 900;
 %   features(1001:1100,:) = [];
 %   labels(1001:1100)=[];
-  for k=1:11
+%   for k=1:11
   %initialize values
   kfold = 5;
   peri_temp = features;
@@ -290,8 +294,8 @@ function [results]=binaryModels(features, labels)
   %perform training - testing split
   partition = cvpartition(label_temp,'Holdout',0.2,'Stratify',true);
   idxTrain = training(partition);
-  idxTrain(1:1200)=1;
-  idxTrain(st:sp)=0;
+%   idxTrain(1:1200)=1;
+%   idxTrain(st:sp)=0;
   peri_temp = features(idxTrain,:);
   label_temp = labels(idxTrain); 
   c = cvpartition(numel(label_temp),'KFold',kfold);
@@ -567,7 +571,7 @@ function [results]=binaryModels(features, labels)
   results(k).ens_simulation = ens_simulation;
   st = sp + 1;
   sp = sp + 100;
-  end
+%   end
 end
 
 function [results]=threeClassModels(features, labels)

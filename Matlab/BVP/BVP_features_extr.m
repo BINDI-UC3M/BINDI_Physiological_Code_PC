@@ -53,13 +53,17 @@ narginchk(1, Inf);
 % Without No-linear features
 featuresNamesIBI = {'mean_', 'HRV', 'meanIBI', 'tachogram_LF', 'tachogram_MF',...
                     'tachogram_HF', 'tachogram_energy_ratio'};
-
 %BVP general features
-featuresNames = {'mean_', 'HRV', 'meanIBI', 'MSE1','MSE2','MSE3','MSE4','MSE5',  ...
+% featuresNames = {'mean_', 'HRV_std','HRV_rmssd', 'meanIBI', 'MSE1','MSE2','MSE3','MSE4','MSE5',  ...
+% 	'sp0001', 'sp0102', 'sp0203', 'sp0304', 'sp_energyRatio', ...
+% 	'tachogram_LF', 'tachogram_MF', 'tachogram_HF', 'tachogram_energy_ratio', ...
+%     'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
+% 	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF'};
+featuresNames = {'mean_', 'HRV_sdnn','HRV_rmssd', 'meanIBI',...
 	'sp0001', 'sp0102', 'sp0203', 'sp0304', 'sp_energyRatio', ...
-	'tachogram_LF', 'tachogram_MF', 'tachogram_HF', 'tachogram_energy_ratio', ...
     'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
-	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF'};
+	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF',...
+    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi'};
 BVP_feats_names = featuresSelector(featuresNames,varargin{:});
 
 %If some features are selected
@@ -93,7 +97,12 @@ if(~isempty(BVP_feats_names))
 	end
 
 	if any(strcmp('meanIBI',BVP_feats_names)) || any(strcmp('HRV',BVP_feats_names))
-		HRV = std(IBI);
+		HRV_sdnn = std(IBI);
+        %HRV_rmssd = sqrt((sum(abs(diff(IBI)).^2))/length(IBI));
+        for i = 1:(length(IBI)-1)
+          HRV_rmssd(i)= (IBI(i)-IBI(i+1))^2;
+        end
+        HRV_rmssd = sqrt(mean(HRV_rmssd));
         rmsHRV = rms(IBI);
 		meanIBI = mean(IBI);
 	end
@@ -248,10 +257,35 @@ if(~isempty(BVP_feats_names))
     Rel_power_LF = abs(relative_power(LF_energia, HF_energia, UHF_energia));
     Rel_power_HF = abs(relative_power(HF_energia, LF_energia, UHF_energia));
     Rel_power_UHF = abs(relative_power(UHF_energia, HF_energia, LF_energia));
+    
+    %% Extra features for Poincaré-Plot (Lorenz)
+    %SD2: Identity line from 0-x - Longitudinal
+    for i = 1:(length(IBI)-1)
+        sd2(i)=(sqrt(2)/2)*(IBI(i)+IBI(i+1));
+    end
+    sd2 = std(sd2);
+    %S1: Identity line from x-0 - Transversal
+    for i = 1:(length(IBI)-1)
+        sd1(i)=(sqrt(2)/2)*(IBI(i)-IBI(i+1));
+    end
+    sd1 = std(sd1);
+    %Longitudinal factor as ref indicated
+    Lsd2 = 4*sd2;
+    %Transversal factor as ref indicated
+    Tsd1 = 4*sd1;
+    %Cardiac Sympathetic Index (CSI) as ref indicated
+    csi = Lsd2/Tsd1;
+    %Modified Cardiac Sympathetic Index (MCSI) as ref indicated
+    mcsi = Lsd2*csi;
+    %Cadiac Vagal Index (CVI) as ref indicated
+    cvi = log10(Lsd2*Tsd1);
+    
+    %% Extra features for morphological features
+    %TBD...
 
 	%Write the values to the final vector output
 	BVP_feats = [];
-	for (i = 1:length(BVP_feats_names))
+	for i = 1:length(BVP_feats_names)
 		eval(['BVP_feats = cat(2, BVP_feats, ' BVP_feats_names{i} ');']);
 	end
 
