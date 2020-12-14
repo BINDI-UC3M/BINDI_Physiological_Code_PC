@@ -14,7 +14,7 @@ function Signal = GSR_create_signal(rawGSR, sampRate)
   end
   
   %Max uSiemens allowed
-  uSiemensMax = 25;
+  uSiemensMax = 41;
 
   %Create an empty structure signal
   %Signal = new_empty_gsr();

@@ -272,10 +272,10 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
      
      %% Stage 2: Extracting Features %%
      % 2.1: Just test the complete set of data
-     [feat_all{i,k}.BVP_feats, feat_all{i,k}.BVP_names] = ...
-      BVP_features_extr(bvp_sig);     
-     [feat_all{i,k}.GSR_feats, feat_all{i,k}.GSR_names] = ...
-      GSR_features_extr(gsr_sig);  
+     %[feat_all{i,k}.BVP_feats, feat_all{i,k}.BVP_names] = ...
+     % BVP_features_extr(bvp_sig);     
+     %[feat_all{i,k}.GSR_feats, feat_all{i,k}.GSR_names] = ...
+     % GSR_features_extr(gsr_sig);  
     
      % 2.2: Deal with window and overlapping
      operational_window = 10; %seconds
@@ -309,22 +309,85 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
     end
   end
 
-  %% Stage 3: Trainning the model - Validation
-  %...TBD
+  %% Stage 3: Assign labels
+  %peri   = {};
+  %labels = {}; 
+  if ~isempty(response_in)
+    for i=1:volunteers
+      for k=1:trials
+        peri{:,:,i}   =[ (data_features{i,k}.BVP_feats(:,:)) (data_features{i,k}.GSR_feats(:,:))];
+        labels{:,:,i} = response_in{i, k}.binary_labels(11:end); 
+      end
+    end
+  end
   
-  %% Stage 4: Testing the model - testing with unseen samples
-  %...TBD
-  
-  %% Stage 5: Give back results
-  Results_BioSpeech.features_windows = data_features;
-  Results_BioSpeech.features_all     = feat_all;
-  %...TBD
-  
-  %% Stage 6: Perform EDA (exploratory data analysis)
+  %% Stage 4: Perform EDA (exploratory data analysis)
   %Example given by HR=60/IBI
-%   c_1=60./data_features{1, 1}.BINDI.Neutro.BVP_feats(:,3);        % Generate group 1
-%   c_2=60./data_features{1, 1}.BINDI.Recovery.BVP_feats(:,3);       % Generate group 2
-%   C = {c_1(:); c_2(:)};  % <--- Just vertically stack all of your groups here
-%   grp = cell2mat(arrayfun(@(i){i*ones(numel(C{i}),1)},(1:numel(C))')); 
-%   boxplot(vertcat(C{:}),grp, 'Labels',{'Neutro','Video'});
+  %c_1=60./data_features{1, 1}.BINDI.Neutro.BVP_feats(:,3);        % Generate group 1
+  %c_2=60./data_features{1, 1}.BINDI.Recovery.BVP_feats(:,3);       % Generate group 2
+  %C = {c_1(:); c_2(:)};  % <--- Just vertically stack all of your groups here
+  %grp = cell2mat(arrayfun(@(i){i*ones(numel(C{i}),1)},(1:numel(C))')); 
+  %boxplot(vertcat(C{:}),grp, 'Labels',{'Neutro','Video'});
+  
+  %Get the balance dataset
+  balance = [];
+  if ~isempty(response_in)
+    for i=1:volunteers
+      class1 = numel(find(labels{:,:,i}==0));
+      class2 = numel(find(labels{:,:,i}==1));
+      balance = [balance; class1 class2];
+    end
+  end
+  
+
+  if ~isempty(response_in)
+    for i=1:volunteers
+      
+      %Display some info
+      fprintf('Volunteer %d, Trainning and Testing...\n',i);
+      
+      %% Stage 5: Trainning the model - Validation
+      % Training for #volunteers except 'i'
+      peri_temp = peri;
+      peri_temp(:,:,i) = [];
+      labels_temp = labels;
+      labels_temp(:,:,i) = [];
+      [result_train{i}] = trainModels_tvt(peri_temp, labels_temp, 'database',4,'model',1);
+      %% Stage 6: Testing the model - Test
+      %SVM
+      for k = 1:5
+        [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k}, zscore(peri{:,:,i}));
+        confuM_t = confusionmat(string(num2cell(labels{:,:,i}+1)), string(tPredictions));
+        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+        gmeant(k) =sqrt(sent *spet);
+      end
+      result_train{i}.svm_test.gmean = gmeant;
+
+      %KNN
+      for k = 1:5
+        [tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k}, zscore(peri{:,:,i}));
+        confuM_t = confusionmat(string(num2cell(labels{:,:,i}+1)), string(tPredictions));
+        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+        gmeant(k) =sqrt(sent *spet);
+      end
+      result_train{i}.knn_test.gmean = gmeant;
+      
+      %ENS
+      for k = 1:5
+        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k}, zscore(peri{:,:,i}));
+        confuM_t = confusionmat(string(num2cell(labels{:,:,i}+1)), string(tPredictions));
+        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+        gmeant(k) =sqrt(sent *spet);
+      end
+      result_train{i}.ens_test.gmean = gmeant;
+      
+    end
+  end
+  %% Stage 6: Give back results
+  Results_BioSpeech.features_windows = data_features;
+  %Results_BioSpeech.features_all     = feat_all;
+  %...TBD
 end
