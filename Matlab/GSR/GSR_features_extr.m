@@ -55,7 +55,7 @@ if strcmp(signalUnit, 'Ohm')
 	 raw = Signal__get_raw(GSRsignal);
 	 raw = 1./(raw);
      GSRsignal = Signal__set_raw(GSRsignal, raw);
-     GSRsignal = Signal__set_unit(GSRsignal, 'uS')
+     GSRsignal = Signal__set_unit(GSRsignal, 'uS');
      signalUnit = Signal__get_unit(GSRsignal);
 elseif strcmp(signalUnit, 'nS')
 	%convert from nano siemens to resistance

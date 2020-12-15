@@ -43,7 +43,7 @@ function Results = EMP_DTE_Physio(data_in,response_in,type,~)
   if nargin < 2
     error('Function requires at least two inputs.');
   end
-  if ~any(strcmpi(type,{'BBDDLab_Bindi','DEAP','MAHNOB','WESAD','BioSpeech'}))
+  if ~any(strcmpi(type,{'BBDDLab_Bindi','BBDDLab_Bindi_All','DEAP','MAHNOB','WESAD','BioSpeech'}))
    error('<type> must be: BBDDLab_Bindi or DEAP or MAHNOB or WESAD or BioSpeech.');
   end
   
@@ -61,6 +61,11 @@ function Results = EMP_DTE_Physio(data_in,response_in,type,~)
         % have been processed before using the pre-processing script.
         % If you are not sure, please contact technician.
         Results = EMP_DTE_Physio_BBDDLab_Bindi(data_in, response_in);
+      case 'BBDDLab_Bindi_All'
+        % NOTE: Take into account that in this case, the signals must
+        % have been processed before using the pre-processing script.
+        % If you are not sure, please contact technician.
+        Results = EMP_DTE_Physio_BBDDLab_Bindi_ALL(data_in, response_in);
       case 'BioSpeech'
         % NOTE: Take into account that in this case, the signals will
         % be processed (filtered) in this function.
@@ -198,6 +203,93 @@ function Results_BBDDLab_Bindi = EMP_DTE_Physio_BBDDLab_Bindi(data_in, response_
   C = {c_1(:); c_2(:)};  % <--- Just vertically stack all of your groups here
   grp = cell2mat(arrayfun(@(i){i*ones(numel(C{i}),1)},(1:numel(C))')); 
   boxplot(vertcat(C{:}),grp, 'Labels',{'Neutro','Video'});
+end
+
+%%Function to handle the data coming from BBDDLab_Bindi BUT without data 
+%%segmentation
+function Results_BBDDLab_Bindi = EMP_DTE_Physio_BBDDLab_Bindi_ALL(data_in, response_in)
+ %% data_in is a struct based of volunteers (rows) and trials (columns)
+  [volunteers, trials] = size(data_in);
+  %sampling rate is 200Hz
+  samprate_bbddlab = 200;
+  %create data to store features
+  %data_features = struct();
+  
+  for i=1:volunteers
+    for k=1:trials-2
+        
+      %Create the BVP signals
+      bvp_sig_neutro   = BVP_create_signal(data_in{i,k}.BINDI.Neutro.raw.bvp_filt, samprate_bbddlab);
+      bvp_sig_video    = BVP_create_signal(data_in{i,k}.BINDI.Video.raw.bvp_filt, samprate_bbddlab);
+      bvp_sig_labels   = BVP_create_signal(data_in{i,k}.BINDI.Labels.raw.bvp_filt, samprate_bbddlab);
+      bvp_sig_recovery = BVP_create_signal(data_in{i,k}.BINDI.Recovery.raw.bvp_filt, samprate_bbddlab);
+      
+      %Create the GSR signals
+      gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered, samprate_bbddlab);
+      gsr_sig_video    = GSR_create_signal(data_in{i,k}.GSR.Video.raw.gsr_uS_filtered, samprate_bbddlab);
+      gsr_sig_labels   = GSR_create_signal(data_in{i,k}.GSR.Labels.raw.gsr_uS_filtered, samprate_bbddlab);
+      gsr_sig_recovery = GSR_create_signal(data_in{i,k}.GSR.Recovery.raw.gsr_uS_filtered, samprate_bbddlab);
+      
+      %% Stage 2: Extracting Features %%
+      % Deal with window and overlapping
+      operational_window = 10; %seconds
+      overlapin_window   = 1;  %seconds
+      
+      %Neutro
+      %BVP processing
+      [data_features{i,k}.BINDI.Neutro.BVP_feats(1,:), ...
+      data_features{i,k}.BINDI.Neutro.BVP_feats_names] = ...
+        BVP_features_extr(bvp_sig_neutro);
+      %GSR processing
+      [data_features{i,k}.BINDI.Neutro.GSR_feats(1,:), ...
+      data_features{i,k}.BINDI.Neutro.GSR_feats_names] = ...
+        GSR_features_extr(gsr_sig_neutro);    
+
+      %Video
+      %BVP processing
+      [data_features{i,k}.BINDI.Video.BVP_feats(1,:), ...
+      data_features{i,k}.BINDI.Video.BVP_feats_names] = ...
+        BVP_features_extr(bvp_sig_video);
+      %GSR processing
+      [data_features{i,k}.BINDI.Video.GSR_feats(1,:), ...
+      data_features{i,k}.BINDI.Video.GSR_feats_names] = ...
+        GSR_features_extr(gsr_sig_video);  
+      
+      %Labels
+      %BVP processing
+      [data_features{i,k}.BINDI.Labels.BVP_feats(1,:), ...
+      data_features{i,k}.BINDI.Labels.BVP_feats_names] = ...
+        BVP_features_extr(bvp_sig_labels);
+      %GSR processing
+      [data_features{i,k}.BINDI.Labels.GSR_feats(1,:), ...
+      data_features{i,k}.BINDI.Labels.GSR_feats_names] = ...
+        GSR_features_extr(gsr_sig_labels);  
+      
+      %Recovery
+      %BVP processing
+      [data_features{i,k}.BINDI.Recovery.BVP_feats(1,:), ...
+      data_features{i,k}.BINDI.Recovery.BVP_feats_names] = ...
+        BVP_features_extr(bvp_sig_recovery);
+      %GSR processing
+      [data_features{i,k}.BINDI.Recovery.GSR_feats(1,:), ...
+      data_features{i,k}.BINDI.Recovery.GSR_feats_names] = ...
+        GSR_features_extr(gsr_sig_recovery);  
+      
+    end
+  end
+    
+  %% Stage 3: Trainning the model - Validation
+  %...TBD
+  
+  %% Stage 4: Testing the model - testing with unseen samples
+  %...TBD
+  
+  %% Stage 5: Give back results
+  Results_BBDDLab_Bindi.features = data_features;
+  %...TBD
+  
+  %% Stage 6: Perform EDA (exploratory data analysis)
+  %%...TBD
 end
 
 %% Function to handle the data coming from BioSpeech Database
