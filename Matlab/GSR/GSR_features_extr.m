@@ -39,7 +39,8 @@ GSR_raw = Signal__get_raw(GSRsignal);
 featuresNames = {'nbPeaks', 'ampPeaks', 'riseTime', ...
                  'recoveryTime', 'aup', 'meanGSR', 'stdGSR',...
                  'firstQuartileGSR','thirdQuartileGSR','sp0005','sp0515',...
-                 'sp_energyRatio'};
+                 'sp_energyRatio'};%,...
+%                  'dfa','rrate','det','lmax','ent','lam','tt','corDim'};
 %featuresNames = {'meanGSR', 'stdGSR'};
 GSR_feats_names = featuresSelector(featuresNames,varargin{:});
 
@@ -57,11 +58,13 @@ if strcmp(signalUnit, 'Ohm')
      GSRsignal = Signal__set_raw(GSRsignal, raw);
      GSRsignal = Signal__set_unit(GSRsignal, 'uS');
      signalUnit = Signal__get_unit(GSRsignal);
+     GSR_raw = Signal__get_raw(GSRsignal);
 elseif strcmp(signalUnit, 'nS')
 	%convert from nano siemens to resistance
 	raw = Signal__get_raw(GSRsignal);
 	raw = 1./(raw*10E9);
 	GSRsignal = Signal__set_raw(GSRsignal, raw);
+    GSR_raw = Signal__get_raw(GSRsignal);
 	ampThresh = 100;%Ohm
 elseif strcmp(signalUnit, 'uS')
 %     disp('The GSR unit is uS');
@@ -139,7 +142,7 @@ if(~isempty(GSR_feats_names))
     end
     
     %Faster faster ..
-    GSR_raw=downsample(GSR_raw,4);
+    GSR_raw=downsample(GSR_raw,32);
     
      %dfa - Detrended Fluctuation Analysis
     if any(strcmp('dfa',GSR_feats_names))

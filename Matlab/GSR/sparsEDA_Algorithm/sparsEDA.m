@@ -143,6 +143,7 @@ function [driver, SCL, signalRs,MSE] = sparsEDA(signalIn,sr,graphics,epsilon,Kma
 
     
     ind = find(SCRaux>0);
+    if isempty(ind)==0
     scr_temp = SCRaux(ind);
     [scr_ord, ind2] = sort(scr_temp, 'descend');
     scr_fin = scr_ord(1);
@@ -159,6 +160,7 @@ function [driver, SCL, signalRs,MSE] = sparsEDA(signalIn,sr,graphics,epsilon,Kma
     scr_max = scr_fin(1);
     threshold = rho*scr_max;
     driver(driver < threshold) = 0;
+    end
     
         %%
     if (graphics)

@@ -106,7 +106,6 @@ if (delineation == 1)
   %Sure to keep that ?
   listePic = round(listePic);
   
-  
   %Remove too early first peak
   if((listePic(1) < limit) && (listePic(2) - listePic(1) >= limit))
       listePic = listePic(2:end);
@@ -174,7 +173,7 @@ elseif delineation == 2
     prev_state = 0;
     countPeaks = 0;
     countValleys = 0;
-    for(i = 2:length(diffSS)-1)
+    for i = 2:length(diffSS)-1
         %In case the two are crossing
          %In case there is a peak
         if diffSS(i)<diffS(i) && diffSS(i+1)>diffS(i+1)
@@ -388,17 +387,254 @@ if (length(listePic) < 2)
     error('There should be at least 2 peaks to detect');
 end
 
+%% -->This TMR-decision-based like is optional, comment if desired
+%%[ADT Elsevier, Hang shin sink]
+[picos_final, valles_final] = ADT(data, fe);
+
+%%[ADS IJCA, Sirinivas]
+[picos_final2, valles_final2] = ASP(data);
+
+%TMR with three low complexity LCM-Slope-based algorithms
+t = [picos_final.posicion];
+t2 = [picos_final2.posicion];
+nbSplFwd = round(0.05*fe);
+
+listePic_new_ab = [];
+for j=1:length(listePic)
+  for k=1:length(t)
+    if (t(k)<=listePic(j)+nbSplFwd && t(k)>=listePic(j)-nbSplFwd) 
+      listePic_new_ab(j) = t(k);
+      break
+    end
+  end
+end
+
+listePic_new_ac = [];
+for j=1:length(listePic)
+  for k=1:length(t2)
+    if (t2(k)<=listePic(j)+nbSplFwd && t2(k)>=listePic(j)-nbSplFwd) 
+      listePic_new_ac(j) = t2(k);
+      break
+    end
+  end
+end
+
+listePic_new_bc = [];
+for j=1:length(t)
+  for k=1:length(t2)
+    if (t2(k)<=t(j)+nbSplFwd && t2(k)>=t(j)-nbSplFwd) 
+      listePic_new_bc(j) = t2(k);
+      break
+    end
+  end
+end
+
+listePic_new = unique([listePic_new_ab, listePic_new_ac, listePic_new_bc]);
+listePic_new(listePic_new==0)=[];
+listePicOrig = listePic;
+listePic = listePic_new;
+% <--
+
 %% Compute bpm from the pic list
 [bpm delta_t t] = PICtoBPM(listePic, fe);
 
+%% Verbose plots
 if(verbose)
     figure; hold on;
     plot(data);
+    plot(listePic,data(round(listePic)),'+')
+%  if(verbose)   
     plot(dataS,'r');
     plot(diffS,'g');
-    plot(listePic,data(round(listePic)),'+')
     plot(listePic,dataS(round(listePic)),'+r')
     plot(listePic,diffS(round(listePic)),'+g')
     plot(t,bpm,'c*-')
 end
+end
+%% Adaptive threshold method for the peak detection of photoplethysmographic waveform
+function [picos_final, valles_final] = ADT(s_input, f_s)
+inicio_ppg = 1;
+picos_final     = 0;
+valles_final    = 0;
+[picos, valles] = delineateFirstDiffPPG(s_input);
+tiempo_maximo = length(s_input);
+slope_max = zeros(1, tiempo_maximo);
+slope_min = zeros(1, tiempo_maximo);
+if(isempty([picos.valor]) )%|| isempty([valles.valor]))
+    %nothing
+else
+slope_max(1)= mean([picos.valor]);%0.2*max([picos.valor]);
+% slope_min(1)= 0.2*min([valles.valor]);
+Sr_max = -0.6;  % factor reductor de treshold superior experimental paper
+Sr_min = 0.8;   % factor incrementador de treshold inferior experimental paper
+muestras_IBI_previo = 0;
+% muestras_IBI_previo_v = 0;
+period_refractory = (0.6 * muestras_IBI_previo);
+% period_refractory_v = (0.6 * muestras_IBI_previo_v);
+i_p=1;
+% i_v=1;
+V_max = 0;
+V_min = 0;
+i_p_new = 1;
+% i_v_new = 1;
+picos_new(i_p_new) = picos(i_p);
+% valles_new(i_v_new) = valles(i_v);
+
+for k = 2:tiempo_maximo
+    if(k + f_s < tiempo_maximo)
+        inicio_ppg = k;
+        fin_ppg = k + f_s;
+    else
+        inicio_ppg = k;
+        fin_ppg = tiempo_maximo;
+    end
+    slope_max(k) = slope_max(k-1) + Sr_max * abs(V_max + std(s_input(inicio_ppg:round(fin_ppg)))) / (f_s);
+    slope_min(k) = slope_min(k-1) + Sr_min * abs(V_min + std(s_input(inicio_ppg:round(fin_ppg)))) / (f_s);
+    
+    if(slope_max(k) < s_input(k) && period_refractory <= (picos(i_p).posicion - picos_new(i_p_new).posicion) && s_input(k) > s_input(k-1))
+        slope_max(k) = s_input(k);
+    end
+%     if(slope_min(k) > s_input(k) && period_refractory_v <= (valles(i_v).posicion - valles_new(i_v_new).posicion) && s_input(k) < s_input(k-1))
+%         slope_min(k) = s_input(k);
+%     end
+    if(k >= picos(i_p).posicion)
+        if(picos(i_p).valor >= slope_max(k) && period_refractory <= (picos(i_p).posicion - picos_new(i_p_new).posicion))
+            V_max = picos(i_p).valor;
+            i_p_new = i_p_new + 1;
+            picos_new(i_p_new) = picos(i_p);
+            if(i_p_new >2)
+                muestras_IBI_previo = picos_new(i_p_new).posicion - picos_new(i_p_new-1).posicion;
+                period_refractory = round(0.7 * muestras_IBI_previo);
+            else
+                muestras_IBI_previo = 600;
+                period_refractory = muestras_IBI_previo;
+            end
+        end       
+         i_p = i_p + 1;
+        if(i_p > length(picos))
+            i_p = length(picos);
+        end
+    end
+%     if(k >= valles(i_v).posicion)
+%         if(valles(i_v).valor <= slope_min(k) && period_refractory_v <= (valles(i_v).posicion - valles_new(i_v_new).posicion))
+%             V_min = valles(i_v).valor;
+%             i_v_new = i_v_new + 1;
+%             valles_new(i_v_new) = valles(i_v);
+%             if(i_v_new > 2)
+%                 muestras_IBI_previo_v = valles_new(i_v_new).posicion - valles_new(i_v_new-1).posicion;
+%                 period_refractory_v = round(0.8 * muestras_IBI_previo_v);
+%             else
+%                 muestras_IBI_previo_v = 600;
+%                 period_refractory_v = muestras_IBI_previo_v;
+%             end
+%         end
+%             i_v = i_v+1;
+%             if(i_v > length(valles))
+%                 i_v = length(valles);
+%             end            
+%     end
+end
+%-----------------------------------------------------------------------------
+picos_final     = picos_new;
+% valles_final    = valles_new;
+end
+end
+%% An Efficient and Automatic Systolic Peak Detection Algorithm for Photoplethysmographic Signals
+function [picos_final, valles_final] = ASP(s_input)
+ [picos, valles] = delineateFirstDiffPPG(s_input);
+if (picos(1).posicion < valles(1).posicion)
+    picos(1) = [];
+%     fprintf('Filtro picos 1: primer pico eliminado.\n');
+end
+
+if(length(picos) > length(valles))
+    picos(length(valles)+1:end)=[];
+%     fprintf('Filtro picos 1: picos extras eliminados.\n');
+elseif(length(picos) < length(valles))
+    valles(length(picos)+1:end)=[];
+%     fprintf('Filtro picos 1: valles extras eliminados.\n');
+end
+
+num_picos_pre   = length(picos);
+num_picos_pos   = 0; 
+iteraciones     = 0;
+
+while(num_picos_pre ~= num_picos_pos && length(picos) > 2 )
+    VPD             = [picos.valor] - [valles.valor];
+    %lim_VPD         = zeros(size(VPD, 1), size(VPD, 2));    
+    num_picos_pre   = length(picos);
+    i               = 0;
+    lim_VPD         = 0.7 * (VPD(1) + VPD(2)) / 3;
+    if(VPD(1) > lim_VPD(1))
+        i                   = i + 1;
+        picos_nuevos(i)     = picos(1);
+        valles_nuevos(i)    = valles(1);
+    end
+    for k = 2:length(VPD)-1
+        lim_VPD(k)  = 0.7 * (VPD(k-1) + VPD(k) + VPD(k+1)) / 3;
+        
+        if(VPD(k) > lim_VPD(k))
+            % ver picos
+            i                   = i + 1;
+            picos_nuevos(i)     = picos(k);
+            valles_nuevos(i)    = valles(k);
+        end
+        
+    end
+    if(i> 0)
+        picos           = picos_nuevos;
+        valles          = valles_nuevos;
+    end
+    num_picos_pos   = length(picos);
+    iteraciones     = iteraciones + 1;
+end
+
+% fprintf('ASP: converge after %i iterations.\n', iteraciones);
+%-----------------------------------------------------------------------------
+picos_final     = picos;
+valles_final    = valles;
+
+end
+%% Sacar todos los picos y los valles
+function [picos, valles] = delineateFirstDiffPPG(s_input)
+  %looking for positive peaks : decreasing slope = 0
+  %Take into account that smooth performs a 5-smoothing moving average
+  %filter. This is done based on quantization problems resulting into 
+  % zero-crossing for the first difference quite often.
+  % Can be done by applying a AGC to not smooth the signal?
+  diffS = smooth(diff(smooth(s_input)));
+  listePic = [];
+  listeValley = [];
+  id_vtp          = 0;
+  id_ptp          = 0;
+  id_vtv          = 0;
+  id_ptv          = 0;
+  for iSpl = 1:length(diffS)-1
+      %If there is a slope == 0 // do not take into account in the last sample
+      if((diffS(iSpl) > 0) && (diffS(iSpl+1) < 0)) 
+        listePic = [listePic iSpl+(diffS(iSpl) / (diffS(iSpl) - diffS(iSpl+1)))];
+        id_vtp = id_vtp + 1;
+        id_ptp = id_ptp + 1; 
+        picos(id_ptp).posicion = round(listePic(end));
+        picos(id_vtp).valor = s_input(round(listePic(end)));
+      elseif ((diffS(iSpl)==0) && (diffS(iSpl+1) < 0))
+        listePic = [listePic iSpl];
+        id_vtp = id_vtp + 1;
+        id_ptp = id_ptp + 1; 
+        picos(id_ptp).posicion = round(listePic(end));
+        picos(id_vtp).valor = s_input(round(listePic(end)));
+      elseif ((diffS(iSpl) < 0) && (diffS(iSpl+1) > 0)) 
+        listeValley = [listeValley iSpl+(diffS(iSpl) / (diffS(iSpl) - diffS(iSpl+1)))];
+        id_vtv = id_vtv + 1;
+        id_ptv = id_ptv + 1; 
+        valles(id_ptv).posicion = round(listeValley(end));
+        valles(id_vtv).valor = s_input(round(listeValley(end)));
+      elseif ((diffS(iSpl)==0) && (diffS(iSpl+1) > 0))
+        listeValley = [listeValley iSpl];
+        id_vtv = id_vtv + 1;
+        id_ptv = id_ptv + 1;
+        valles(id_ptp).posicion = round(listeValley(end));
+        valles(id_vtp).valor = s_input(round(listeValley(end)));
+      end
+  end
 end

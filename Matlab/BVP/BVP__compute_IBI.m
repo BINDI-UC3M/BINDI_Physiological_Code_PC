@@ -51,8 +51,8 @@ if(isempty(Signal__get_raw(BVPSignal.IBI)))
 
 	%Attribute the computed signal to IBI to check if range is correct
 	% This is done now because this can cause problems in the resampling
-	BVPSignal.IBI = Signal__set_raw(BVPSignal.IBI,IBI);
-	Signal__assert_range(BVPSignal.IBI, 0.25, 1.5, 1);
+	%BVPSignal.IBI = Signal__set_raw(BVPSignal.IBI,IBI);
+	%Signal__assert_range(BVPSignal.IBI, 0.25, 1.5, 1);
 
     %Apply moving median average to smooth IBI. Take into account that in
     % PICtoBPM hampel has been used to remove outliners (3*std - see doc)

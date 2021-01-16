@@ -60,10 +60,10 @@ featuresNamesIBI = {'mean_', 'HRV', 'meanIBI', 'tachogram_LF', 'tachogram_MF',..
 %     'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
 % 	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF'};
 featuresNames = {'mean_', 'HRV_sdnn','HRV_rmssd', 'meanIBI',...
-	'sp0001', 'sp0102', 'sp0203', 'sp0304', 'sp_energyRatio', ...
     'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
 	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF',...
-    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi'};
+    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi',...
+    'dfa_bvp','dfa_ibi','rrate','det','lmax','ent','lam','tt','corDim'};
 BVP_feats_names = featuresSelector(featuresNames,varargin{:});
 
 %If some features are selected
@@ -83,7 +83,7 @@ if(~isempty(BVP_feats_names))
 	    %BVPSignal.IBI.interp = downsample(BVPSignal.IBI.interp,IBI_sp_bvp/32);
         BVPSignal.IBI = Signal__set_samprate(BVPSignal.IBI,IBI_sp_bvp);
         IBI_sp = Signal__get_samprate(BVPSignal.IBI);
-        IBI = BVPSignal.IBI.interp;
+        %IBI = BVPSignal.IBI.interp;
         
 	end
 
@@ -116,10 +116,8 @@ if(~isempty(BVP_feats_names))
         MSE5 = MSE(5);
     end
    
-    %EMPATIA
-    %welch_window_size_BVP = samprate*10;
-    %TEAP-DEAP-MAHNOB
-	%welch_window_size_BVP = samprate*20;
+    %PWelch processing windows
+    IBI = BVPSignal.IBI.interp;
     welch_window_size_BVP = floor(length(rawSignal)-samprate);
 	%welch_window_size_IBI = IBI_sp*20;
     welch_window_size_IBI = floor(length(IBI)/2);
@@ -173,6 +171,9 @@ if(~isempty(BVP_feats_names))
 		end
     end
     
+    %Faster faster ..
+    rawSignal=downsample(rawSignal,2);
+    
      %dfa - Detrended Fluctuation Analysis
     if any(strcmp('dfa_bvp',BVP_feats_names))
      pts = round(length(rawSignal)/10):10:length(rawSignal);
@@ -186,7 +187,7 @@ if(~isempty(BVP_feats_names))
     %rqa_stat - RQA statistics - [recrate DET LMAX ENT TND LAM TT]
     if any(strcmp('rrate',BVP_feats_names))
       %Determining embedding dimension m and time lag (delay time) t
-      [y,eLag,eDim]=phaseSpaceReconstruction(IBI,'MaxLag',1,'MaxDim',3);
+      [y,eLag,eDim]=phaseSpaceReconstruction(rawSignal,'MaxLag',1,'MaxDim',3);
       
       % phase space plot
       %y = phasespace(IBI,3,10);
