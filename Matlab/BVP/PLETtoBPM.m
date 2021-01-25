@@ -439,11 +439,11 @@ listePic = listePic_new;
 [bpm delta_t t] = PICtoBPM(listePic, fe);
 
 %% Verbose plots
-if(verbose)
+% if(verbose)
     figure; hold on;
     plot(data);
     plot(listePic,data(round(listePic)),'+')
-%  if(verbose)   
+ if(verbose)   
     plot(dataS,'r');
     plot(diffS,'g');
     plot(listePic,dataS(round(listePic)),'+r')

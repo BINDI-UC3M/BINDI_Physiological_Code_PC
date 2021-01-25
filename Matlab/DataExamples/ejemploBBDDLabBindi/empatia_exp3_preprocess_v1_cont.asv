@@ -1,5 +1,5 @@
 %% MAIN FUCNTION
-function out_struct = empatia_exp3_preprocess_v1_cont(parseEH)
+function out_struct = empatia_exp3_preprocess_v1_cont()
 
 %Select folder where data have been stored
 selpath = uigetdir(cd,'Script Root Folder - Select Data Root Folder for BINDI, GSR and EH');
@@ -61,13 +61,11 @@ for j = init_directory:patients_total
     out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw = [];
     
     %Apply parser for EH files
-    if parseEH==1
-      str_folder_eh = strcat(curr_path_eh, directory_data_eh(j).name);
-      cd(str_folder_eh);
-      python = strcat('python',{' '},selpath,'\autoParser_v2.py');
-      system(string(python));  
-      cd(selpath);
-    end
+%     str_folder_eh = strcat(curr_path_eh, directory_data_eh(j).name);
+%     cd(str_folder_eh);
+%     python = strcat('python',{' '},selpath,'\autoParser_v2.py');
+%     system(string(python));  
+%     cd(selpath);
     
     for i = 1:videos_total
         fprintf('Patient %s, Video %d data extracting...\n',directory_data_eh(j).name, i);
@@ -87,8 +85,8 @@ for j = init_directory:patients_total
 %             [out_struct{j-init_directory+1,videos_total+1}.BINDI.samplesLostnum;  out_struct{j-init_directory+1,i}.BINDI.samplesLostnum];
 %        out_struct{j-init_directory+1,videos_total+1}.BINDI.samplesLostRow = ...
 %             [out_struct{j-init_directory+1,videos_total+1}.BINDI.samplesLostRow;  out_struct{j-init_directory+1,i}.BINDI.samplesLostRow];
-        out_struct{j-init_directory+1,videos_total+1}.BINDI.allRaw = ...
-            [out_struct{j-init_directory+1,videos_total+1}.BINDI.allRaw; out_struct{j-init_directory+1, i}.BINDI.allraw.gsr_ADC];
+%         out_struct{j-init_directory+1,videos_total+1}.BINDI.allRaw = ...
+%             [out_struct{j-init_directory+1,videos_total+1}.BINDI.allRaw; out_struct{j-init_directory+1, i}.BINDI.allraw.count];
         
         %%%%%%%%%%%%%%%%%%%%%%%%%% GSR
 		out_struct{j-init_directory+1,i}.GSR = empatia_preprocess_gfileNew(str_file_g,i);
@@ -99,8 +97,8 @@ for j = init_directory:patients_total
 %             [out_struct{j-init_directory+1,videos_total+1}.GSR.samplesLostnum;  out_struct{j-init_directory+1,i}.GSR.samplesLostnum];
 %        out_struct{j-init_directory+1,videos_total+1}.GSR.samplesLostRow = ...
 %             [out_struct{j-init_directory+1,videos_total+1}.GSR.samplesLostRow;  out_struct{j-init_directory+1,i}.GSR.samplesLostRow];
-        out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw = ...
-            [out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw; out_struct{j-init_directory+1, i}.GSR.allraw.gsr_uS];
+%         out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw = ...
+%             [out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw; out_struct{j-init_directory+1, i}.GSR.allraw.count];
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%% EH
         out_struct{j-init_directory+1,i}.EH = empatia_preprocess_efile(str_file_e,i);
@@ -252,9 +250,10 @@ for i = 1:filetypes_num
         out_s.Neutro.raw.gsr = data.gsr;
         out_s.Neutro.raw.gsr(isnan(out_s.Neutro.raw.gsr))=[];
         out_s.allraw.gsr_ADC = [out_s.allraw.gsr_ADC;  out_s.Neutro.raw.gsr];
-        out_s.allraw.gsr_Ohm = [out_s.allraw.gsr_Ohm;...
-            -(1000000.*out_s.Neutro.raw.gsr)./(out_s.Neutro.raw.gsr - 16383)];
-        out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS ;(1./out_s.allraw.gsr_Ohm)*10e6];
+        out_s.allraw.gsr_Ohm = [out_s.allraw.gsr_Ohm;  out_s.Neutro.raw.gsr];
+        out_s.allraw.gsr_Ohm = ...
+            -(1000000.*out_s.allraw.gsr_Ohm)./(out_s.allraw.gsr_Ohm - 16383);
+        out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS ;1./out_s.allraw.gsr_Ohm];
         out_s.Neutro.raw.bvp = data.bvp;
         out_s.Neutro.raw.bvp(isnan(out_s.Neutro.raw.bvp))=[];
 %         out_s.Neutro.raw.skt = data.skt;
@@ -279,9 +278,10 @@ for i = 1:filetypes_num
         out_s.Video.raw.gsr = data.gsr;
         out_s.Video.raw.gsr(isnan(out_s.Video.raw.gsr))=[];
         out_s.allraw.gsr_ADC = [out_s.allraw.gsr_ADC;  out_s.Video.raw.gsr];
-        out_s.allraw.gsr_Ohm = [out_s.allraw.gsr_Ohm;...
-            -(1000000.*out_s.Video.raw.gsr)./(out_s.Video.raw.gsr - 16383)];
-        out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS ;(1./out_s.allraw.gsr_Ohm)*10e6];
+        out_s.allraw.gsr_Ohm = [out_s.allraw.gsr_Ohm;  out_s.Video.raw.gsr];
+        out_s.allraw.gsr_Ohm = ...
+            -(1000000.*out_s.allraw.gsr_Ohm)./(out_s.allraw.gsr_Ohm - 16383);
+        out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS ;1./out_s.allraw.gsr_Ohm];
         out_s.Video.raw.bvp = data.bvp;
         out_s.Video.raw.bvp(isnan(out_s.Video.raw.bvp))=[];
 %         out_s.Video.raw.skt = data.skt;
@@ -306,9 +306,10 @@ for i = 1:filetypes_num
         out_s.Labels.raw.gsr = data.gsr;
         out_s.Labels.raw.gsr(isnan(out_s.Labels.raw.gsr))=[];
         out_s.allraw.gsr_ADC = [out_s.allraw.gsr_ADC;  out_s.Labels.raw.gsr];
-        out_s.allraw.gsr_Ohm = [out_s.allraw.gsr_Ohm;...
-            -(1000000.*out_s.Labels.raw.gsr)./(out_s.Labels.raw.gsr - 16383)];
-        out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS ;(1./out_s.allraw.gsr_Ohm)*10e6];
+        out_s.allraw.gsr_Ohm = [out_s.allraw.gsr_Ohm;  out_s.Labels.raw.gsr];
+        out_s.allraw.gsr_Ohm = ...
+            -(1000000.*out_s.allraw.gsr_Ohm)./(out_s.allraw.gsr_Ohm - 16383);
+        out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS ;1./out_s.allraw.gsr_Ohm];
         out_s.Labels.raw.bvp = data.bvp;
         out_s.Labels.raw.bvp(isnan(out_s.Labels.raw.bvp))=[];
 %         out_s.Labels.raw.skt = data.skt;
@@ -332,10 +333,10 @@ for i = 1:filetypes_num
       case 4
         out_s.Recovery.raw.gsr = data.gsr;
         out_s.Recovery.raw.gsr(isnan(out_s.Recovery.raw.gsr))=[];
-        out_s.allraw.gsr_ADC = [out_s.allraw.gsr_ADC;  out_s.Recovery.raw.gsr];
-        out_s.allraw.gsr_Ohm = [out_s.allraw.gsr_Ohm;...
-            -(1000000.*out_s.Recovery.raw.gsr)./(out_s.Recovery.raw.gsr - 16383)];
-        out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS ;(1./out_s.allraw.gsr_Ohm)*10e6];
+        out_s.allraw.gsr_Ohm = [out_s.allraw.gsr_Ohm;  out_s.Recovery.raw.gsr];
+        out_s.allraw.gsr_Ohm = ...
+            -(1000000.*out_s.allraw.gsr_Ohm)./(out_s.allraw.gsr_Ohm - 16383);
+        out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS; 1./out_s.allraw.gsr_Ohm];
         out_s.Recovery.raw.bvp = data.bvp;
         out_s.Recovery.raw.bvp(isnan(out_s.Recovery.raw.bvp))=[];
 %         out_s.Recovery.raw.skt = data.skt;

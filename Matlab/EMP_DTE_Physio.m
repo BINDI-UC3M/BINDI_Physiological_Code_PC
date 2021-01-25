@@ -281,10 +281,12 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       while(stop_bvp<length(bvp_sig_video.raw)) %&& ...
             %stop_gsr<length(gsr_sig_video.raw))
         %BVP processing
+        tic
         bvp_sig_cpy.raw = bvp_sig_video.raw(start_bvp:stop_bvp);
         [data_features{i,k}.EH.Video.BVP_feats(window_num,:), ...
          data_features{i,k}.EH.Video.BVP_feats_names] = ...
             BVP_features_extr(bvp_sig_cpy);
+        toc
         %GSR processing
 %          gsr_sig_cpy.raw = gsr_sig_video.raw(start_gsr:stop_gsr);
 %         [data_features{i,k}.EH.Video.GSR_feats(window_num,:), ...
@@ -350,8 +352,8 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
   %...TBD
 end
 
-%%Function to handle the data coming from BBDDLab_Bindi BUT without data 
-%%segmentation
+%% Function to handle the data coming from BBDDLab_Bindi BUT without data 
+%  segmentation
 function Results_BBDDLab_Bindi = EMP_DTE_Physio_BBDDLab_Bindi_ALL(data_in, response_in)
  %% data_in is a struct based of volunteers (rows) and trials (columns)
   [volunteers, trials] = size(data_in);
@@ -453,12 +455,12 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
     error('Number of volunteers or trials exceed the maximun allowed');
   end
   
-  %Sampling rate
-  samprate_biospeech = 2048; %Hz
-  
   for i=1:volunteers
     for k=1:trials
      
+     %Sampling rate
+     samprate_biospeech = 2048; %Hz
+  
      %Display some info
      fprintf('Volunteer %d, extracting...\n',i);
      
@@ -505,7 +507,7 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
      % Apply IIR Forward-Backward filtering
      bvp_sig = BVP_removebaselinewander_signal(bvp_sig, samprate_biospeech);
      
-     % 123: BVP Automatic Gain Control
+     % 1.2: BVP Automatic Gain Control
      % This is based on a fixed AGC. 
      % This AWG is based on cubing-normalized process.
      % Change the number of iterations to even enhance more peaks, but
@@ -516,48 +518,37 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
        bvp_sig = BVP_enhancePeaks_signal(bvp_sig); 
      end
      
-     % 1.3: BVP advanced data processing: EMD-ICA
-     % By now there is no need to apply this over BioSpeech.
-     [out_1_fastICA,out_2_gradientICA] = apply_eemdica_modified(bvp_sig.raw',samprate_biospeech);
-     % Remove outliers out of the signal. Outliers can be produced by
-     % sequences in which the sensor is just starting or is malcfunctioning
-     bvp_sig_fi = BVP_create_signal(out_1_fastICA, samprate_biospeech);
-     bvp_sig_fi = Signal__rmoutliers(bvp_sig_fi);
+     % 1.3: BVP Downsampling
+     samprate_biospeech = 64;
+     bvp_sig = BVP_create_signal(downsample(bvp_sig.raw,32), samprate_biospeech);
      
-     %% Stage 1: preprocessing - filtering signals %%
-     
-     % BVP:
-     % 1.1: BVP filtering. Baseline wander and high frequencies removal
-     % Apply Zero-phase bandpass digital filtering for the whole signal
-     % without performing downsampling before filtering process
-     % Fc1 = 0.2 Hz (-6dB) / Fc2 = 4 Hz (-6dB)
-     % Fs  = 2048
-     % Hamming Window
-     FIRCoeffs = load('BVP_coeffs_highlowpass_2048.mat');
-     bvp_sig_fi = Signal__filter_signal(bvp_sig_fi, FIRCoeffs.BVP_coeffs_lowpass);
-     bvp_sig_fi = Signal__set_preproc(bvp_sig_fi, 'lowpass');
-     bvp_sig_fi = Signal__filter_signal(bvp_sig_fi, FIRCoeffs.BVP_coeffs_highpass);
-     bvp_sig_fi = Signal__set_preproc(bvp_sig_fi, 'highpass');
-     % Apply IIR Forward-Backward filtering
-     bvp_sig_fi = BVP_removebaselinewander_signal(bvp_sig_fi, samprate_biospeech);
-     
-     % 123: BVP Automatic Gain Control
-     % This is based on a fixed AGC. 
-     % This AWG is based on cubing-normalized process.
-     % Change the number of iterations to even enhance more peaks, but
-     % be aware that a high number of iterations could introduce to much 
-     % distortion to the signal.
-     iterations = 1;
-     for j=1:iterations
-       bvp_sig_fi = BVP_enhancePeaks_signal(bvp_sig_fi); 
+     % 1.4: BVP advanced data processing: EMD-ICA
+     plot(bvp_sig.raw)
+     hold on;
+     iterations = 2;
+     for w=1:iterations
+       imfs = emd(bvp_sig.raw);
+       z =bvp_sig.raw';
+       [~,b] = size(imfs);
+       for j=3:b
+         z = z - imfs(:,j);
+       end
+       [sst,F] = wsst(z,samprate_biospeech);
+       [~,iridge] = wsstridge(sst,50,F,'NumRifges',2);
+       xrec = iwsst(sst,iridge);
+       bvp_sig.raw = xrec(:,1) ;%+ xrec(:,2);
+       plot(bvp_sig.raw);
+       bvp_sig.raw=bvp_sig.raw';
      end
-     
-     
      
      % GSR:
      % For the Galvanic Skin Conductance within BioSpeech there is no need
      % to apply filtering stage. Check the EDA (Exploratory Data Analysis)
      % document.
+     
+     % 1.1: GSR Downsampling
+     samprate_biospeech = 64;
+     gsr_sig = GSR_create_signal(downsample(gsr_sig.raw,32), samprate_biospeech);
      
      %% Stage 2: Extracting Features %%
      % 2.1: Just test the complete set of data

@@ -90,16 +90,16 @@ separation = 2;
     samprate = Signal__get_samprate(GSRsignal);
     %GSR=(1./GSR_raw)*1e6;
     GSR=GSR_raw;
-    %GSR_median = movmedian(GSR, [tWindowSec*samprate tWindowSec*samprate]);
-    %GSR_phasic = GSR - GSR_median;
+    GSR_median = movmedian(GSR, [tWindowSec*samprate tWindowSec*samprate]);
+    GSR_phasic = GSR - GSR_median;
     %GSR_phasic = detrend(GSR);
-    [GSR_phasic, p, GSR_tonic, l, d, e, obj] = cvxEDA(zscore(GSR), 1/samprate);
-    figure, hold all
-    tm = (1:length(GSR))'/samprate;
-    plot(tm, (GSR))
-    plot(tm, GSR_phasic)
-    plot(tm, p)
-    plot(tm, GSR_tonic)
+%     [GSR_phasic, p, GSR_tonic, l, d, e, obj] = cvxEDA(zscore(GSR), 1/samprate);
+%     figure, hold all
+%     tm = (1:length(GSR))'/samprate;
+%     plot(tm, (GSR))
+%     plot(tm, GSR_phasic)
+%     plot(tm, p)
+%     plot(tm, GSR_tonic)
     phasicGSR = GSR_phasic;
     %GSR_tonic  = GSR-detrend(GSR);
     %GSR_tonic  = GSR_median;
