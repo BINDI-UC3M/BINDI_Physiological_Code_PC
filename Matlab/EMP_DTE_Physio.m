@@ -242,7 +242,7 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       
       %% Stage 2: Extracting Features %%
       % Deal with window and overlapping
-      operational_window = 20; %seconds
+      operational_window = 40; %seconds
       overlapin_window   = 1;  %seconds
       
       %Neutro
@@ -281,12 +281,14 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       while(stop_bvp<length(bvp_sig_video.raw)) %&& ...
             %stop_gsr<length(gsr_sig_video.raw))
         %BVP processing
-        tic
+        %To measure the time taken for each physio-processing uncomment the
+        %tic-toc commands
+        %tic
         bvp_sig_cpy.raw = bvp_sig_video.raw(start_bvp:stop_bvp);
         [data_features{i,k}.EH.Video.BVP_feats(window_num,:), ...
          data_features{i,k}.EH.Video.BVP_feats_names] = ...
             BVP_features_extr(bvp_sig_cpy);
-        toc
+        %toc
         %GSR processing
 %          gsr_sig_cpy.raw = gsr_sig_video.raw(start_gsr:stop_gsr);
 %         [data_features{i,k}.EH.Video.GSR_feats(window_num,:), ...

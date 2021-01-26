@@ -62,8 +62,8 @@ featuresNamesIBI = {'mean_', 'HRV', 'meanIBI', 'tachogram_LF', 'tachogram_MF',..
 featuresNames = {'mean_', 'HRV_sdnn','HRV_rmssd', 'meanIBI',...
     'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
 	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF',...
-    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi',...
-    'dfa_bvp','dfa_ibi','rrate','det','lmax','ent','lam','tt','corDim'};
+    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi'};%,...
+    %'dfa_bvp','dfa_ibi','rrate','det','lmax','ent','lam','tt','corDim'};
 BVP_feats_names = featuresSelector(featuresNames,varargin{:});
 
 %If some features are selected
@@ -78,10 +78,9 @@ if(~isempty(BVP_feats_names))
 		IBI = Signal__get_raw(BVPSignal.IBI);
 		IBI_sp_bvp = Signal__get_samprate(BVPSignal.IBI);
         
-        %This is just for BioSpeech-Multimodal - 
-        %In case IBI is interpolated performed downsampling 2048/32 = 64 Hz
+        %In case IBI is interpolated performed downsampling 
 	    %BVPSignal.IBI.interp = downsample(BVPSignal.IBI.interp,IBI_sp_bvp/32);
-        BVPSignal.IBI = Signal__set_samprate(BVPSignal.IBI,IBI_sp_bvp);
+        %BVPSignal.IBI = Signal__set_samprate(BVPSignal.IBI,IBI_sp_bvp);
         IBI_sp = Signal__get_samprate(BVPSignal.IBI);
         %IBI = BVPSignal.IBI.interp;
         
@@ -117,7 +116,7 @@ if(~isempty(BVP_feats_names))
     end
    
     %PWelch processing windows
-    IBI = BVPSignal.IBI.interp;
+    %IBI = BVPSignal.IBI.interp;
     welch_window_size_BVP = floor(length(rawSignal)-samprate);
 	%welch_window_size_IBI = IBI_sp*20;
     welch_window_size_IBI = floor(length(IBI)/2);
@@ -143,33 +142,33 @@ if(~isempty(BVP_feats_names))
 			sp_energyRatio = log(sum(P(f<0.08))/sum(P(f>0.15 & f<0.5))+eps);
 		end
 	end
-	if length(IBI)< welch_window_size_IBI +IBI_sp
- 		warning('Signal is too short for this welch window size');
-	end
-	if length(IBI)< welch_window_size_IBI +1
- 		warning('Signal is too short for this welch window size and the PSD features cannot be calculated');
-		tachogram_LF = NaN;tachogram_MF = NaN;tachogram_HF = NaN;
-		tachogram_energy_ratio = NaN;
-	else
-		%tachogram features; psd features on inter beat intervals
-		%R. McCraty, M. Atkinson, W. Tiller, G. Rein, and A. Watkins, "The
-		%effects of emotions on short-term power spectrum analysis of
-		%heart rate variability," The American Journal of Cardiology, vol. 76,
-		%no. 14, pp. 1089 -1093, 1995
-		if any(strcmp('tachogram_LF',BVP_feats_names)) ...
-				|| any(strcmp('tachogram_MF',BVP_feats_names)) ||  any(strcmp('tachogram_HF',BVP_feats_names)) ...
-				|| any(strcmp('tachogram_energy_ratio',BVP_feats_names))
-			[Pt, ft] = pwelch(IBI, welch_window_size_IBI, [], [], IBI_sp);
-            %[Pt, ft] = pwelch(IBI, [], [], [], IBI_sp);
-			clear tachogram %TODO: delete ? Why is it useful ?
-			%WARN: check that this is possible with the IBI sampling rate
-			%WARN: these values are sometimes negative because of the log, doesn't it appear as strange for a user ?
-			tachogram_LF = log(sum(Pt(ft>0.01 & ft<=0.08))+eps);
-			tachogram_MF = log(sum(Pt(ft>0.08 & ft<=0.15))+eps);
-			tachogram_HF = log(sum(Pt(ft>0.15 & ft<=0.5))+eps);
-			tachogram_energy_ratio = tachogram_MF/(tachogram_LF+tachogram_HF);
-		end
-    end
+% 	if length(IBI)< welch_window_size_IBI +IBI_sp
+%  		warning('Signal is too short for this welch window size');
+% 	end
+% 	if length(IBI)< welch_window_size_IBI +1
+%  		warning('Signal is too short for this welch window size and the PSD features cannot be calculated');
+% 		tachogram_LF = NaN;tachogram_MF = NaN;tachogram_HF = NaN;
+% 		tachogram_energy_ratio = NaN;
+% 	else
+% 		%tachogram features; psd features on inter beat intervals
+% 		%R. McCraty, M. Atkinson, W. Tiller, G. Rein, and A. Watkins, "The
+% 		%effects of emotions on short-term power spectrum analysis of
+% 		%heart rate variability," The American Journal of Cardiology, vol. 76,
+% 		%no. 14, pp. 1089 -1093, 1995
+% 		if any(strcmp('tachogram_LF',BVP_feats_names)) ...
+% 				|| any(strcmp('tachogram_MF',BVP_feats_names)) ||  any(strcmp('tachogram_HF',BVP_feats_names)) ...
+% 				|| any(strcmp('tachogram_energy_ratio',BVP_feats_names))
+% 			[Pt, ft] = pwelch(IBI, welch_window_size_IBI, [], [], IBI_sp);
+%             %[Pt, ft] = pwelch(IBI, [], [], [], IBI_sp);
+% 			clear tachogram %TODO: delete ? Why is it useful ?
+% 			%WARN: check that this is possible with the IBI sampling rate
+% 			%WARN: these values are sometimes negative because of the log, doesn't it appear as strange for a user ?
+% 			tachogram_LF = log(sum(Pt(ft>0.01 & ft<=0.08))+eps);
+% 			tachogram_MF = log(sum(Pt(ft>0.08 & ft<=0.15))+eps);
+% 			tachogram_HF = log(sum(Pt(ft>0.15 & ft<=0.5))+eps);
+% 			tachogram_energy_ratio = tachogram_MF/(tachogram_LF+tachogram_HF);
+%         end
+%     end
     
     %Faster faster ..
     rawSignal=downsample(rawSignal,2);
@@ -179,9 +178,15 @@ if(~isempty(BVP_feats_names))
      pts = round(length(rawSignal)/10):10:length(rawSignal);
 	 [dfa_out,~] = DFA_fun(rawSignal,pts);
      dfa_bvp = dfa_out(1);
-     pts = round(length(IBI)/10):10:length(IBI);
-     [dfa_out,~] = DFA_fun(IBI,pts);
-     dfa_ibi = dfa_out(1);
+     %pts = round(length(IBI)/10):10:length(IBI);
+%      pts = 3:2:length(IBI);
+%      [dfa_out,~] = DFA_fun(IBI,pts);
+%      dfa_ibi = dfa_out(1);
+%      %Check values 
+%      if (isnan(dfa_bvp) || isnan(dfa_ibi)) || ...
+%         (isinf(dfa_bvp) || isinf(dfa_ibi)) 
+%        error('NaN detected');
+%      end
     end
     
     %rqa_stat - RQA statistics - [recrate DET LMAX ENT TND LAM TT]
@@ -248,7 +253,20 @@ if(~isempty(BVP_feats_names))
     %% Energy for the different bands
     LF_energia = abs(log(sum_LF));
     HF_energia = abs(log(sum_HF));
-    UHF_energia = abs(log(sum_UHF));
+    
+    %Check values, in case of having a low HR, there will be not enough UHF
+    if sum_UHF==0
+      UHF_energia = sum_UHF;
+    else
+      UHF_energia = abs(log(sum_UHF));
+    end
+    if isnan(LF_energia) || isnan(HF_energia) || isnan(UHF_energia)
+        error('NaN detected');
+    end
+    if isinf(LF_energia) || isinf(HF_energia) || isinf(UHF_energia)
+        error('NaN detected');
+    end
+    
     %% Ratios between LF and HF bands (SNS(7) / PNS(9))
     Ratio_LFHF = abs(LF_energia/HF_energia);
     %% Normalized energy
@@ -270,16 +288,31 @@ if(~isempty(BVP_feats_names))
         sd1(i)=(sqrt(2)/2)*(IBI(i)-IBI(i+1));
     end
     sd1 = std(sd1);
+    
+    %Check values 
+    if (isnan(sd1) || isnan(sd2)) || ...
+       (isinf(sd1) || isinf(sd2)) 
+      error('NaN detected');
+    end
+    
     %Longitudinal factor as ref indicated
     Lsd2 = 4*sd2;
     %Transversal factor as ref indicated
     Tsd1 = 4*sd1;
     %Cardiac Sympathetic Index (CSI) as ref indicated
-    csi = Lsd2/Tsd1;
+    if Lsd2==0 || Tsd1==0
+      csi = 0;
+    else
+      csi = Lsd2/Tsd1;
+    end
     %Modified Cardiac Sympathetic Index (MCSI) as ref indicated
     mcsi = Lsd2*csi;
     %Cadiac Vagal Index (CVI) as ref indicated
-    cvi = log10(Lsd2*Tsd1);
+    if Lsd2==0 || Tsd1==0
+      cvi = 0;
+    else
+      cvi = log10(Lsd2*Tsd1);
+    end
     
     %% Extra features for morphological features
     %TBD...
