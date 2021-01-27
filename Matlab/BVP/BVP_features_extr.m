@@ -62,8 +62,8 @@ featuresNamesIBI = {'mean_', 'HRV', 'meanIBI', 'tachogram_LF', 'tachogram_MF',..
 featuresNames = {'mean_', 'HRV_sdnn','HRV_rmssd', 'meanIBI',...
     'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
 	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF',...
-    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi'};%,...
-    %'dfa_bvp','dfa_ibi','rrate','det','lmax','ent','lam','tt','corDim'};
+    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi',...
+    'dfa_bvp','rrate','det','lmax','ent','lam','tt','corDim'};
 BVP_feats_names = featuresSelector(featuresNames,varargin{:});
 
 %If some features are selected
@@ -171,7 +171,7 @@ if(~isempty(BVP_feats_names))
 %     end
     
     %Faster faster ..
-    rawSignal=downsample(rawSignal,2);
+    rawSignal=downsample(rawSignal,4);
     
      %dfa - Detrended Fluctuation Analysis
     if any(strcmp('dfa_bvp',BVP_feats_names))
