@@ -82,7 +82,7 @@ separation = 2;
     end
     phasicGSR = GSR_phasic;
   else
-    tWindowSec = 10;
+    tWindowSec = 4;
 
     %Search low and high peaks
     %low peaks are the GSR appex reactions (highest sudation)
@@ -154,8 +154,8 @@ separation = 2;
             finding_offset = 0;
         end
       end
-    nbPeaks = length(ampPeaks);
-  end
+      nbPeaks = length(ampPeaks);
+    end
 end
 
 

@@ -70,7 +70,16 @@ function  [result] = trainModels_tvt(features, labels, varargin)
         disp('WESAD Open BBDD simulation running');
         patients_open = [1,2,3,4,5];
         patients = 15;
-        trials   = 5;        
+        trials   = 5;     
+      case 4
+        disp('BioSpeech Open BBDD simulation running');
+        patients_open = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,...
+                         18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,...
+                         33,34,35,36,37,38,39,40,41];
+        %Add this line if you want to include EN and DE experiments
+        patients_open = [patients_open patients_open+41];
+        patients = 41;
+        trials   = 1; 
       otherwise
         patients_open = [1];
         patients = 1;
@@ -187,18 +196,18 @@ function  [result] = trainModels_tvt(features, labels, varargin)
         %identify possible inf values
         p_temp = features(:,:,patients_open(i));
         l_temp = labels(:,:,patients_open(i));
-        [r,~] = find(isinf(p_temp(:,:)));
+        [r,~] = find(isinf(cell2mat(p_temp(:,:))));
         if r>0
           p_temp(r,:) = [];
           l_temp(r,:,:)= [];
         end
-        peri_temp  = [peri_temp ; zscore(p_temp)];
-        label_temp = [label_temp ; l_temp];
+        peri_temp  = [peri_temp ; zscore(cell2mat(p_temp))];
+        label_temp = [label_temp ; cell2mat(l_temp)];
       end
       i = 1;
 
         %convert from '0' to +1
-        if numel(label_temp(strcmp(label_temp,'0'),1))>0
+        if numel(label_temp(strcmp(string(label_temp),'0'),1))>0
           label_temp = double(label_temp);
           label_temp = label_temp + 1;
           label_temp = string(label_temp);
@@ -293,18 +302,23 @@ function [results]=binaryModels(features, labels)
   label_temp = labels;
   %perform training - testing split
   partition = cvpartition(label_temp,'Holdout',0.2,'Stratify',true);
-  idxTrain = training(partition);
+  %idxTrain = training(partition);
+%   [idxTrain,~] = size(features);
+%   idxTrain(1:idxTrain)=1;
 %   idxTrain(1:1200)=1;
 %   idxTrain(st:sp)=0;
-  peri_temp = features(idxTrain,:);
-  label_temp = labels(idxTrain); 
+%   peri_temp = features(idxTrain,:);
+%   label_temp = labels(idxTrain); 
   c = cvpartition(numel(label_temp),'KFold',kfold);
 
   %Bayesian Optimization for SVM 
 %   svm_temp = fitcsvm(peri_temp,label_temp,...
 %            'Cost',[0,1;3.3,0]);
+%   svm_temp = fitcsvm(peri_temp,label_temp,...
+%              'OptimizeHyperparameters','all',...
+%              'HyperparameterOptimizationOptions',...
+%              struct('CVPartition',c,'ShowPlots',false,'Verbose',1));
   svm_temp = fitcsvm(peri_temp,label_temp,...
-               'Cost',[0,1.2;2.5,0],...
              'OptimizeHyperparameters','all',...
              'HyperparameterOptimizationOptions',...
              struct('CVPartition',c,'ShowPlots',false,'Verbose',1));
@@ -329,48 +343,44 @@ function [results]=binaryModels(features, labels)
   modelLosses = kfoldLoss(svm_temp_cv,'mode','individual');
   [~,row_min] = min(modelLosses);
    
-  %compute testing accuracy
+  %compute testing accuracy for each subrrogate models
   tAccuracy = 1 - min(modelLosses);
   
   %compute testing predictions - unseen testing points
-  [tPredictions, tScores] = predict(svm_temp_cv.Trained{1}, features(~idxTrain,:));
-  
-  [tPredictions2, tScores2] = predict(svm_temp_cv.Trained{2}, features(~idxTrain,:));
-    confuM_t2 = confusionmat(labels(~idxTrain), tPredictions2);
-  [tPredictions3, tScores3] = predict(svm_temp_cv.Trained{3}, features(~idxTrain,:));
-    confuM_t3 = confusionmat(labels(~idxTrain), tPredictions3);
-  [tPredictions4, tScores4] = predict(svm_temp_cv.Trained{4}, features(~idxTrain,:));
-    confuM_t4 = confusionmat(labels(~idxTrain), tPredictions4);
-  [tPredictions5, tScores5] = predict(svm_temp_cv.Trained{5}, features(~idxTrain,:));
-    confuM_t5 = confusionmat(labels(~idxTrain), tPredictions5);
+%   [tPredictions, tScores] = predict(svm_temp_cv.Trained{1}, features(~idxTrain,:));
+%     confuM_t = confusionmat(labels(~idxTrain), tPredictions);
+%   [tPredictions2, tScores2] = predict(svm_temp_cv.Trained{2}, features(~idxTrain,:));
+%     confuM_t2 = confusionmat(labels(~idxTrain), tPredictions2);
+%   [tPredictions3, tScores3] = predict(svm_temp_cv.Trained{3}, features(~idxTrain,:));
+%     confuM_t3 = confusionmat(labels(~idxTrain), tPredictions3);
+%   [tPredictions4, tScores4] = predict(svm_temp_cv.Trained{4}, features(~idxTrain,:));
+%     confuM_t4 = confusionmat(labels(~idxTrain), tPredictions4);
+%   [tPredictions5, tScores5] = predict(svm_temp_cv.Trained{5}, features(~idxTrain,:));
+%     confuM_t5 = confusionmat(labels(~idxTrain), tPredictions5);
 
   %perform Receiver Operating Characteristic (ROC) for testing
-  [~,~,~,auc_1_t,~] = perfcurve(labels(~idxTrain),tScores(:,1),1);
-  [~,~,~,auc_2_t,~] = perfcurve(labels(~idxTrain),tScores(:,2),2);
-  
-  %get confusion matrix for validation
-  confuM_t = confusionmat(labels(~idxTrain), tPredictions);
+%   [~,~,~,auc_1_t,~] = perfcurve(labels(~idxTrain),tScores(:,1),1);
+%   [~,~,~,auc_2_t,~] = perfcurve(labels(~idxTrain),tScores(:,2),2);
   
   %check gmean
-  svm_sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
-  svm_spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
-  svm_gmeant =sqrt(svm_sent *svm_spet);
-  
-  svm_sent   = confuM_t2(2,2)/(confuM_t2(2,2)+confuM_t2(1,2));
-  svm_spet   = confuM_t2(1,1)/(confuM_t2(1,1)+confuM_t2(2,1));
-  svm_gmeant2 =sqrt(svm_sent *svm_spet);
-  svm_sent   = confuM_t3(2,2)/(confuM_t3(2,2)+confuM_t3(1,2));
-  svm_spet   = confuM_t3(1,1)/(confuM_t3(1,1)+confuM_t3(2,1));
-  svm_gmeant3 =sqrt(svm_sent *svm_spet);
-  svm_sent   = confuM_t4(2,2)/(confuM_t4(2,2)+confuM_t4(1,2));
-  svm_spet   = confuM_t4(1,1)/(confuM_t4(1,1)+confuM_t4(2,1));
-  svm_gmeant4 =sqrt(svm_sent *svm_spet);
-  svm_sent   = confuM_t5(2,2)/(confuM_t5(2,2)+confuM_t5(1,2));
-  svm_spet   = confuM_t5(1,1)/(confuM_t5(1,1)+confuM_t5(2,1));
-  svm_gmeant5 =sqrt(svm_sent *svm_spet);
+%   svm_sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+%   svm_spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+%   svm_gmeant =sqrt(svm_sent *svm_spet);
+%   svm_sent   = confuM_t2(2,2)/(confuM_t2(2,2)+confuM_t2(1,2));
+%   svm_spet   = confuM_t2(1,1)/(confuM_t2(1,1)+confuM_t2(2,1));
+%   svm_gmeant2 =sqrt(svm_sent *svm_spet);
+%   svm_sent   = confuM_t3(2,2)/(confuM_t3(2,2)+confuM_t3(1,2));
+%   svm_spet   = confuM_t3(1,1)/(confuM_t3(1,1)+confuM_t3(2,1));
+%   svm_gmeant3 =sqrt(svm_sent *svm_spet);
+%   svm_sent   = confuM_t4(2,2)/(confuM_t4(2,2)+confuM_t4(1,2));
+%   svm_spet   = confuM_t4(1,1)/(confuM_t4(1,1)+confuM_t4(2,1));
+%   svm_gmeant4 =sqrt(svm_sent *svm_spet);
+%   svm_sent   = confuM_t5(2,2)/(confuM_t5(2,2)+confuM_t5(1,2));
+%   svm_spet   = confuM_t5(1,1)/(confuM_t5(1,1)+confuM_t5(2,1));
+%   svm_gmeant5 =sqrt(svm_sent *svm_spet);
         
   
-  
+  svm_simulation.ClassifierAll = svm_temp;
   svm_simulation.Classifier = svm_temp_cv;
   svm_simulation.vPredictions = vPredictions;
   svm_simulation.vScores = vScores;
@@ -380,39 +390,39 @@ function [results]=binaryModels(features, labels)
   svm_simulation.CM = confuM;
   
   svm_simulation.Classifier_test = row_min;
-  svm_simulation.tPredictions = tPredictions;
-  svm_simulation.tScores = tScores;
+%   svm_simulation.tPredictions = tPredictions;
+%   svm_simulation.tScores = tScores;
   svm_simulation.tAccuracy = tAccuracy;
-  svm_simulation.roc_1_t.auc = auc_1_t;
-  svm_simulation.roc_2_t.auc = auc_2_t;
-  svm_simulation.CM_t = [confuM_t;confuM_t2;confuM_t3;confuM_t4;confuM_t5];   
-  svm_simulation.gmean_t = ...
-      [svm_gmeant;svm_gmeant2;svm_gmeant3;svm_gmeant4;svm_gmeant5];   
+%   svm_simulation.roc_1_t.auc = auc_1_t;
+%   svm_simulation.roc_2_t.auc = auc_2_t;
+%   svm_simulation.CM_t = [confuM_t;confuM_t2;confuM_t3;confuM_t4;confuM_t5];   
+%   svm_simulation.gmean_t = ...
+%       [svm_gmeant;svm_gmeant2;svm_gmeant3;svm_gmeant4;svm_gmeant5];   
   
   %Bayesian Optimization for KNN      
-  knn_temp = fitcknn(peri_temp,label_temp,...
-             'OptimizeHyperparameters','auto',...
-             'HyperparameterOptimizationOptions',...
-             struct('ShowPlots',false,'Verbose',1));
 %   knn_temp = fitcknn(peri_temp,label_temp,...
-%              'OptimizeHyperparameters','all',...
+%              'OptimizeHyperparameters','auto',...
 %              'HyperparameterOptimizationOptions',...
-%              struct('CVPartition',c,'ShowPlots',false,'Verbose',1));
+%              struct('ShowPlots',false,'Verbose',1));
+  knn_temp = fitcknn(peri_temp,label_temp,...
+             'OptimizeHyperparameters','all',...
+             'HyperparameterOptimizationOptions',...
+             struct('CVPartition',c,'ShowPlots',false,'Verbose',1));
 
   % Perform cross-validation
   knn_temp_cv = crossval(knn_temp, 'KFold', kfold);
 
   % Compute validation predictions
   [vPredictions, vScores] = kfoldPredict(knn_temp_cv);
-  
-  [tPredictions2, tScores2] = predict(knn_temp_cv.Trained{2}, features(~idxTrain,:));
-    confuM_t2 = confusionmat(labels(~idxTrain), tPredictions2);
-  [tPredictions3, tScores3] = predict(knn_temp_cv.Trained{3}, features(~idxTrain,:));
-    confuM_t3 = confusionmat(labels(~idxTrain), tPredictions3);
-  [tPredictions4, tScores4] = predict(knn_temp_cv.Trained{4}, features(~idxTrain,:));
-    confuM_t4 = confusionmat(labels(~idxTrain), tPredictions4);
-  [tPredictions5, tScores5] = predict(knn_temp_cv.Trained{5}, features(~idxTrain,:));
-    confuM_t5 = confusionmat(labels(~idxTrain), tPredictions5);
+  confuM = confusionmat(label_temp, vPredictions);
+%   [tPredictions2, tScores2] = predict(knn_temp_cv.Trained{2}, features(~idxTrain,:));
+%     confuM_t2 = confusionmat(labels(~idxTrain), tPredictions2);
+%   [tPredictions3, tScores3] = predict(knn_temp_cv.Trained{3}, features(~idxTrain,:));
+%     confuM_t3 = confusionmat(labels(~idxTrain), tPredictions3);
+%   [tPredictions4, tScores4] = predict(knn_temp_cv.Trained{4}, features(~idxTrain,:));
+%     confuM_t4 = confusionmat(labels(~idxTrain), tPredictions4);
+%   [tPredictions5, tScores5] = predict(knn_temp_cv.Trained{5}, features(~idxTrain,:));
+%     confuM_t5 = confusionmat(labels(~idxTrain), tPredictions5);
 
   % Compute validation accuracy
   vAccuracy = 1 - kfoldLoss(knn_temp_cv);
@@ -421,44 +431,41 @@ function [results]=binaryModels(features, labels)
   [~,~,~,auc_1,~] = perfcurve(label_temp,vScores(:,1),1);
   [~,~,~,auc_2,~] = perfcurve(label_temp,vScores(:,2),2);
   
-  %get confusion matrix
-  confuM = confusionmat(label_temp, vPredictions);
-  
   %compute individual validation loss
   modelLosses = kfoldLoss(knn_temp_cv,'mode','individual');
   [~,row_min] = min(modelLosses);
   
   %compute testing predictions - unseen testing points
-  [tPredictions, tScores] = predict(knn_temp_cv.Trained{row_min}, features(~idxTrain,:));
+%   [tPredictions, tScores] = predict(knn_temp_cv.Trained{row_min}, features(~idxTrain,:));
   
   %compute testing accuracy
   tAccuracy = 1 - min(modelLosses);
 
   %perform Receiver Operating Characteristic (ROC) for testing
-  [~,~,~,auc_1_t,~] = perfcurve(labels(~idxTrain),tScores(:,1),1);
-  [~,~,~,auc_2_t,~] = perfcurve(labels(~idxTrain),tScores(:,2),2);
+%   [~,~,~,auc_1_t,~] = perfcurve(labels(~idxTrain),tScores(:,1),1);
+%   [~,~,~,auc_2_t,~] = perfcurve(labels(~idxTrain),tScores(:,2),2);
   
   %get confusion matrix for validation
-  confuM_t = confusionmat(labels(~idxTrain), tPredictions);
+%   confuM_t = confusionmat(labels(~idxTrain), tPredictions);
   
   %check gmean
-  knn_sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
-  knn_spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
-  knn_gmeant =sqrt(knn_sent *knn_spet);
-  
-  knn_sent   = confuM_t2(2,2)/(confuM_t2(2,2)+confuM_t2(1,2));
-  knn_spet   = confuM_t2(1,1)/(confuM_t2(1,1)+confuM_t2(2,1));
-  knn_gmeant2 =sqrt(knn_sent *knn_spet);
-  knn_sent   = confuM_t3(2,2)/(confuM_t3(2,2)+confuM_t3(1,2));
-  knn_spet   = confuM_t3(1,1)/(confuM_t3(1,1)+confuM_t3(2,1));
-  knn_gmeant3 =sqrt(knn_sent *knn_spet);
-  knn_sent   = confuM_t4(2,2)/(confuM_t4(2,2)+confuM_t4(1,2));
-  knn_spet   = confuM_t4(1,1)/(confuM_t4(1,1)+confuM_t4(2,1));
-  knn_gmeant4 =sqrt(knn_sent *knn_spet);
-  knn_sent   = confuM_t5(2,2)/(confuM_t5(2,2)+confuM_t5(1,2));
-  knn_spet   = confuM_t5(1,1)/(confuM_t5(1,1)+confuM_t5(2,1));
-  knn_gmeant5 =sqrt(knn_sent *knn_spet);
+%   knn_sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+%   knn_spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+%   knn_gmeant =sqrt(knn_sent *knn_spet);
+%   knn_sent   = confuM_t2(2,2)/(confuM_t2(2,2)+confuM_t2(1,2));
+%   knn_spet   = confuM_t2(1,1)/(confuM_t2(1,1)+confuM_t2(2,1));
+%   knn_gmeant2 =sqrt(knn_sent *knn_spet);
+%   knn_sent   = confuM_t3(2,2)/(confuM_t3(2,2)+confuM_t3(1,2));
+%   knn_spet   = confuM_t3(1,1)/(confuM_t3(1,1)+confuM_t3(2,1));
+%   knn_gmeant3 =sqrt(knn_sent *knn_spet);
+%   knn_sent   = confuM_t4(2,2)/(confuM_t4(2,2)+confuM_t4(1,2));
+%   knn_spet   = confuM_t4(1,1)/(confuM_t4(1,1)+confuM_t4(2,1));
+%   knn_gmeant4 =sqrt(knn_sent *knn_spet);
+%   knn_sent   = confuM_t5(2,2)/(confuM_t5(2,2)+confuM_t5(1,2));
+%   knn_spet   = confuM_t5(1,1)/(confuM_t5(1,1)+confuM_t5(2,1));
+%   knn_gmeant5 =sqrt(knn_sent *knn_spet);
 
+  knn_simulation.ClassifierAll = knn_temp;
   knn_simulation.Classifier = knn_temp_cv;
   knn_simulation.vPredictions = vPredictions;
   knn_simulation.vScores = vScores;
@@ -468,25 +475,25 @@ function [results]=binaryModels(features, labels)
   knn_simulation.CM = confuM;
   
   knn_simulation.Classifier_test = row_min;
-  knn_simulation.tPredictions = tPredictions;
-  knn_simulation.tScores = tScores;
+%   knn_simulation.tPredictions = tPredictions;
+%   knn_simulation.tScores = tScores;
   knn_simulation.tAccuracy = tAccuracy;
-  knn_simulation.roc_1_t.auc = auc_1_t;
-  knn_simulation.roc_2_t.auc = auc_2_t;
-  knn_simulation.CM_t = [confuM_t;confuM_t2;confuM_t3;confuM_t4;confuM_t5]; 
-  knn_simulation.gmean_t = ...
-      [knn_gmeant;knn_gmeant2;knn_gmeant3;knn_gmeant4;knn_gmeant5];   
+%   knn_simulation.roc_1_t.auc = auc_1_t;
+%   knn_simulation.roc_2_t.auc = auc_2_t;
+%   knn_simulation.CM_t = [confuM_t;confuM_t2;confuM_t3;confuM_t4;confuM_t5]; 
+%   knn_simulation.gmean_t = ...
+%       [knn_gmeant;knn_gmeant2;knn_gmeant3;knn_gmeant4;knn_gmeant5];   
          
   %Bayesian Optimization for ENS
-  ens_temp = fitcensemble(peri_temp,label_temp,...
-             'OptimizeHyperparameters','auto',...
-             'HyperparameterOptimizationOptions',...
-             struct('ShowPlots',false,'Verbose',1)); 
-
-%   ens_temp = fitcensemble(peri_temp,label_temp,...
-%              'OptimizeHyperparameters','all',...
+%   ens_temp = fitcensemble(peri_temp(1:100,:),label_temp(1:100,:),...
+%              'OptimizeHyperparameters','auto',...
 %              'HyperparameterOptimizationOptions',...
-%              struct('CVPartition',c,'ShowPlots',false,'Verbose',1)); 
+%              struct('ShowPlots',false,'Verbose',1)); 
+
+  ens_temp = fitcensemble(peri_temp,label_temp,...
+             'OptimizeHyperparameters','all',...
+             'HyperparameterOptimizationOptions',...
+             struct('CVPartition',c,'ShowPlots',false,'Verbose',1)); 
          
   % Perform cross-validation
   ens_temp_cv = crossval(ens_temp, 'KFold', kfold);
@@ -509,45 +516,42 @@ function [results]=binaryModels(features, labels)
   [~,row_min] = min(modelLosses);
   
   %compute testing predictions - unseen testing points
-  [tPredictions, tScores] = predict(ens_temp_cv.Trained{row_min}, features(~idxTrain,:));
-  
-  [tPredictions2, tScores2] = predict(ens_temp_cv.Trained{2}, features(~idxTrain,:));
-    confuM_t2 = confusionmat(labels(~idxTrain), tPredictions2);
-  [tPredictions3, tScores3] = predict(ens_temp_cv.Trained{3}, features(~idxTrain,:));
-    confuM_t3 = confusionmat(labels(~idxTrain), tPredictions3);
-  [tPredictions4, tScores4] = predict(ens_temp_cv.Trained{4}, features(~idxTrain,:));
-    confuM_t4 = confusionmat(labels(~idxTrain), tPredictions4);
-  [tPredictions5, tScores5] = predict(ens_temp_cv.Trained{5}, features(~idxTrain,:));
-    confuM_t5 = confusionmat(labels(~idxTrain), tPredictions5);
+%   [tPredictions, tScores] = predict(ens_temp_cv.Trained{row_min}, features(~idxTrain,:));
+%     confuM_t = confusionmat(labels(~idxTrain), tPredictions);
+%   [tPredictions2, tScores2] = predict(ens_temp_cv.Trained{2}, features(~idxTrain,:));
+%     confuM_t2 = confusionmat(labels(~idxTrain), tPredictions2);
+%   [tPredictions3, tScores3] = predict(ens_temp_cv.Trained{3}, features(~idxTrain,:));
+%     confuM_t3 = confusionmat(labels(~idxTrain), tPredictions3);
+%   [tPredictions4, tScores4] = predict(ens_temp_cv.Trained{4}, features(~idxTrain,:));
+%     confuM_t4 = confusionmat(labels(~idxTrain), tPredictions4);
+%   [tPredictions5, tScores5] = predict(ens_temp_cv.Trained{5}, features(~idxTrain,:));
+%     confuM_t5 = confusionmat(labels(~idxTrain), tPredictions5);
   
   %compute testing accuracy
   tAccuracy = 1 - min(modelLosses);
 
   %perform Receiver Operating Characteristic (ROC) for testing
-  [~,~,~,auc_1_t,~] = perfcurve(labels(~idxTrain),tScores(:,1),1);
-  [~,~,~,auc_2_t,~] = perfcurve(labels(~idxTrain),tScores(:,2),2);
-  
-  %get confusion matrix for validation
-  confuM_t = confusionmat(labels(~idxTrain), tPredictions);
-  
+%   [~,~,~,auc_1_t,~] = perfcurve(labels(~idxTrain),tScores(:,1),1);
+%   [~,~,~,auc_2_t,~] = perfcurve(labels(~idxTrain),tScores(:,2),2);
+    
   %check gmean
-  ens_sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
-  ens_spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
-  ens_gmeant =sqrt(ens_sent * ens_spet);
+%   ens_sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+%   ens_spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+%   ens_gmeant =sqrt(ens_sent * ens_spet);
+%   ens_sent   = confuM_t2(2,2)/(confuM_t2(2,2)+confuM_t2(1,2));
+%   ens_spet   = confuM_t2(1,1)/(confuM_t2(1,1)+confuM_t2(2,1));
+%   ens_gmeant2 =sqrt(ens_sent *ens_spet);
+%   ens_sent   = confuM_t3(2,2)/(confuM_t3(2,2)+confuM_t3(1,2));
+%   ens_spet   = confuM_t3(1,1)/(confuM_t3(1,1)+confuM_t3(2,1));
+%   ens_gmeant3 =sqrt(ens_sent *ens_spet);
+%   ens_sent   = confuM_t4(2,2)/(confuM_t4(2,2)+confuM_t4(1,2));
+%   ens_spet   = confuM_t4(1,1)/(confuM_t4(1,1)+confuM_t4(2,1));
+%   ens_gmeant4 =sqrt(ens_sent *ens_spet);
+%   ens_sent   = confuM_t5(2,2)/(confuM_t5(2,2)+confuM_t5(1,2));
+%   ens_spet   = confuM_t5(1,1)/(confuM_t5(1,1)+confuM_t5(2,1));
+%   ens_gmeant5 =sqrt(ens_sent *ens_spet);
   
-  ens_sent   = confuM_t2(2,2)/(confuM_t2(2,2)+confuM_t2(1,2));
-  ens_spet   = confuM_t2(1,1)/(confuM_t2(1,1)+confuM_t2(2,1));
-  ens_gmeant2 =sqrt(ens_sent *ens_spet);
-  ens_sent   = confuM_t3(2,2)/(confuM_t3(2,2)+confuM_t3(1,2));
-  ens_spet   = confuM_t3(1,1)/(confuM_t3(1,1)+confuM_t3(2,1));
-  ens_gmeant3 =sqrt(ens_sent *ens_spet);
-  ens_sent   = confuM_t4(2,2)/(confuM_t4(2,2)+confuM_t4(1,2));
-  ens_spet   = confuM_t4(1,1)/(confuM_t4(1,1)+confuM_t4(2,1));
-  ens_gmeant4 =sqrt(ens_sent *ens_spet);
-  ens_sent   = confuM_t5(2,2)/(confuM_t5(2,2)+confuM_t5(1,2));
-  ens_spet   = confuM_t5(1,1)/(confuM_t5(1,1)+confuM_t5(2,1));
-  ens_gmeant5 =sqrt(ens_sent *ens_spet);
-  
+  ens_simulation.ClassifierAll = ens_temp;
   ens_simulation.Classifier = ens_temp_cv;
   ens_simulation.vPredictions = vPredictions;
   ens_simulation.vScores = vScores;
@@ -557,20 +561,23 @@ function [results]=binaryModels(features, labels)
   ens_simulation.CM = confuM;
   
   ens_simulation.Classifier_test = row_min;
-  ens_simulation.tPredictions = tPredictions;
-  ens_simulation.tScores = tScores;
+%   ens_simulation.tPredictions = tPredictions;
+%   ens_simulation.tScores = tScores;
   ens_simulation.tAccuracy = tAccuracy;
-  ens_simulation.roc_1_t.auc = auc_1_t;
-  ens_simulation.roc_2_t.auc = auc_2_t;
-  ens_simulation.CM_t = [confuM_t;confuM_t2;confuM_t3;confuM_t4;confuM_t5];  
-  ens_simulation.gmean_t = ...
-      [ens_gmeant;ens_gmeant2;ens_gmeant3;ens_gmeant4;ens_gmeant5];   
+%   ens_simulation.roc_1_t.auc = auc_1_t;
+%   ens_simulation.roc_2_t.auc = auc_2_t;
+%   ens_simulation.CM_t = [confuM_t;confuM_t2;confuM_t3;confuM_t4;confuM_t5];  
+%   ens_simulation.gmean_t = ...
+%       [ens_gmeant;ens_gmeant2;ens_gmeant3;ens_gmeant4;ens_gmeant5];   
     
-  results(k).svm_simulation = svm_simulation;
-  results(k).knn_simulation = knn_simulation;
-  results(k).ens_simulation = ens_simulation;
-  st = sp + 1;
-  sp = sp + 100;
+  results.svm_simulation = svm_simulation;
+  results.knn_simulation = knn_simulation;
+  results.ens_simulation = ens_simulation;
+%   results(k).svm_simulation = svm_simulation;
+%   results(k).knn_simulation = knn_simulation;
+%   results(k).ens_simulation = ens_simulation;
+%   st = sp + 1;
+%   sp = sp + 100;
 %   end
 end
 

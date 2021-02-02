@@ -142,7 +142,7 @@ if(~isempty(GSR_feats_names))
     end
     
     %Faster faster ..
-    GSR_raw=downsample(GSR_raw,32);
+    %GSR_raw=downsample(GSR_raw,32);
     
      %dfa - Detrended Fluctuation Analysis
     if any(strcmp('dfa',GSR_feats_names))

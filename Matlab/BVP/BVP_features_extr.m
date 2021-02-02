@@ -76,7 +76,7 @@ if(~isempty(BVP_feats_names))
 		%Compute IBI
 		BVPSignal = BVP__compute_IBI( BVPSignal );
 		IBI = Signal__get_raw(BVPSignal.IBI);
-		IBI_sp_bvp = Signal__get_samprate(BVPSignal.IBI);
+        IBI_sp_bvp = Signal__get_samprate(BVPSignal.IBI);
         
         %In case IBI is interpolated performed downsampling 
 	    %BVPSignal.IBI.interp = downsample(BVPSignal.IBI.interp,IBI_sp_bvp/32);
@@ -84,6 +84,11 @@ if(~isempty(BVP_feats_names))
         IBI_sp = Signal__get_samprate(BVPSignal.IBI);
         %IBI = BVPSignal.IBI.interp;
         
+        %Check variance to avoid zero var
+        if std(IBI)==0
+          IBI(1)=IBI(1)+0.001/IBI_sp;
+          BVPSignal.IBI = Signal__set_raw(BVPSignal.IBI,IBI);
+        end
 	end
 
 	%Get the raw signals
@@ -171,7 +176,7 @@ if(~isempty(BVP_feats_names))
 %     end
     
     %Faster faster ..
-    rawSignal=downsample(rawSignal,4);
+    %rawSignal=downsample(rawSignal,4);
     
      %dfa - Detrended Fluctuation Analysis
     if any(strcmp('dfa_bvp',BVP_feats_names))
@@ -251,10 +256,17 @@ if(~isempty(BVP_feats_names))
     sum_HF = f_sum_frec(HF_signal)*100;
     sum_UHF = f_sum_frec(UHF_signal)*100;
     %% Energy for the different bands
-    LF_energia = abs(log(sum_LF));
-    HF_energia = abs(log(sum_HF));
-    
     %Check values, in case of having a low HR, there will be not enough UHF
+    if sum_LF==0
+      LF_energia = sum_LF;
+    else
+      LF_energia = abs(log(sum_LF));
+    end
+    if sum_HF==0
+      HF_energia = sum_HF;
+    else
+      HF_energia = abs(log(sum_HF));
+    end
     if sum_UHF==0
       UHF_energia = sum_UHF;
     else

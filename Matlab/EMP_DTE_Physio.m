@@ -44,7 +44,7 @@ function Results = EMP_DTE_Physio(data_in,response_in,type,~)
     error('Function requires at least two inputs.');
   end
   if ~any(strcmpi(type,{'BBDDLab_Bindi','BBDDLab_Bindi_All','DEAP',...
-                        'MAHNOB','WESAD','BioSpeech','BBDDLab_EH'}))
+                        'MAHNOB','WESAD','BioSpeech','BioSpeechJustTrain','BBDDLab_EH'}))
    error('<type> must be: BBDDLab_Bindi or DEAP or MAHNOB or WESAD or BioSpeech.');
   end
   
@@ -78,6 +78,12 @@ function Results = EMP_DTE_Physio(data_in,response_in,type,~)
         % If you are not sure about this function or its behavior, 
         % please contact technician.
         Results = EMP_DTE_Physio_BioSpeech(data_in, response_in);
+      case 'BioSpeechJustTrain'
+        % NOTE: Take into account that in this case, the features should
+        % have been previously extracted and being stored into data_in.
+        % If you are not sure about this function or its behavior, 
+        % please contact technician.
+        Results = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, response_in);
       otherwise
         error('Not implemented yet.');
   end   
@@ -242,7 +248,7 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       
       %% Stage 2: Extracting Features %%
       % Deal with window and overlapping
-      operational_window = 40; %seconds
+      operational_window = 20; %seconds
       overlapin_window   = 1;  %seconds
       
       %Neutro
@@ -453,11 +459,11 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
   %Max Volunteers are 42 and max trial are 1
   [volunteers, trials] = size(data_in);
   %check values
-  if volunteers > 42 || trials > 1
+  if volunteers > 84 || trials > 1
     error('Number of volunteers or trials exceed the maximun allowed');
   end
   
-  for i=1:volunteers
+  for i=5:volunteers
     for k=1:trials
      
      %Sampling rate
@@ -502,10 +508,15 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
      % Fs  = 2048
      % Hamming Window
      FIRCoeffs = load('BVP_coeffs_highlowpass_2048.mat');
-     bvp_sig = Signal__filter_signal(bvp_sig, FIRCoeffs.BVP_coeffs_lowpass);
-     bvp_sig = Signal__set_preproc(bvp_sig, 'lowpass');
-     bvp_sig = Signal__filter_signal(bvp_sig, FIRCoeffs.BVP_coeffs_highpass);
-     bvp_sig = Signal__set_preproc(bvp_sig, 'highpass');
+     if length(bvp_sig.raw)<=(length(FIRCoeffs.BVP_coeffs_lowpass)*3 - 3)
+       %bvp_sig.raw = [bvp_sig.raw ];
+     else
+       bvp_sig = Signal__filter_signal(bvp_sig, FIRCoeffs.BVP_coeffs_lowpass);
+       bvp_sig = Signal__set_preproc(bvp_sig, 'lowpass');
+       bvp_sig = Signal__filter_signal(bvp_sig, FIRCoeffs.BVP_coeffs_highpass);
+       bvp_sig = Signal__set_preproc(bvp_sig, 'highpass');
+     end
+
      % Apply IIR Forward-Backward filtering
      bvp_sig = BVP_removebaselinewander_signal(bvp_sig, samprate_biospeech);
      
@@ -521,26 +532,51 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
      end
      
      % 1.3: BVP Downsampling
-     samprate_biospeech = 64;
-     bvp_sig = BVP_create_signal(downsample(bvp_sig.raw,32), samprate_biospeech);
+     downsample_n = 32;
+     samprate_biospeech = samprate_biospeech/downsample_n;
+     bvp_sig = BVP_create_signal(downsample(bvp_sig.raw,downsample_n), ...
+                                 samprate_biospeech);
      
-     % 1.4: BVP advanced data processing: EMD-ICA
-     plot(bvp_sig.raw)
-     hold on;
+     % 1.4: BVP advanced data processing: Wavelet Synchrosqueezed Transform
+     time=0:1/samprate_biospeech:...
+          (length(bvp_sig.raw)/samprate_biospeech - 1/samprate_biospeech);
      iterations = 2;
      for w=1:iterations
-       imfs = emd(bvp_sig.raw);
+       figure;
+       plot(time,bvp_sig.raw)
+       hold on;
+       imfs = emd(bvp_sig.raw,'Display',0);
        z =bvp_sig.raw';
        [~,b] = size(imfs);
        for j=3:b
          z = z - imfs(:,j);
        end
        [sst,F] = wsst(z,samprate_biospeech);
-       [~,iridge] = wsstridge(sst,50,F,'NumRifges',2);
-       xrec = iwsst(sst,iridge);
+       t=find(F>0.8 & F<3.5);
+       [fridge,iridge] = wsstridge(sst(t,:),2,F(1,t),'NumRifges',1);
+       xrec = iwsst(sst(t,:),iridge);
        bvp_sig.raw = xrec(:,1) ;%+ xrec(:,2);
-       plot(bvp_sig.raw);
+       plot(time,bvp_sig.raw);
        bvp_sig.raw=bvp_sig.raw';
+       
+       %Draw result:
+       figure;
+       plot(time,fridge,'k--','linewidth',4);
+       hold on;
+       contour(time,F(1,t),abs(sst(t,:)));
+       ylim([0.5 3.5]);
+     end
+     
+     % 1.5: BVP Automatic Gain Control over WST-Systolic extracted
+     % This is based on a fixed AGC. 
+     % This AWG is based on cubing-normalized process.
+     % Change the number of iterations to even enhance more peaks, but
+     % be aware that a high number of iterations could introduce to much 
+     % distortion to the signal.
+     iterations = 1;
+     bvp_sig.raw = bvp_sig.raw + abs(min(bvp_sig.raw));
+     for j=1:iterations         
+       bvp_sig = BVP_enhancePeaks_signal(bvp_sig); 
      end
      
      % GSR:
@@ -670,6 +706,168 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
   end
   %% Stage 6: Give back results
   Results_BioSpeech.features_windows = data_features;
+  %Results_BioSpeech.features_all     = feat_all;
+  %...TBD
+end
+
+%% Function to handle the data coming from BioSpeech Database
+function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, response_in)
+  %This function is done ad-hoc for the multimodal DTE-TSC work package
+  %It is based on the BioSpeech database
+  % Input: data_in --> this is an array of tables
+  %        each table corresponds to BVP and GSR extracted features
+  
+  %Get the number of volunteers and trials
+  %Max Volunteers are 42 and max trial are 1
+  [volunteers, trials] = size(data_in.features_windows);
+  %check values
+  if volunteers > 84 || trials > 1
+    error('Number of volunteers or trials exceed the maximun allowed');
+  end
+     
+  %% Stage 3: Assign labels
+  %peri   = [];
+  %labels = {}; 
+  if ~isempty(response_in)
+    for i=1:volunteers
+      for k=1:trials
+        peri{:,:,i}   =[ (data_in.features_windows{i,k}.BVP_feats(:,:)) (data_in.features_windows{i,k}.GSR_feats(:,:))];
+        [win, ~] = size(peri{:,:,i});
+        labels{:,:,i} = response_in{i, k}.binary_labels(11:11+win-1); 
+      end
+    end
+  end
+  
+  %% Stage 4: Perform EDA (exploratory data analysis)
+  %Example given by HR=60/IBI
+  %c_1=60./data_features{1, 1}.BINDI.Neutro.BVP_feats(:,3);        % Generate group 1
+  %c_2=60./data_features{1, 1}.BINDI.Recovery.BVP_feats(:,3);       % Generate group 2
+  %C = {c_1(:); c_2(:)};  % <--- Just vertically stack all of your groups here
+  %grp = cell2mat(arrayfun(@(i){i*ones(numel(C{i}),1)},(1:numel(C))')); 
+  %boxplot(vertcat(C{:}),grp, 'Labels',{'Neutro','Video'});
+  
+  %Get the balance dataset
+  balance = [];
+  if ~isempty(response_in)
+    for i=1:volunteers
+      class1 = numel(find(labels{:,:,i}==0));
+      class2 = numel(find(labels{:,:,i}==1));
+      balance = [balance; class1 class2];
+    end
+  end
+  
+
+  if ~isempty(response_in)
+    for i=1:volunteers-42
+      
+      %Display some info
+      fprintf('Volunteer %d, Trainning and Testing...\n',i);
+      
+      %% Stage 5: Trainning the model - Validation
+      % Training for #volunteers except 'i'
+      peri_temp = peri;
+      peri_temp(:,:,i) = [];
+      peri_temp(:,:,i+42) = [];
+      labels_temp = labels;
+      labels_temp(:,:,i) = [];
+      labels_temp(:,:,i+42) = [];
+      [result_train{i}] = trainModels_tvt(peri_temp, labels_temp, 'database',4,'model',1);
+      %% Stage 6: Testing the model - Test
+      %SVM
+      for k = 1:5
+        [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+        [gl,pl]=size(confuM_t);
+        if gl==1 && pl==1
+          sent = 0;
+          spet = 0;
+        else
+          sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+          spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+        end
+        gmeant(k) =sqrt(sent *spet);
+        confuM{k} =confuM_t;
+      end
+      [tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+      [gl,pl]=size(confuM_t);
+      if gl==1 && pl==1
+        sent = 0;
+        spet = 0;
+      else
+        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+      end
+      gmeant(k+1) =sqrt(sent *spet);
+      confuM{k+1} =confuM_t;
+      result_train{i}.svm_test.gmean = gmeant;
+      result_train{i}.svm_test.confu = confuM;
+
+      %KNN
+      for k = 1:5
+        [tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+        [gl,pl]=size(confuM_t);
+        if gl==1 && pl==1
+          sent = 0;
+          spet = 0;
+        else
+          sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+          spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+        end
+        gmeant(k) =sqrt(sent *spet);
+        confuM{k} =confuM_t;
+      end
+      [tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+      [gl,pl]=size(confuM_t);
+      if gl==1 && pl==1
+        sent = 0;
+        spet = 0;
+      else
+        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+      end
+      gmeant(k+1) =sqrt(sent *spet);
+      confuM{k+1} =confuM_t;
+      result_train{i}.knn_test.gmean = gmeant;
+      result_train{i}.knn_test.confu = confuM;
+      
+      %ENS
+      for k = 1:5
+        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+        [gl,pl]=size(confuM_t);
+        if gl==1 && pl==1
+          sent = 0;
+          spet = 0;
+        else
+          sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+          spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+        end
+        gmeant(k) =sqrt(sent *spet);
+        confuM{k} =confuM_t;
+      end
+      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+      [gl,pl]=size(confuM_t);
+      if gl==1 && pl==1
+        sent = 0;
+        spet = 0;
+      else
+        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
+        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+      end
+      gmeant(k+1) =sqrt(sent *spet);
+      confuM{k+1} =confuM_t;
+      result_train{i}.ens_test.gmean = gmeant;
+      result_train{i}.ens_test.confu = confuM;
+      
+    end
+  end
+  %% Stage 6: Give back results
+  Results_BioSpeech.features_windows = data_features;
+  Results_BioSpeech.results_windows  = result_train;
   %Results_BioSpeech.features_all     = feat_all;
   %...TBD
 end
