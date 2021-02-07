@@ -87,8 +87,8 @@ for j = init_directory:patients_total
 %             [out_struct{j-init_directory+1,videos_total+1}.BINDI.samplesLostnum;  out_struct{j-init_directory+1,i}.BINDI.samplesLostnum];
 %        out_struct{j-init_directory+1,videos_total+1}.BINDI.samplesLostRow = ...
 %             [out_struct{j-init_directory+1,videos_total+1}.BINDI.samplesLostRow;  out_struct{j-init_directory+1,i}.BINDI.samplesLostRow];
-        out_struct{j-init_directory+1,videos_total+1}.BINDI.allRaw = ...
-            [out_struct{j-init_directory+1,videos_total+1}.BINDI.allRaw; out_struct{j-init_directory+1, i}.BINDI.allraw.gsr_ADC];
+%         out_struct{j-init_directory+1,videos_total+1}.BINDI.allRaw = ...
+%             [out_struct{j-init_directory+1,videos_total+1}.BINDI.allRaw; out_struct{j-init_directory+1, i}.BINDI.allraw.gsr_ADC];
         
         %%%%%%%%%%%%%%%%%%%%%%%%%% GSR
 		out_struct{j-init_directory+1,i}.GSR = empatia_preprocess_gfileNew(str_file_g,i);
@@ -99,8 +99,8 @@ for j = init_directory:patients_total
 %             [out_struct{j-init_directory+1,videos_total+1}.GSR.samplesLostnum;  out_struct{j-init_directory+1,i}.GSR.samplesLostnum];
 %        out_struct{j-init_directory+1,videos_total+1}.GSR.samplesLostRow = ...
 %             [out_struct{j-init_directory+1,videos_total+1}.GSR.samplesLostRow;  out_struct{j-init_directory+1,i}.GSR.samplesLostRow];
-        out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw = ...
-            [out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw; out_struct{j-init_directory+1, i}.GSR.allraw.gsr_uS];
+%         out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw = ...
+%             [out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw; out_struct{j-init_directory+1, i}.GSR.allraw.gsr_uS];
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%% EH
         out_struct{j-init_directory+1,i}.EH = empatia_preprocess_efile(str_file_e,i);
@@ -698,7 +698,8 @@ function out_s = empatia_preprocess_efile(file,video)
 
 % Setup the Import Options and import the data
 variables_num = 10; %number of columns
-filetypes_str = {'N','V','E','D'};
+% filetypes_str = {'N','V','E','D'};
+filetypes_str = {'N','V','E'};
 filetypes_num = size(filetypes_str,2);
 
 % "time", "packet_id", "skt", "bvp", "gsr", "resp", "emg"
@@ -786,20 +787,20 @@ for i = 1:filetypes_num
             out_s.Neutro.raw.gsr(isnan(out_s.Neutro.raw.gsr))=[];
             out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS ;  out_s.Neutro.raw.gsr];
             
-            out_s.Neutro.raw.resp = data.resp(1:end);
-            out_s.Neutro.raw.resp(isnan(out_s.Neutro.raw.resp))=[];
-            
-            out_s.Neutro.raw.emg = data.emg(1:end);
-            out_s.Neutro.raw.emg(isnan(out_s.Neutro.raw.emg))=[];
-            
-            out_s.Neutro.raw.acc1 = data.acc1(1:end);
-            out_s.Neutro.raw.acc1(isnan(out_s.Neutro.raw.acc1))=[];
-            
-            out_s.Neutro.raw.acc2 = data.acc2(1:end);
-            out_s.Neutro.raw.acc2(isnan(out_s.Neutro.raw.acc2))=[];
-            
-            out_s.Neutro.raw.acc3 = data.acc3(1:end);
-            out_s.Neutro.raw.acc3(isnan(out_s.Neutro.raw.acc3))=[];
+%             out_s.Neutro.raw.resp = data.resp(1:end);
+%             out_s.Neutro.raw.resp(isnan(out_s.Neutro.raw.resp))=[];
+%             
+%             out_s.Neutro.raw.emg = data.emg(1:end);
+%             out_s.Neutro.raw.emg(isnan(out_s.Neutro.raw.emg))=[];
+%             
+%             out_s.Neutro.raw.acc1 = data.acc1(1:end);
+%             out_s.Neutro.raw.acc1(isnan(out_s.Neutro.raw.acc1))=[];
+%             
+%             out_s.Neutro.raw.acc2 = data.acc2(1:end);
+%             out_s.Neutro.raw.acc2(isnan(out_s.Neutro.raw.acc2))=[];
+%             
+%             out_s.Neutro.raw.acc3 = data.acc3(1:end);
+%             out_s.Neutro.raw.acc3(isnan(out_s.Neutro.raw.acc3))=[];
             
             disp("EH: Neutro successfull");
             
@@ -821,20 +822,20 @@ for i = 1:filetypes_num
             out_s.Video.raw.gsr(isnan(out_s.Video.raw.gsr))=[];
             out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS  ;  out_s.Video.raw.gsr];
             
-            out_s.Video.raw.resp = data.resp(1:end);
-            out_s.Video.raw.resp(isnan(out_s.Video.raw.resp))=[];
-            
-            out_s.Video.raw.emg = data.emg(1:end);
-            out_s.Video.raw.emg(isnan(out_s.Video.raw.emg))=[];
-            
-            out_s.Video.raw.acc1 = data.acc1(1:end);
-            out_s.Video.raw.acc1(isnan(out_s.Video.raw.acc1))=[];
-            
-            out_s.Video.raw.acc2 = data.acc2(1:end);
-            out_s.Video.raw.acc2(isnan(out_s.Video.raw.acc2))=[];
-            
-            out_s.Video.raw.acc3 = data.acc3(1:end);
-            out_s.Video.raw.acc3(isnan(out_s.Video.raw.acc3))=[];
+%             out_s.Video.raw.resp = data.resp(1:end);
+%             out_s.Video.raw.resp(isnan(out_s.Video.raw.resp))=[];
+%             
+%             out_s.Video.raw.emg = data.emg(1:end);
+%             out_s.Video.raw.emg(isnan(out_s.Video.raw.emg))=[];
+%             
+%             out_s.Video.raw.acc1 = data.acc1(1:end);
+%             out_s.Video.raw.acc1(isnan(out_s.Video.raw.acc1))=[];
+%             
+%             out_s.Video.raw.acc2 = data.acc2(1:end);
+%             out_s.Video.raw.acc2(isnan(out_s.Video.raw.acc2))=[];
+%             
+%             out_s.Video.raw.acc3 = data.acc3(1:end);
+%             out_s.Video.raw.acc3(isnan(out_s.Video.raw.acc3))=[];
 
             disp("EH: Video successfull");
             
@@ -856,20 +857,20 @@ for i = 1:filetypes_num
             out_s.Labels.raw.gsr(isnan(out_s.Labels.raw.gsr))=[];
             out_s.allraw.gsr_uS = [out_s.allraw.gsr_uS  ;  out_s.Labels.raw.gsr];
             
-            out_s.Labels.raw.resp = data.resp(1:end);
-            out_s.Labels.raw.resp(isnan(out_s.Labels.raw.resp))=[];
-            
-            out_s.Labels.raw.emg = data.emg(1:end);
-            out_s.Labels.raw.emg(isnan(out_s.Labels.raw.emg))=[];
-            
-            out_s.Labels.raw.acc1 = data.acc1(1:end);
-            out_s.Labels.raw.acc1(isnan(out_s.Labels.raw.acc1))=[];
-            
-            out_s.Labels.raw.acc2 = data.acc2(1:end);
-            out_s.Labels.raw.acc2(isnan(out_s.Labels.raw.acc2))=[];
-            
-            out_s.Labels.raw.acc3 = data.acc3(1:end);
-            out_s.Labels.raw.acc3(isnan(out_s.Labels.raw.acc3))=[];
+%             out_s.Labels.raw.resp = data.resp(1:end);
+%             out_s.Labels.raw.resp(isnan(out_s.Labels.raw.resp))=[];
+%             
+%             out_s.Labels.raw.emg = data.emg(1:end);
+%             out_s.Labels.raw.emg(isnan(out_s.Labels.raw.emg))=[];
+%             
+%             out_s.Labels.raw.acc1 = data.acc1(1:end);
+%             out_s.Labels.raw.acc1(isnan(out_s.Labels.raw.acc1))=[];
+%             
+%             out_s.Labels.raw.acc2 = data.acc2(1:end);
+%             out_s.Labels.raw.acc2(isnan(out_s.Labels.raw.acc2))=[];
+%             
+%             out_s.Labels.raw.acc3 = data.acc3(1:end);
+%             out_s.Labels.raw.acc3(isnan(out_s.Labels.raw.acc3))=[];
             
             disp("EH: Labels successfull");
             
@@ -1555,20 +1556,21 @@ function out = empatia_preprocess_esignals(data_struct)
 %                  data_struct{j,i}.EH.Labels.raw.gsr_uS_filtered_tonic_dn;
 				 
       %Recovery
-      if(length(data_struct{j,i}.EH.Recovery.raw.gsr)>(3*length(FIRs.Coeffs_GSR)))
-      data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered = ...
-          filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Recovery.raw.gsr);
-      elseif(length(data_struct{j,i}.EH.Recovery.raw.gsr)>(3*length(FIRs.Coeffs_GSR_smaller)))
-      data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered = ...
-          filtfilt(FIRs.Coeffs_GSR_smaller,1,data_struct{j,i}.EH.Recovery.raw.gsr);
-      else
-        %Not filtering provided
-      end   
-	  data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn = ...
-          downsample(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered,downsample_gsr);
-      data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn_sm = ...
-          movmedian(movmean(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn,...
-                           (Fs/downsample_gsr)),(Fs/downsample_gsr)/2); 
+%       if(length(data_struct{j,i}.EH.Recovery.raw.gsr)>(3*length(FIRs.Coeffs_GSR)))
+%       data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered = ...
+%           filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Recovery.raw.gsr);
+%       elseif(length(data_struct{j,i}.EH.Recovery.raw.gsr)>(3*length(FIRs.Coeffs_GSR_smaller)))
+%       data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered = ...
+%           filtfilt(FIRs.Coeffs_GSR_smaller,1,data_struct{j,i}.EH.Recovery.raw.gsr);
+%       else
+%         %Not filtering provided
+%       end   
+% 	  data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn = ...
+%           downsample(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered,downsample_gsr);
+%       data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn_sm = ...
+%           movmedian(movmean(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn,...
+%                            (Fs/downsample_gsr)),(Fs/downsample_gsr)/2); 
+                       
 %       data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_tonic = ... 
 %           movmedian(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered,[Fs*window_gsr Fs*window_gsr]);
 %       data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_phasic = ...
@@ -1615,20 +1617,20 @@ function out = empatia_preprocess_esignals(data_struct)
           data_struct{j,i}.EH.Labels.raw.bvp_filt - ...
           BVP_removebaselinewander_signal(data_struct{j,i}.EH.Labels.raw.bvp_filt,Fs);
       
-      if(length(data_struct{j,i}.EH.Recovery.raw.bvp)>(3*length(FIRs.Coeffs_BVP)))
-        data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
-          filtfilt(FIRs.Coeffs_BVP,1,data_struct{j,i}.EH.Recovery.raw.bvp);
-      elseif((length(data_struct{j,i}.EH.Recovery.raw.bvp)>(3*length(FIRs.Coeffs_BVP_smaller))))
-        data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
-          filtfilt(FIRs.Coeffs_BVP_smaller,1,data_struct{j,i}.EH.Recovery.raw.bvp);
-      else
-        %Not filtering provided
-        data_struct{j,i}.EH.Recovery.raw.bvp_filt = smooth(data_struct{j,i}.EH.Recovery.raw.bvp,Fs/2);
-      end
-      
-      data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
-          data_struct{j,i}.EH.Recovery.raw.bvp_filt - ...
-          BVP_removebaselinewander_signal(data_struct{j,i}.EH.Recovery.raw.bvp_filt,Fs); 
+%       if(length(data_struct{j,i}.EH.Recovery.raw.bvp)>(3*length(FIRs.Coeffs_BVP)))
+%         data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
+%           filtfilt(FIRs.Coeffs_BVP,1,data_struct{j,i}.EH.Recovery.raw.bvp);
+%       elseif((length(data_struct{j,i}.EH.Recovery.raw.bvp)>(3*length(FIRs.Coeffs_BVP_smaller))))
+%         data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
+%           filtfilt(FIRs.Coeffs_BVP_smaller,1,data_struct{j,i}.EH.Recovery.raw.bvp);
+%       else
+%         %Not filtering provided
+%         data_struct{j,i}.EH.Recovery.raw.bvp_filt = smooth(data_struct{j,i}.EH.Recovery.raw.bvp,Fs/2);
+%       end
+%       
+%       data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
+%           data_struct{j,i}.EH.Recovery.raw.bvp_filt - ...
+%           BVP_removebaselinewander_signal(data_struct{j,i}.EH.Recovery.raw.bvp_filt,Fs); 
         
         %AGC
 %       iterations = 2;
@@ -1755,17 +1757,17 @@ function out = empatia_preprocess_esignals(data_struct)
       
       %EMG adjust length
       %%Neutro
-      data_struct{j,i}.EH.Neutro.raw.emg_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Neutro.raw.emg);
-      data_struct{j,i}.EH.Neutro.raw.emg_filt_dn = ...
-          downsample(data_struct{j,i}.EH.Neutro.raw.emg_filt,downsample_gsr);
-      %%Video
-      data_struct{j,i}.EH.Video.raw.emg_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Video.raw.emg);
-      data_struct{j,i}.EH.Video.raw.emg_filt_dn = ...
-          downsample(data_struct{j,i}.EH.Video.raw.emg_filt,downsample_gsr);
-      %%Labels
-      data_struct{j,i}.EH.Labels.raw.emg_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Labels.raw.emg);
-      data_struct{j,i}.EH.Labels.raw.emg_filt_dn = ...
-          downsample(data_struct{j,i}.EH.Labels.raw.emg_filt,downsample_gsr);
+%       data_struct{j,i}.EH.Neutro.raw.emg_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Neutro.raw.emg);
+%       data_struct{j,i}.EH.Neutro.raw.emg_filt_dn = ...
+%           downsample(data_struct{j,i}.EH.Neutro.raw.emg_filt,downsample_gsr);
+%       %%Video
+%       data_struct{j,i}.EH.Video.raw.emg_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Video.raw.emg);
+%       data_struct{j,i}.EH.Video.raw.emg_filt_dn = ...
+%           downsample(data_struct{j,i}.EH.Video.raw.emg_filt,downsample_gsr);
+%       %%Labels
+%       data_struct{j,i}.EH.Labels.raw.emg_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Labels.raw.emg);
+%       data_struct{j,i}.EH.Labels.raw.emg_filt_dn = ...
+%           downsample(data_struct{j,i}.EH.Labels.raw.emg_filt,downsample_gsr);
       %%Recovery
 %       data_struct{j,i}.EH.Recovery.raw.emg_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Recovery.raw.emg);
 %       data_struct{j,i}.EH.Recovery.raw.emg_filt_dn = ...

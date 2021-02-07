@@ -14,6 +14,7 @@
 %              - 1: DEAP
 %              - 2: MAHNOB
 %              - 3: WESAD
+%              - 4: BioSpeech
 
 function  [result] = trainModels_tvt(features, labels, varargin)
 

@@ -145,7 +145,7 @@ separation = 2;
           riseTime(ctr_peak)=peak_pos;
           recoveryTime(ctr_peak)=(last_offset-last_onset)-peak_pos;
           ampPeaks(ctr_peak)=peak_raw-GSR_phasic(peakTimes(ctr_peak,1));
-          posPeaks(ctr_peak)=peak_pos+last_onset;
+          posPeaks(ctr_peak)=peak_pos+last_onset-1;
           %absAmpPeaks(ctr_peak)=GSR_raw(posPeaks(ctr_peak));
           ctr_peak = ctr_peak + 1;
         else

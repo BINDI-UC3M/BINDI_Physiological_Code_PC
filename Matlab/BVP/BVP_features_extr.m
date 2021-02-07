@@ -176,7 +176,7 @@ if(~isempty(BVP_feats_names))
 %     end
     
     %Faster faster ..
-    %rawSignal=downsample(rawSignal,4);
+    rawSignal=downsample(rawSignal,4);
     
      %dfa - Detrended Fluctuation Analysis
     if any(strcmp('dfa_bvp',BVP_feats_names))

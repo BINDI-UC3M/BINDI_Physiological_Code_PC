@@ -235,14 +235,14 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
      fprintf('Volunteer %d, Trial %d, extracting...\n',i,k);
         
       %Create the BVP signals
-      %bvp_sig_neutro   = BVP_create_signal(data_in{i,k}.EH.Neutro.raw.bvp_filt, samprate_bbddlab);
+      bvp_sig_neutro   = BVP_create_signal(data_in{i,k}.EH.Neutro.raw.bvp_filt, samprate_bbddlab_bvp);
       bvp_sig_video    = BVP_create_signal(data_in{i,k}.EH.Video.raw.bvp_filt, samprate_bbddlab_bvp);
       %bvp_sig_labels   = BVP_create_signal(data_in{i,k}.EH.Labels.raw.bvp_filt, samprate_bbddlab);
       %bvp_sig_recovery = BVP_create_signal(data_in{i,k}.EH.Recovery.raw.bvp_filt, samprate_bbddlab);
       
       %Create the GSR signals
-      %gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered, samprate_bbddlab);
-      gsr_sig_video    = GSR_create_signal(data_in{i,k}.EH.Video.raw.gsr_uS_filtered_dn, samprate_bbddlab_gsr);
+      gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+      gsr_sig_video    = GSR_create_signal(data_in{i,k}.EH.Video.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       %gsr_sig_labels   = GSR_create_signal(data_in{i,k}.GSR.Labels.raw.gsr_uS_filtered, samprate_bbddlab);
       %gsr_sig_recovery = GSR_create_signal(data_in{i,k}.GSR.Recovery.raw.gsr_uS_filtered, samprate_bbddlab);
       
@@ -252,27 +252,57 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       overlapin_window   = 1;  %seconds
       
       %Neutro
-%       start   = 1;
-%       stop    = operational_window*samprate_bbddlab;
-%       overlap =  overlapin_window*samprate_bbddlab;
-%       window_num = 1;
-%       bvp_sig_cpy = bvp_sig_neutro;
-%       gsr_sig_cpy   = gsr_sig_neutro;
-%       while(stop<length(bvp_sig_neutro.raw))
-%          %BVP processing
-%         bvp_sig_cpy.raw = bvp_sig_neutro.raw(start:stop);
-%         [data_features{i,k}.BINDI.Neutro.BVP_feats(window_num,:), ...
-%          data_features{i,k}.BINDI.Neutro.BVP_feats_names] = ...
-%             BVP_features_extr(bvp_sig_cpy);
-%         %GSR processing
-%          gsr_sig_cpy.raw = gsr_sig_neutro.raw(start:stop);
-%         [data_features{i,k}.BINDI.Neutro.GSR_feats(window_num,:), ...
-%          data_features{i,k}.BINDI.Neutro.GSR_feats_names] = ...
-%             GSR_features_extr(gsr_sig_cpy);    
-%         start = start + overlap;
-%         stop  = stop  + overlap;
-%         window_num = window_num + 1;
-%       end
+      start_bvp   = 1;
+      stop_bvp    = operational_window*samprate_bbddlab_bvp;
+      start_gsr   = 1;
+      stop_gsr    = operational_window*samprate_bbddlab_gsr;
+      overlap_bvp = overlapin_window*samprate_bbddlab_bvp;
+      overlap_gsr = overlapin_window*samprate_bbddlab_gsr;      
+      window_num  = 1;
+      bvp_sig_cpy = bvp_sig_neutro;
+      gsr_sig_cpy = gsr_sig_neutro;
+      while(stop_bvp<length(bvp_sig_neutro.raw) && ...
+            stop_gsr<length(gsr_sig_neutro.raw))
+        %BVP processing
+        %To measure the time taken for each physio-processing uncomment the
+        %tic-toc commands
+        %tic
+        bvp_sig_cpy.raw = bvp_sig_neutro.raw(start_bvp:stop_bvp);
+        [data_features{i,k}.EH.Neutro.BVP_feats(window_num,:), ...
+         data_features{i,k}.EH.Neutro.BVP_feats_names] = ...
+            BVP_features_extr(bvp_sig_cpy);
+        %toc
+        %GSR processing
+        gsr_sig_cpy.raw = gsr_sig_neutro.raw(start_gsr:stop_gsr);
+        [data_features{i,k}.EH.Neutro.GSR_feats(window_num,:), ...
+         data_features{i,k}.EH.Neutro.GSR_feats_names] = ...
+            GSR_features_extr(gsr_sig_cpy);       
+        start_bvp = start_bvp + overlap_bvp;
+        stop_bvp  = stop_bvp  + overlap_bvp;
+        start_gsr = start_gsr + overlap_gsr;
+        stop_gsr  = stop_gsr  + overlap_gsr;
+        window_num = window_num + 1;
+      end
+      
+      %Check in case neutro is smaller than operational_window
+      %NOTE!!! --> if this is the case, just use the neutro to normalize
+      %data for intra-differences within the subject
+      if window_num == 1
+        %BVP processing
+        %To measure the time taken for each physio-processing uncomment the
+        %tic-toc commands
+        %tic
+        bvp_sig_cpy.raw = bvp_sig_neutro.raw;
+        [data_features{i,k}.EH.Neutro.BVP_feats(window_num,:), ...
+         data_features{i,k}.EH.Neutro.BVP_feats_names] = ...
+            BVP_features_extr(bvp_sig_cpy);
+        %toc
+        %GSR processing
+        gsr_sig_cpy.raw = gsr_sig_neutro.raw;
+        [data_features{i,k}.EH.Neutro.GSR_feats(window_num,:), ...
+         data_features{i,k}.EH.Neutro.GSR_feats_names] = ...
+            GSR_features_extr(gsr_sig_cpy); 
+      end
 
       %Video
       start_bvp   = 1;
@@ -284,8 +314,8 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       window_num  = 1;
       bvp_sig_cpy = bvp_sig_video;
       gsr_sig_cpy = gsr_sig_video;
-      while(stop_bvp<length(bvp_sig_video.raw)) %&& ...
-            %stop_gsr<length(gsr_sig_video.raw))
+      while(stop_bvp<length(bvp_sig_video.raw) && ...
+            stop_gsr<length(gsr_sig_video.raw))
         %BVP processing
         %To measure the time taken for each physio-processing uncomment the
         %tic-toc commands
@@ -296,10 +326,10 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
             BVP_features_extr(bvp_sig_cpy);
         %toc
         %GSR processing
-%          gsr_sig_cpy.raw = gsr_sig_video.raw(start_gsr:stop_gsr);
-%         [data_features{i,k}.EH.Video.GSR_feats(window_num,:), ...
-%          data_features{i,k}.EH.Video.GSR_feats_names] = ...
-%             GSR_features_extr(gsr_sig_cpy);       
+        gsr_sig_cpy.raw = gsr_sig_video.raw(start_gsr:stop_gsr);
+        [data_features{i,k}.EH.Video.GSR_feats(window_num,:), ...
+         data_features{i,k}.EH.Video.GSR_feats_names] = ...
+            GSR_features_extr(gsr_sig_cpy);       
         start_bvp = start_bvp + overlap_bvp;
         stop_bvp  = stop_bvp  + overlap_bvp;
         start_gsr = start_gsr + overlap_gsr;
@@ -758,7 +788,7 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
   
 
   if ~isempty(response_in)
-    for i=1:volunteers-42
+    for i=1:volunteers-42-1
       
       %Display some info
       fprintf('Volunteer %d, Trainning and Testing...\n',i);
@@ -766,11 +796,11 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
       %% Stage 5: Trainning the model - Validation
       % Training for #volunteers except 'i'
       peri_temp = peri;
-      peri_temp(:,:,i) = [];
-      peri_temp(:,:,i+42) = [];
+      peri_temp(:,:,[i i+42]) = [];
+      %peri_temp(:,:,i+42) = [];
       labels_temp = labels;
-      labels_temp(:,:,i) = [];
-      labels_temp(:,:,i+42) = [];
+      labels_temp(:,:,[i i+42]) = [];
+      %labels_temp(:,:,i+42) = [];
       [result_train{i}] = trainModels_tvt(peri_temp, labels_temp, 'database',4,'model',1);
       %% Stage 6: Testing the model - Test
       %SVM
@@ -835,8 +865,8 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
       
       %ENS
       for k = 1:5
-        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
-        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42+1})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42+1}+1))], string(tPredictions));
         [gl,pl]=size(confuM_t);
         if gl==1 && pl==1
           sent = 0;
@@ -848,8 +878,8 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
         gmeant(k) =sqrt(sent *spet);
         confuM{k} =confuM_t;
       end
-      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
-      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42+1})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42+1}+1))], string(tPredictions));
       [gl,pl]=size(confuM_t);
       if gl==1 && pl==1
         sent = 0;
