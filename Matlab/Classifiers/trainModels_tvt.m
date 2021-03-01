@@ -60,9 +60,9 @@ function  [result] = trainModels_tvt(features, labels, varargin)
       case 2
         disp('MAHNOB Open BBDD simulation running');                
         %only females
-        patients_open = [4,5,7,14,19,20,21,22,23,24,28,29];
-%         patients_open = [4,5,7,14,19,20,21,22,23,24,29];
-%         patients_open = [4,20,24];
+        patients_open  = [4,5,7,14,19,20,21,22,23,24,28,29];
+        %patients_open = [4,5,7,14,19,20,21,22,23,24,29];
+        %patients_open = [4,20,24];
         %only males
         %patients_open = [1,2,8,10,13,17,18,27,30];
         patients = 29;
@@ -74,11 +74,17 @@ function  [result] = trainModels_tvt(features, labels, varargin)
         trials   = 5;     
       case 4
         disp('BioSpeech Open BBDD simulation running');
+        
         patients_open = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,...
                          18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,...
                          33,34,35,36,37,38,39,40,41];
+                     
+        %Add this line if you want single Hybrid simulation
+        patients_open = [patients_open 42];
+        
         %Add this line if you want to include EN and DE experiments
         patients_open = [patients_open patients_open+41];
+        
         patients = 41;
         trials   = 1; 
       otherwise
@@ -202,8 +208,15 @@ function  [result] = trainModels_tvt(features, labels, varargin)
           p_temp(r,:) = [];
           l_temp(r,:,:)= [];
         end
-        peri_temp  = [peri_temp ; zscore(cell2mat(p_temp))];
+        
+        %In case of normalizing the set of features per volunteer
+        %peri_temp  = [peri_temp ; zscore(cell2mat(p_temp))];
+        
+        %In case of NOT normalizing the set of features per volunteer
+        peri_temp  = [peri_temp ; (cell2mat(p_temp))];
+        
         label_temp = [label_temp ; cell2mat(l_temp)];
+        
       end
       i = 1;
 

@@ -46,6 +46,8 @@ init_directory = 3;
 %There must be a total of 10 videos for each patient
 videos_total = 14;
 
+patients_total = 4;
+
 for j = init_directory:patients_total
     
 %     out_struct{j-init_directory+1,videos_total+1}.BINDI.trial = [];
@@ -91,7 +93,7 @@ for j = init_directory:patients_total
 %             [out_struct{j-init_directory+1,videos_total+1}.BINDI.allRaw; out_struct{j-init_directory+1, i}.BINDI.allraw.gsr_ADC];
         
         %%%%%%%%%%%%%%%%%%%%%%%%%% GSR
-		out_struct{j-init_directory+1,i}.GSR = empatia_preprocess_gfileNew(str_file_g,i);
+% 		out_struct{j-init_directory+1,i}.GSR = empatia_preprocess_gfileNew(str_file_g,i);
 %         out_struct{j-init_directory+1,videos_total+1}.GSR.trial = [out_struct{j-init_directory+1,videos_total+1}.GSR.trial; i];
 %         out_struct{j-init_directory+1,videos_total+1}.GSR.samplesLostfile = ...
 %             [out_struct{j-init_directory+1,videos_total+1}.GSR.samplesLostfile;  out_struct{j-init_directory+1,i}.GSR.samplesLostfile];
@@ -103,7 +105,7 @@ for j = init_directory:patients_total
 %             [out_struct{j-init_directory+1,videos_total+1}.GSR.allRaw; out_struct{j-init_directory+1, i}.GSR.allraw.gsr_uS];
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%% EH
-        out_struct{j-init_directory+1,i}.EH = empatia_preprocess_efile(str_file_e,i);
+%         out_struct{j-init_directory+1,i}.EH = empatia_preprocess_efile(str_file_e,i);
         %WTD
 
         out_struct{j-init_directory+1,i}.ParticipantNum = (directory_data_eh(j).name);
@@ -115,8 +117,8 @@ end
 %--------------------------------------------%
 
 %Applying signal preprocessing 
-out_struct = empatia_preprocess_gsignalsNew(out_struct);
-out_struct = empatia_preprocess_esignals(out_struct);
+% out_struct = empatia_preprocess_gsignalsNew(out_struct);
+% out_struct = empatia_preprocess_esignals(out_struct);
 out_struct = empatia_preprocess_bsignals(out_struct);
 
 %Plotting the raw data
@@ -698,8 +700,8 @@ function out_s = empatia_preprocess_efile(file,video)
 
 % Setup the Import Options and import the data
 variables_num = 10; %number of columns
-% filetypes_str = {'N','V','E','D'};
-filetypes_str = {'N','V','E'};
+filetypes_str = {'N','V','E','D'};
+% filetypes_str = {'N','V','E'};
 filetypes_num = size(filetypes_str,2);
 
 % "time", "packet_id", "skt", "bvp", "gsr", "resp", "emg"
@@ -1556,20 +1558,20 @@ function out = empatia_preprocess_esignals(data_struct)
 %                  data_struct{j,i}.EH.Labels.raw.gsr_uS_filtered_tonic_dn;
 				 
       %Recovery
-%       if(length(data_struct{j,i}.EH.Recovery.raw.gsr)>(3*length(FIRs.Coeffs_GSR)))
-%       data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered = ...
-%           filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Recovery.raw.gsr);
-%       elseif(length(data_struct{j,i}.EH.Recovery.raw.gsr)>(3*length(FIRs.Coeffs_GSR_smaller)))
-%       data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered = ...
-%           filtfilt(FIRs.Coeffs_GSR_smaller,1,data_struct{j,i}.EH.Recovery.raw.gsr);
-%       else
-%         %Not filtering provided
-%       end   
-% 	  data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn = ...
-%           downsample(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered,downsample_gsr);
-%       data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn_sm = ...
-%           movmedian(movmean(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn,...
-%                            (Fs/downsample_gsr)),(Fs/downsample_gsr)/2); 
+      if(length(data_struct{j,i}.EH.Recovery.raw.gsr)>(3*length(FIRs.Coeffs_GSR)))
+      data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered = ...
+          filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Recovery.raw.gsr);
+      elseif(length(data_struct{j,i}.EH.Recovery.raw.gsr)>(3*length(FIRs.Coeffs_GSR_smaller)))
+      data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered = ...
+          filtfilt(FIRs.Coeffs_GSR_smaller,1,data_struct{j,i}.EH.Recovery.raw.gsr);
+      else
+        %Not filtering provided
+      end   
+	  data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn = ...
+          downsample(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered,downsample_gsr);
+      data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn_sm = ...
+          movmedian(movmean(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_dn,...
+                           (Fs/downsample_gsr)),(Fs/downsample_gsr)/2); 
                        
 %       data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered_tonic = ... 
 %           movmedian(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered,[Fs*window_gsr Fs*window_gsr]);
@@ -1617,20 +1619,20 @@ function out = empatia_preprocess_esignals(data_struct)
           data_struct{j,i}.EH.Labels.raw.bvp_filt - ...
           BVP_removebaselinewander_signal(data_struct{j,i}.EH.Labels.raw.bvp_filt,Fs);
       
-%       if(length(data_struct{j,i}.EH.Recovery.raw.bvp)>(3*length(FIRs.Coeffs_BVP)))
-%         data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
-%           filtfilt(FIRs.Coeffs_BVP,1,data_struct{j,i}.EH.Recovery.raw.bvp);
-%       elseif((length(data_struct{j,i}.EH.Recovery.raw.bvp)>(3*length(FIRs.Coeffs_BVP_smaller))))
-%         data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
-%           filtfilt(FIRs.Coeffs_BVP_smaller,1,data_struct{j,i}.EH.Recovery.raw.bvp);
-%       else
-%         %Not filtering provided
-%         data_struct{j,i}.EH.Recovery.raw.bvp_filt = smooth(data_struct{j,i}.EH.Recovery.raw.bvp,Fs/2);
-%       end
-%       
-%       data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
-%           data_struct{j,i}.EH.Recovery.raw.bvp_filt - ...
-%           BVP_removebaselinewander_signal(data_struct{j,i}.EH.Recovery.raw.bvp_filt,Fs); 
+      if(length(data_struct{j,i}.EH.Recovery.raw.bvp)>(3*length(FIRs.Coeffs_BVP)))
+        data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
+          filtfilt(FIRs.Coeffs_BVP,1,data_struct{j,i}.EH.Recovery.raw.bvp);
+      elseif((length(data_struct{j,i}.EH.Recovery.raw.bvp)>(3*length(FIRs.Coeffs_BVP_smaller))))
+        data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
+          filtfilt(FIRs.Coeffs_BVP_smaller,1,data_struct{j,i}.EH.Recovery.raw.bvp);
+      else
+        %Not filtering provided
+        data_struct{j,i}.EH.Recovery.raw.bvp_filt = smooth(data_struct{j,i}.EH.Recovery.raw.bvp,Fs/2);
+      end
+      
+      data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
+          data_struct{j,i}.EH.Recovery.raw.bvp_filt - ...
+          BVP_removebaselinewander_signal(data_struct{j,i}.EH.Recovery.raw.bvp_filt,Fs); 
         
         %AGC
 %       iterations = 2;
@@ -1751,9 +1753,20 @@ function out = empatia_preprocess_esignals(data_struct)
           movmedian(movmean(data_struct{j,i}.EH.Labels.raw.skt_filt_dn,...
                            (Fs/downsample_gsr)),(Fs/downsample_gsr)/2); 
       %%Recovery
-%       data_struct{j,i}.EH.Recovery.raw.skt_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Recovery.raw.skt);
-%       data_struct{j,i}.EH.Recovery.raw.skt_filt_dn = ...
-%           downsample(data_struct{j,i}.EH.Recovery.raw.skt_filt,downsample_gsr);
+      if(length(data_struct{j,i}.EH.Recovery.raw.skt)>(3*length(FIRs.Coeffs_GSR)))
+      data_struct{j,i}.EH.Recovery.raw.skt_filt = ...
+          filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Recovery.raw.skt);
+      elseif(length(data_struct{j,i}.EH.Recovery.raw.skt)>(3*length(FIRs.Coeffs_GSR_smaller)))
+      data_struct{j,i}.EH.Recovery.raw.skt_filt = ...
+          filtfilt(FIRs.Coeffs_GSR_smaller,1,data_struct{j,i}.EH.Recovery.raw.skt);
+      else
+        %Not filtering provided
+      end   
+	  data_struct{j,i}.EH.Recovery.raw.skt_filt_dn = ...
+          downsample(data_struct{j,i}.EH.Recovery.raw.skt_filt,downsample_gsr);
+      data_struct{j,i}.EH.Recovery.raw.skt_filt_dn_sm = ...
+          movmedian(movmean(data_struct{j,i}.EH.Recovery.raw.skt_filt_dn,...
+                           (Fs/downsample_gsr)),(Fs/downsample_gsr)/2); 
       
       %EMG adjust length
       %%Neutro

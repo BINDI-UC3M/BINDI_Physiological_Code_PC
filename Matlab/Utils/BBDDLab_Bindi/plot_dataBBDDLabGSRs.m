@@ -9,16 +9,19 @@ function [stds,rds]=plot_dataBBDDLabGSRs(s,pa,pb,va,vb)
     gsreh_neutro=[];
     gsreh_video=[];
     gsreh_labels=[];
+    gsreh_recov=[];
     
     gsrnew = [];
     gsrnew_neutro=[];
     gsrnew_video=[];
     gsrnew_labels=[];
+    gsrnew_recov=[];
     
     gsrb=[];
     gsrb_neutro=[];
     gsrb_video=[];
     gsrb_labels=[];
+    gsrb_recov=[];
     
 %     f = figure('units','normalized','outerposition',[0 0 1 1]);
 %     f.Name = "Volunteer " + s{i,1}.ParticipantNum +  " Complete Experiment";
@@ -34,18 +37,22 @@ function [stds,rds]=plot_dataBBDDLabGSRs(s,pa,pb,va,vb)
         gsreh_neutro = s{i, j}.EH.Neutro.raw.gsr_uS_filtered_dn_sm;
         gsreh_video  = s{i, j}.EH.Video.raw.gsr_uS_filtered_dn_sm;
         gsreh_labels = s{i, j}.EH.Labels.raw.gsr_uS_filtered_dn_sm;
-%         gsreh_neutro = zscore(gsreh_neutro);
-%         gsreh_video  = zscore(gsreh_video);
-%         gsreh_labels = zscore(gsreh_labels);
-        gsreh = [gsreh; gsreh_neutro; gsreh_video; gsreh_labels];
+        gsreh_recov = s{i, j}.EH.Recovery.raw.gsr_uS_filtered_dn_sm;
+        gsreh_neutro = zscore(gsreh_neutro);
+        gsreh_video  = zscore(gsreh_video);
+        gsreh_labels = zscore(gsreh_labels);
+        gsreh_recov = zscore(gsreh_recov);
+        gsreh = [gsreh; gsreh_neutro; gsreh_video; gsreh_labels; gsreh_recov];
 
         gsrnew_neutro = s{i, j}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm;
         gsrnew_video  = s{i, j}.GSR.Video.raw.gsr_uS_filtered_dn_sm;
         gsrnew_labels = s{i, j}.GSR.Labels.raw.gsr_uS_filtered_dn_sm;
-%         gsrnew_neutro = zscore(gsrnew_neutro);
-%         gsrnew_video  = zscore(gsrnew_video);
-%         gsrnew_labels = zscore(gsrnew_labels);
-        gsrnew = [gsrnew; gsrnew_neutro; gsrnew_video; gsrnew_labels];
+        gsrnew_recov = s{i, j}.GSR.Recovery.raw.gsr_uS_filtered_dn_sm;
+        gsrnew_neutro = zscore(gsrnew_neutro);
+        gsrnew_video  = zscore(gsrnew_video);
+        gsrnew_labels = zscore(gsrnew_labels);
+        gsrnew_recov  = zscore(gsrnew_recov);
+        gsrnew = [gsrnew; gsrnew_neutro; gsrnew_video; gsrnew_labels; gsrnew_recov];
 
         %gsr_filtered is the ADC codes
         gsrb_neutro = (movmedian(movmean(downsample(s{i, j}.BINDI.Neutro.raw.gsr_filtered,20),10),5));
@@ -63,12 +70,12 @@ function [stds,rds]=plot_dataBBDDLabGSRs(s,pa,pb,va,vb)
         gsrb_labels = -((1000000/1).*gsrb_labels)./(gsrb_labels - 16383);
         gsrb_labels = 1./gsrb_labels;
         gsrb_labels = gsrb_labels.*10e6;
-        %gsrb_neutro = zscore(movmedian(movmean((gsrb_neutro),10),5));
-        %gsrb_video  = zscore(movmedian(movmean((gsrb_video),10),5));
-        %gsrb_labels = zscore(movmedian(movmean((gsrb_labels),10),5));
-        gsrb_neutro = movmean(zscore(gsrb_neutro),[20 20]);
-        gsrb_video  = movmean(zscore(gsrb_video),[20 20]);
-        gsrb_labels = movmean(zscore(gsrb_labels),[20 20]);
+        gsrb_neutro = zscore(movmedian(movmean((gsrb_neutro),10),5));
+        gsrb_video  = zscore(movmedian(movmean((gsrb_video),10),5));
+        gsrb_labels = zscore(movmedian(movmean((gsrb_labels),10),5));
+%         gsrb_neutro = movmean(zscore(gsrb_neutro),[20 20]);
+%         gsrb_video  = movmean(zscore(gsrb_video),[20 20]);
+%         gsrb_labels = movmean(zscore(gsrb_labels),[20 20]);
         gsrb = [gsrb; gsrb_neutro; gsrb_video; gsrb_labels];
 
         %%
@@ -85,13 +92,13 @@ function [stds,rds]=plot_dataBBDDLabGSRs(s,pa,pb,va,vb)
         t = (t(end)+1/10):1/10:(t(end)+length(gsreh_labels)/10);
         plot(t, gsreh_labels,'-.r','LineWidth',2)  
         
-%         t = 0:1/10:(length(gsrnew_neutro)/10 - 1/10);
-%         plot(t, gsrnew_neutro,'--b')
-%         hold on
-%         t = (t(end)+1/10):1/10:(t(end)+length(gsrnew_video)/10);
-%         plot(t, gsrnew_video,'--k')
-%         t = (t(end)+1/10):1/10:(t(end)+length(gsrnew_labels)/10);
-%         plot(t, gsrnew_labels,'--r')
+        t = 0:1/10:(length(gsrnew_neutro)/10 - 1/10);
+        plot(t, gsrnew_neutro,'--b')
+        hold on
+        t = (t(end)+1/10):1/10:(t(end)+length(gsrnew_video)/10);
+        plot(t, gsrnew_video,'--k')
+        t = (t(end)+1/10):1/10:(t(end)+length(gsrnew_labels)/10);
+        plot(t, gsrnew_labels,'--r')
         
         ylabel('uSiemens') 
         title(['Volunteer ' s{i,j}.ParticipantNum ' Stimulus' num2str(j) ' EH(-.) vs GSR(--)'])
@@ -99,13 +106,13 @@ function [stds,rds]=plot_dataBBDDLabGSRs(s,pa,pb,va,vb)
         
         subplot(3,1,2)
         
-%         t = 0:1/10:(length(gsreh_neutro)/10 - 1/10);
-%         plot(t, gsreh_neutro,'-.b','LineWidth',2)
-%         hold on
-%         t = (t(end)+1/10):1/10:(t(end)+length(gsreh_video)/10);
-%         plot(t, gsreh_video,'-.k','LineWidth',2)    
-%         t = (t(end)+1/10):1/10:(t(end)+length(gsreh_labels)/10);
-%         plot(t, gsreh_labels,'-.r','LineWidth',2) 
+        t = 0:1/10:(length(gsreh_neutro)/10 - 1/10);
+        plot(t, gsreh_neutro,'-.b','LineWidth',2)
+        hold on
+        t = (t(end)+1/10):1/10:(t(end)+length(gsreh_video)/10);
+        plot(t, gsreh_video,'-.k','LineWidth',2)    
+        t = (t(end)+1/10):1/10:(t(end)+length(gsreh_labels)/10);
+        plot(t, gsreh_labels,'-.r','LineWidth',2) 
                 
         t = 0:1/10:(length(gsrb_neutro)/10 - 1/10);
         plot(t, gsrb_neutro,'b')
@@ -128,13 +135,13 @@ function [stds,rds]=plot_dataBBDDLabGSRs(s,pa,pb,va,vb)
         t = (t(end)+1/10):1/10:(t(end)+length(gsrnew_labels)/10);
         plot(t, gsrnew_labels,'--r','LineWidth',1)
         
-%         t = 0:1/10:(length(gsrb_neutro)/10 - 1/10);
-%         plot(t, gsrb_neutro,'b')
-%         hold on
-%         t = (t(end)+1/10):1/10:(t(end)+length(gsrb_video)/10);
-%         plot(t, gsrb_video,'k')
-%         t = (t(end)+1/10):1/10:(t(end)+length(gsrb_labels)/10);
-%         plot(t, gsrb_labels,'r')
+        t = 0:1/10:(length(gsrb_neutro)/10 - 1/10);
+        plot(t, gsrb_neutro,'b')
+        hold on
+        t = (t(end)+1/10):1/10:(t(end)+length(gsrb_video)/10);
+        plot(t, gsrb_video,'k')
+        t = (t(end)+1/10):1/10:(t(end)+length(gsrb_labels)/10);
+        plot(t, gsrb_labels,'r')
 
         ylabel('uSiemens') 
         title(['Volunteer ' s{i,j}.ParticipantNum ' Stimulus' num2str(j) ' GSR(--) vs BINDI'])
