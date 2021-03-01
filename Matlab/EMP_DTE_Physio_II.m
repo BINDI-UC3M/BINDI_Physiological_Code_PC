@@ -1194,16 +1194,17 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
       
       %% Display some result info for Hybrid approach
       fprintf('Rows: Ground truth for test volunteer %d:\n',i);
-      fprintf('----------')
+      fprintf('----------\n')
       fprintf('| %d   0  |\n',balance(i,1));
       fprintf('|  0  %d  |\n',balance(i,2));
-      fprintf('----------')
+      fprintf('----------\n')
       
       %% Save intermediate results
       % Back up file
       copyfile([fname '.mat'], [fname '.bak'], 'f') 
       % Overwrite file with updated result_train 
       save(fname, 'result_train') 
+      result_train{i} = [];
     end
   end
   %% Stage 6: Give back results
