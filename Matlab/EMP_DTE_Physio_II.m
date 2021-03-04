@@ -839,6 +839,18 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
       end
     end
   end
+  if ~isempty(response_in)
+    for i=1:volunteers/2
+      for k=1:trials
+        peribase{:,:,i}   =[ (data_in.Baseline.features_windows{i,k}.BVP_feats(:,:)) ...
+                         (data_in.Baseline.features_windows{i,k}.GSR_feats(:,:))];
+        [win, ~] = size(peribase{:,:,i});
+        t = 1:1:win;
+        t(:)=0;
+        labelsbase{:,:,i} = t'; 
+      end
+    end
+  end
   
   %% Stage 3.1: Option to normalize data with baseline:
   % This step is optional and should be subjected to application neeeds
@@ -891,7 +903,7 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
     for i=1:volunteers-volunteers/2
       
       %Display some info
-      fprintf('Volunteer %d, Trainning and Testing...\n',i);
+      fprintf('Running %d, Trainning and Testing...\n',i);
       
       %Create name file to store data
       fname = strcat('ResultsBioSpeech_V',num2str(i));
@@ -907,12 +919,33 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
       
       fullLOSO = info.fullLOSO; 
       doubleHybrid = info.doubleHybrid; 
+      l2so = info.l2so;
       if fullLOSO
         peri_temp(:,:,[i (i+volunteers/2)])   = [];
         labels_temp(:,:,[i (i+volunteers/2)]) = [];
       elseif doubleHybrid
         peri_temp(:,:,[i (i+volunteers/2+1)])   = [];
         labels_temp(:,:,[i (i+volunteers/2+1)]) = [];
+      elseif l2so
+        %select two random volunteers
+        vs = [1,2];
+        class1_v1 = 0;
+        class2_v1 = 0;
+        class1_v2 = 0;
+        class2_v2 = 0;
+        while (class1_v1 + class1_v2)==0 || (class2_v1 + class2_v2)==0 ...
+               || vs(1,1)==vs(1,2)
+          vs = randi([1 volunteers/2],1,2);
+          class1_v1 = balance_total(vs(1,1),1);
+          class2_v1 = balance_total(vs(1,1),2);
+          class1_v2 = balance_total(vs(1,2),1);
+          class2_v2 = balance_total(vs(1,2),2);
+        end
+        fprintf('Volunteers: %d(%d,%d) & %d(%d,%d)\n',vs(1,1),class1_v1,...
+                                             class2_v1,vs(1,2),class1_v2,...
+                                             class2_v2);
+        peri_temp(:,:,[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2])   = [];
+        labels_temp(:,:,[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]) = [];
       else
         %Add when wanting to test with EN experiments  
         peri_temp(:,:,i)   = [];
@@ -922,7 +955,7 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
         %labels_temp(:,:,i+volunteers/2) = [];
       end
       
-      [result_train{i}] = trainModels_tvt(peri_temp, labels_temp, 'database',4,'model',1);
+      [result_train{i}] = trainModels_tvt(cat(3,peri_temp, peribase), cat(3,labels_temp,labelsbase), 'database',4,'model',1);
       
       %% Stage 6: Testing the model - Test
       % SVM Testing for the five (5-kfold) surrogate models
@@ -940,32 +973,46 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
         % 3. For double Hybrid    
         %tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i+(volunteers/2)+1)})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+        % 4. For L2SO
+        %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+        [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ zscore(peri{:,:,vs(1,1)}) ; zscore(peri{:,:,vs(1,1)+volunteers/2});...
+                                                                                               zscore(peri{:,:,vs(1,2)}) ; zscore(peri{:,:,vs(1,2)+volunteers/2})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                               string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'}); 
         
         %% In case of NOT performing normalization by features:
         % 1. For FULL LOSO
         %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ (peri{:,:,i}) ; (peri{:,:,(i+volunteers/2)})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+volunteers/2)}+1))], string(tPredictions),'order',{'1','2'});
         % 2.1 For single Hybrid w/ EN
-        [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ (peri{:,:,i})]);
-        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
+        %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ (peri{:,:,i})]);
+        %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
         % 2.2 For single Hybrid w/ DE
         %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ (peri{:,:,i+volunteers/2})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});
         % 3. For double Hybrid    
         %tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ (peri{:,:,i}) ; (peri{:,:,(i+(volunteers/2)+1)})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+        % 4. For L2SO
+        %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+        %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ (peri{:,:,vs(1,1)}) ; (peri{:,:,vs(1,1)+volunteers/2});...
+        %                                                                                         (peri{:,:,vs(1,2)}) ; (peri{:,:,vs(1,2)+volunteers/2})]);
+        %confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+        %                         string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});        
         
         [gl,pl]=size(confuM_t);
         if gl==1 && pl==1
           sent = 0;
           spet = 0;
         else
-          sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
-          spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+          sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(2,1));
+          spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(1,2));
         end
         gmeant(k) =sqrt(sent *spet);
         confuM{k} =confuM_t;
         result_train{i}.svm_test.tScores{k} = tScores;
+        result_train{i}.svm_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
       end
       
       %SVM testing for the "complete-data" model
@@ -982,28 +1029,40 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
       % 3. For double Hybrid    
       %tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i+(volunteers/2)+1)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+      % 4. For L2SO
+      %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+      [tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ zscore(peri{:,:,vs(1,1)}) ; zscore(peri{:,:,vs(1,1)+volunteers/2});...
+                                                                                             zscore(peri{:,:,vs(1,2)}) ; zscore(peri{:,:,vs(1,2)+volunteers/2})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                             string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});  
       
       %% In case of NOT performing normalization by features:
       % 1. For FULL LOSO
       %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ (peri{:,:,i}) ; (peri{:,:,(i+volunteers/2)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+volunteers/2)}+1))], string(tPredictions),'order',{'1','2'});
       % 2.1 For single Hybrid w/ EN
-      [tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ (peri{:,:,i})]);
-      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
+      %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ (peri{:,:,i})]);
+      %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
       % 2.2 For single Hybrid w/ DE
       %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ (peri{:,:,i+volunteers/2})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});
       % 3. For double Hybrid    
       %tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ (peri{:,:,i}) ; (peri{:,:,(i+(volunteers/2)+1)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+      % 4. For L2SO
+      %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+      %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ (peri{:,:,vs(1,1)}) ; (peri{:,:,vs(1,1)+volunteers/2});...
+      %                                                                                         (peri{:,:,vs(1,2)}) ; (peri{:,:,vs(1,2)+volunteers/2})]);
+      %confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+      %                         string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});   
       
       [gl,pl]=size(confuM_t);
       if gl==1 && pl==1
         sent = 0;
         spet = 0;
       else
-        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
-        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(2,1));
+        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(1,2));
       end
       gmeant(k+1) =sqrt(sent *spet);
       confuM{k+1} =confuM_t;
@@ -1013,6 +1072,8 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
       %result_train{i}.svm_simulation.ClassifierAll = [];
       %result_train{i}.svm_simulation.Classifier    = [];
       result_train{i}.svm_test.tScores{k+1} = tScores;
+      result_train{i}.svm_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
 
       %KNN Testing for the five (5-kfold) surrogate models
       for k = 1:5
@@ -1030,31 +1091,46 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
         % 3. For double Hybrid    
         %tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i+(volunteers/2)+1)})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+        % 4. For L2SO
+        %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+        [tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},[ zscore(peri{:,:,vs(1,1)}) ; zscore(peri{:,:,vs(1,1)+volunteers/2});...
+                                                                                               zscore(peri{:,:,vs(1,2)}) ; zscore(peri{:,:,vs(1,2)+volunteers/2})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                               string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});   
         
         %% In case of NOT performing normalization by features:
         % 1. For FULL LOSO
         %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},[ (peri{:,:,i}) ; (peri{:,:,(i+volunteers/2)})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+volunteers/2)}+1))], string(tPredictions),'order',{'1','2'});
         % 2.1 For single Hybrid w/ EN
-        [tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k}, (peri{:,:,i}));
-        confuM_t = confusionmat(string(num2cell(labels{:,:,i}+1)), string(tPredictions),'order',{'1','2'});
+        %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k}, (peri{:,:,i}));
+        %confuM_t = confusionmat(string(num2cell(labels{:,:,i}+1)), string(tPredictions),'order',{'1','2'});
         % 2.2 For single Hybrid w/ DE
         %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k}, (peri{:,:,i+volunteers/2}));
         %confuM_t = confusionmat(string(num2cell(labels{:,:,i+volunteers/2}+1)), string(tPredictions),'order',{'1','2'});
         % 3. For double Hybrid    
         %tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},[ (peri{:,:,i}) ; (peri{:,:,(i+(volunteers/2)+1)})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+        % 4. For L2SO
+        %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+        %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},[ (peri{:,:,vs(1,1)}) ; (peri{:,:,vs(1,1)+volunteers/2});...
+        %                                                                                         (peri{:,:,vs(1,2)}) ; (peri{:,:,vs(1,2)+volunteers/2})]);
+        %confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+        %                        string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});   
         
         [gl,pl]=size(confuM_t);
         if gl==1 && pl==1
           sent = 0;
           spet = 0;
         else
-          sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
-          spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+          sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(2,1));
+          spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(1,2));
         end
         gmeant(k) =sqrt(sent *spet);
         confuM{k} =confuM_t;
+        result_train{i}.knn_test.tScores{k} = tScores;
+        result_train{i}.knn_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
       end
 
       %KNN testing for the "complete-data" model
@@ -1071,28 +1147,40 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
       % 3. For double Hybrid    
       %tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i+(volunteers/2)+1)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+      % 4. For L2SO
+      %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+      [tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ zscore(peri{:,:,vs(1,1)}) ; zscore(peri{:,:,vs(1,1)+volunteers/2});...
+                                                                                             zscore(peri{:,:,vs(1,2)}) ; zscore(peri{:,:,vs(1,2)+volunteers/2})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                             string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});   
       
       %% In case of NOT performing normalization by features:
       % 1. For FULL LOSO
       %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ (peri{:,:,i}) ; (peri{:,:,(i+volunteers/2)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+volunteers/2)}+1))], string(tPredictions),'order',{'1','2'});
       % 2.1 For single Hybrid w/ EN
-      [tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ (peri{:,:,i})]);
-      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
+      %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ (peri{:,:,i})]);
+      %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
       % 2.2 For single Hybrid w/ DE
       %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ (peri{:,:,i+volunteers/2})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});
       % 3. For double Hybrid    
       %tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ (peri{:,:,i}) ; (peri{:,:,(i+(volunteers/2)+1)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+      % 4. For L2SO
+      %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+      %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ (peri{:,:,vs(1,1)}) ; (peri{:,:,vs(1,1)+volunteers/2});...
+      %                                                                                         (peri{:,:,vs(1,2)}) ; (peri{:,:,vs(1,2)+volunteers/2})]);
+      %confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+      %                         string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});   
 
       [gl,pl]=size(confuM_t);
       if gl==1 && pl==1
         sent = 0;
         spet = 0;
       else
-        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
-        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(2,1));
+        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(1,2));
       end
       gmeant(k+1) =sqrt(sent *spet);
       confuM{k+1} =confuM_t;
@@ -1101,6 +1189,9 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
             
       %result_train{i}.knn_simulation.ClassifierAll = [];
       %result_train{i}.knn_simulation.Classifier    = [];
+      result_train{i}.knn_test.tScores{k+1} = tScores;
+      result_train{i}.knn_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
       
       %ENS
       for k = 1:5
@@ -1118,32 +1209,46 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
         % 3. For double Hybrid    
         %tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i+(volunteers/2)+1)})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+        % 4. For L2SO
+        %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,vs(1,1)}) ; zscore(peri{:,:,vs(1,1)+volunteers/2});...
+                                                                                               zscore(peri{:,:,vs(1,2)}) ; zscore(peri{:,:,vs(1,2)+volunteers/2})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                               string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});   
         
         %% In case of NOT performing normalization by features:
         % 1. For FULL LOSO
         %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ (peri{:,:,i}) ; (peri{:,:,(i+volunteers/2)})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+volunteers/2)}+1))], string(tPredictions),'order',{'1','2'});
         % 2.1 For single Hybrid w/ EN
-        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ (peri{:,:,i})]);
-        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
+        %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ (peri{:,:,i})]);
+        %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
         % 2.2 For single Hybrid w/ DE
         %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ (peri{:,:,i+volunteers/2})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});
         % 3. For double Hybrid    
         %tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ (peri{:,:,i}) ; (peri{:,:,(i+(volunteers/2)+1)})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+        % 4. For L2SO
+        %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+        %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ (peri{:,:,vs(1,1)}) ; (peri{:,:,vs(1,1)+volunteers/2});...
+        %                                                                                         (peri{:,:,vs(1,2)}) ; (peri{:,:,vs(1,2)+volunteers/2})]);
+        %confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+        %                         string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});   
         
         [gl,pl]=size(confuM_t);
         if gl==1 && pl==1
           sent = 0;
           spet = 0;
         else
-          sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
-          spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+          sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(2,1));
+          spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(1,2));
         end
         gmeant(k) =sqrt(sent *spet);
         confuM{k} =confuM_t;
         result_train{i}.ens_test.tScores{k} = tScores;
+        result_train{i}.ens_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
       end
 
       %ENS testing for the "complete-data" model
@@ -1152,36 +1257,48 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
       %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i+volunteers/2)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+volunteers/2)}+1))], string(tPredictions),'order',{'1','2'});
       % 2.1 For single Hybrid w/ EN
-      %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i})]);
-      %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
+      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
       % 2.2 For single Hybrid w/ DE
       %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i+volunteers/2})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});
       % 3. For double Hybrid    
       %tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i+(volunteers/2)+1)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+      % 4. For L2SO
+      %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,vs(1,1)}) ; zscore(peri{:,:,vs(1,1)+volunteers/2});...
+                                                                                               zscore(peri{:,:,vs(1,2)}) ; zscore(peri{:,:,vs(1,2)+volunteers/2})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                               string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});   
       
       %% In case of NOT performing normalization by features:
       % 1. For FULL LOSO
       %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ (peri{:,:,i}) ; (peri{:,:,(i+volunteers/2)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+volunteers/2)}+1))], string(tPredictions),'order',{'1','2'});
       % 2.1 For single Hybrid w/ EN
-      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ (peri{:,:,i})]);
-      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
+      %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ (peri{:,:,i})]);
+      %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
       % 2.2 For single Hybrid w/ DE
       %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ (peri{:,:,i+volunteers/2})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});
       % 3. For double Hybrid    
       %tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ (peri{:,:,i}) ; (peri{:,:,(i+(volunteers/2)+1)})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+(volunteers/2)+1)}+1))], string(tPredictions),'order',{'1','2'});
+      % 4. For L2SO
+      %[vs(1,1) vs(1,1)+volunteers/2 vs(1,2) vs(1,2)+volunteers/2]
+      %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ (peri{:,:,vs(1,1)}) ; (peri{:,:,vs(1,1)+volunteers/2});...
+      %                                                                                         (peri{:,:,vs(1,2)}) ; (peri{:,:,vs(1,2)+volunteers/2})]);
+      %confuM_t = confusionmat([string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+      %                         string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))], string(tPredictions),'order',{'1','2'});   
       
       [gl,pl]=size(confuM_t);
       if gl==1 && pl==1
         sent = 0;
         spet = 0;
       else
-        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(1,2));
-        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(2,1));
+        sent   = confuM_t(2,2)/(confuM_t(2,2)+confuM_t(2,1));
+        spet   = confuM_t(1,1)/(confuM_t(1,1)+confuM_t(1,2));
       end
       gmeant(k+1) =sqrt(sent *spet);
       confuM{k+1} =confuM_t;
@@ -1191,13 +1308,15 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(info)
       %result_train{i}.ens_simulation.ClassifierAll = [];
       %result_train{i}.ens_simulation.Classifier    = [];
       result_train{i}.ens_test.tScores{k+1} = tScores;
+      result_train{i}.ens_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
       
       %% Display some result info for Hybrid approach
-      fprintf('Rows: Ground truth for test volunteer %d:\n',i);
-      fprintf('----------\n')
-      fprintf('| %d   0  |\n',balance(i,1));
-      fprintf('|  0  %d  |\n',balance(i,2));
-      fprintf('----------\n')
+      %fprintf('Rows: Ground truth for test volunteer %d:\n',i);
+      %fprintf('----------\n')
+      %fprintf('| %d   0  |\n',balance(i,1));
+      %fprintf('|  0  %d  |\n',balance(i,2));
+      %fprintf('----------\n')
       
       %% Save intermediate results
       % Back up file

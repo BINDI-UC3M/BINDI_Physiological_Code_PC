@@ -80,10 +80,16 @@ function  [result] = trainModels_tvt(features, labels, varargin)
                          33,34,35,36,37,38,39,40,41];
                      
         %Add this line if you want single Hybrid simulation
-        patients_open = [patients_open 42];
+        %patients_open = [patients_open 42];
         
         %Add this line if you want to include EN and DE experiments
-        patients_open = [patients_open patients_open+41];
+        %patients_open = [patients_open patients_open+41];
+        
+        %Add this line if you want L2SO simulation
+        patients_open = [patients_open (patients_open(end)+1:1:patients_open(end)+39)];
+        
+        %Add this line if you want norm data into trainning
+        patients_open = [patients_open (patients_open(end)+1:1:patients_open(end)+42)];
         
         patients = 41;
         trials   = 1; 
@@ -210,13 +216,12 @@ function  [result] = trainModels_tvt(features, labels, varargin)
         end
         
         %In case of normalizing the set of features per volunteer
-        %peri_temp  = [peri_temp ; zscore(cell2mat(p_temp))];
+        peri_temp  = [peri_temp ; zscore(cell2mat(p_temp))];
         
         %In case of NOT normalizing the set of features per volunteer
-        peri_temp  = [peri_temp ; (cell2mat(p_temp))];
+        %peri_temp  = [peri_temp ; (cell2mat(p_temp))];
         
         label_temp = [label_temp ; cell2mat(l_temp)];
-        
       end
       i = 1;
 
@@ -332,7 +337,7 @@ function [results]=binaryModels(features, labels)
 %              'OptimizeHyperparameters','all',...
 %              'HyperparameterOptimizationOptions',...
 %              struct('CVPartition',c,'ShowPlots',false,'Verbose',1));
-  svm_temp = fitcsvm(peri_temp,label_temp,...
+  svm_temp = fitcsvm(peri_temp,label_temp,'Cost',[0,1;2,0],...
              'OptimizeHyperparameters','all',...
              'HyperparameterOptimizationOptions',...
              struct('CVPartition',c,'ShowPlots',false,'Verbose',1));
@@ -351,7 +356,7 @@ function [results]=binaryModels(features, labels)
   [~,~,~,auc_2,~] = perfcurve(label_temp,vScores(:,2),2);
   
   %get confusion matrix for validation
-  confuM = confusionmat(label_temp, vPredictions);
+  confuM = confusionmat(label_temp, vPredictions,'order',{'1','2'});
   
   %compute individual validation loss
   modelLosses = kfoldLoss(svm_temp_cv,'mode','individual');
@@ -428,7 +433,7 @@ function [results]=binaryModels(features, labels)
 
   % Compute validation predictions
   [vPredictions, vScores] = kfoldPredict(knn_temp_cv);
-  confuM = confusionmat(label_temp, vPredictions);
+  confuM = confusionmat(label_temp, vPredictions,'order',{'1','2'});
 %   [tPredictions2, tScores2] = predict(knn_temp_cv.Trained{2}, features(~idxTrain,:));
 %     confuM_t2 = confusionmat(labels(~idxTrain), tPredictions2);
 %   [tPredictions3, tScores3] = predict(knn_temp_cv.Trained{3}, features(~idxTrain,:));
@@ -523,7 +528,7 @@ function [results]=binaryModels(features, labels)
   [~,~,~,auc_2,~] = perfcurve(label_temp,vScores(:,2),2);
   
   %get confusion matrix
-  confuM = confusionmat(label_temp, vPredictions);
+  confuM = confusionmat(label_temp, vPredictions,'order',{'1','2'});
   
   %compute individual validation loss
   modelLosses = kfoldLoss(ens_temp_cv,'mode','individual');
