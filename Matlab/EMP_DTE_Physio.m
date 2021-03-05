@@ -235,16 +235,16 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
      fprintf('Volunteer %d, Trial %d, extracting...\n',i,k);
         
       %Create the BVP signals
-      bvp_sig_neutro   = BVP_create_signal(data_in{i,k}.EH.Neutro.raw.bvp_filt, samprate_bbddlab_bvp);
+%       bvp_sig_neutro   = BVP_create_signal(data_in{i,k}.EH.Neutro.raw.bvp_filt, samprate_bbddlab_bvp);
       bvp_sig_video    = BVP_create_signal(data_in{i,k}.EH.Video.raw.bvp_filt, samprate_bbddlab_bvp);
-      bvp_sig_labels   = BVP_create_signal(data_in{i,k}.EH.Labels.raw.bvp_filt, samprate_bbddlab_bvp);
-      bvp_sig_recovery = BVP_create_signal(data_in{i,k}.EH.Recovery.raw.bvp_filt, samprate_bbddlab_bvp);
+%       bvp_sig_labels   = BVP_create_signal(data_in{i,k}.EH.Labels.raw.bvp_filt, samprate_bbddlab_bvp);
+%       bvp_sig_recovery = BVP_create_signal(data_in{i,k}.EH.Recovery.raw.bvp_filt, samprate_bbddlab_bvp);
       
       %Create the GSR signals
-      gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+%       gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       gsr_sig_video    = GSR_create_signal(data_in{i,k}.EH.Video.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
-      gsr_sig_labels   = GSR_create_signal(data_in{i,k}.GSR.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
-      gsr_sig_recovery = GSR_create_signal(data_in{i,k}.GSR.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+%       gsr_sig_labels   = GSR_create_signal(data_in{i,k}.GSR.Labels.raw.gsr_uS_filtered, samprate_bbddlab_gsr);
+%       gsr_sig_recovery = GSR_create_signal(data_in{i,k}.GSR.Recovery.raw.gsr_uS_filtered, samprate_bbddlab_gsr);
       
       %% Stage 2: Extracting Features %%
       % Deal with window and overlapping
@@ -252,57 +252,57 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       overlapin_window   = 1;  %seconds
       
       %Neutro
-      start_bvp   = 1;
-      stop_bvp    = operational_window*samprate_bbddlab_bvp;
-      start_gsr   = 1;
-      stop_gsr    = operational_window*samprate_bbddlab_gsr;
-      overlap_bvp = overlapin_window*samprate_bbddlab_bvp;
-      overlap_gsr = overlapin_window*samprate_bbddlab_gsr;      
-      window_num  = 1;
-      bvp_sig_cpy = bvp_sig_neutro;
-      gsr_sig_cpy = gsr_sig_neutro;
-      while(stop_bvp<length(bvp_sig_neutro.raw) && ...
-            stop_gsr<length(gsr_sig_neutro.raw))
-        %BVP processing
-        %To measure the time taken for each physio-processing uncomment the
-        %tic-toc commands
-        %tic
-        bvp_sig_cpy.raw = bvp_sig_neutro.raw(start_bvp:stop_bvp);
-        [data_features{i,k}.EH.Neutro.BVP_feats(window_num,:), ...
-         data_features{i,k}.EH.Neutro.BVP_feats_names] = ...
-            BVP_features_extr(bvp_sig_cpy);
-        %toc
-        %GSR processing
-        gsr_sig_cpy.raw = gsr_sig_neutro.raw(start_gsr:stop_gsr);
-        [data_features{i,k}.EH.Neutro.GSR_feats(window_num,:), ...
-         data_features{i,k}.EH.Neutro.GSR_feats_names] = ...
-            GSR_features_extr(gsr_sig_cpy);       
-        start_bvp = start_bvp + overlap_bvp;
-        stop_bvp  = stop_bvp  + overlap_bvp;
-        start_gsr = start_gsr + overlap_gsr;
-        stop_gsr  = stop_gsr  + overlap_gsr;
-        window_num = window_num + 1;
-      end
-      
-      %Check in case neutro is smaller than operational_window
-      %NOTE!!! --> if this is the case, just use the neutro to normalize
-      %data for intra-differences within the subject
-      if window_num == 1
-        %BVP processing
-        %To measure the time taken for each physio-processing uncomment the
-        %tic-toc commands
-        %tic
-        bvp_sig_cpy.raw = bvp_sig_neutro.raw;
-        [data_features{i,k}.EH.Neutro.BVP_feats(window_num,:), ...
-         data_features{i,k}.EH.Neutro.BVP_feats_names] = ...
-            BVP_features_extr(bvp_sig_cpy);
-        %toc
-        %GSR processing
-        gsr_sig_cpy.raw = gsr_sig_neutro.raw;
-        [data_features{i,k}.EH.Neutro.GSR_feats(window_num,:), ...
-         data_features{i,k}.EH.Neutro.GSR_feats_names] = ...
-            GSR_features_extr(gsr_sig_cpy); 
-      end
+%       start_bvp   = 1;
+%       stop_bvp    = operational_window*samprate_bbddlab_bvp;
+%       start_gsr   = 1;
+%       stop_gsr    = operational_window*samprate_bbddlab_gsr;
+%       overlap_bvp = overlapin_window*samprate_bbddlab_bvp;
+%       overlap_gsr = overlapin_window*samprate_bbddlab_gsr;      
+%       window_num  = 1;
+%       bvp_sig_cpy = bvp_sig_neutro;
+%       gsr_sig_cpy = gsr_sig_neutro;
+%       while(stop_bvp<length(bvp_sig_neutro.raw) && ...
+%             stop_gsr<length(gsr_sig_neutro.raw))
+%         %BVP processing
+%         %To measure the time taken for each physio-processing uncomment the
+%         %tic-toc commands
+%         %tic
+%         bvp_sig_cpy.raw = bvp_sig_neutro.raw(start_bvp:stop_bvp);
+%         [data_features{i,k}.EH.Neutro.BVP_feats(window_num,:), ...
+%          data_features{i,k}.EH.Neutro.BVP_feats_names] = ...
+%             BVP_features_extr(bvp_sig_cpy);
+%         %toc
+%         %GSR processing
+%         gsr_sig_cpy.raw = gsr_sig_neutro.raw(start_gsr:stop_gsr);
+%         [data_features{i,k}.EH.Neutro.GSR_feats(window_num,:), ...
+%          data_features{i,k}.EH.Neutro.GSR_feats_names] = ...
+%             GSR_features_extr(gsr_sig_cpy);       
+%         start_bvp = start_bvp + overlap_bvp;
+%         stop_bvp  = stop_bvp  + overlap_bvp;
+%         start_gsr = start_gsr + overlap_gsr;
+%         stop_gsr  = stop_gsr  + overlap_gsr;
+%         window_num = window_num + 1;
+%       end
+%       
+%       %Check in case neutro is smaller than operational_window
+%       %NOTE!!! --> if this is the case, just use the neutro to normalize
+%       %data for intra-differences within the subject
+%       if window_num == 1
+%         %BVP processing
+%         %To measure the time taken for each physio-processing uncomment the
+%         %tic-toc commands
+%         %tic
+%         bvp_sig_cpy.raw = bvp_sig_neutro.raw;
+%         [data_features{i,k}.EH.Neutro.BVP_feats(window_num,:), ...
+%          data_features{i,k}.EH.Neutro.BVP_feats_names] = ...
+%             BVP_features_extr(bvp_sig_cpy);
+%         %toc
+%         %GSR processing
+%         gsr_sig_cpy.raw = gsr_sig_neutro.raw;
+%         [data_features{i,k}.EH.Neutro.GSR_feats(window_num,:), ...
+%          data_features{i,k}.EH.Neutro.GSR_feats_names] = ...
+%             GSR_features_extr(gsr_sig_cpy); 
+%       end
 
       %Video
       start_bvp   = 1;
@@ -338,91 +338,38 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       end
       
       %Labels
-      start_bvp   = 1;
-      stop_bvp    = operational_window*samprate_bbddlab_bvp;
-      start_gsr   = 1;
-      stop_gsr    = operational_window*samprate_bbddlab_gsr;
-      overlap_bvp = overlapin_window*samprate_bbddlab_bvp;
-      overlap_gsr = overlapin_window*samprate_bbddlab_gsr;      
-      window_num  = 1;
-      bvp_sig_cpy = bvp_sig_labels;
-      gsr_sig_cpy = gsr_sig_labels;
-      while(stop_bvp<length(bvp_sig_labels.raw) && ...
-            stop_gsr<length(gsr_sig_labels.raw))
-        %BVP processing
-        %To measure the time taken for each physio-processing uncomment the
-        %tic-toc commands
-        %tic
-        bvp_sig_cpy.raw = bvp_sig_labels.raw(start_bvp:stop_bvp);
-        [data_features{i,k}.EH.Labels.BVP_feats(window_num,:), ...
-         data_features{i,k}.EH.Labels.BVP_feats_names] = ...
-            BVP_features_extr(bvp_sig_cpy);
-        %toc
-        %GSR processing
-        gsr_sig_cpy.raw = gsr_sig_labels.raw(start_gsr:stop_gsr);
-        [data_features{i,k}.EH.Labels.GSR_feats(window_num,:), ...
-         data_features{i,k}.EH.Labels.GSR_feats_names] = ...
-            GSR_features_extr(gsr_sig_cpy);       
-        start_bvp = start_bvp + overlap_bvp;
-        stop_bvp  = stop_bvp  + overlap_bvp;
-        start_gsr = start_gsr + overlap_gsr;
-        stop_gsr  = stop_gsr  + overlap_gsr;
-        window_num = window_num + 1;
-      end
-      
-      %Recovery
-      start_bvp   = 1;
-      stop_bvp    = operational_window*samprate_bbddlab_bvp;
-      start_gsr   = 1;
-      stop_gsr    = operational_window*samprate_bbddlab_gsr;
-      overlap_bvp = overlapin_window*samprate_bbddlab_bvp;
-      overlap_gsr = overlapin_window*samprate_bbddlab_gsr;      
-      window_num  = 1;
-      bvp_sig_cpy = bvp_sig_recovery;
-      gsr_sig_cpy = gsr_sig_recovery;
-      while(stop_bvp<length(bvp_sig_recovery.raw) && ...
-            stop_gsr<length(gsr_sig_recovery.raw))
-        %BVP processing
-        %To measure the time taken for each physio-processing uncomment the
-        %tic-toc commands
-        %tic
-        bvp_sig_cpy.raw = bvp_sig_recovery.raw(start_bvp:stop_bvp);
-        [data_features{i,k}.EH.Recovery.BVP_feats(window_num,:), ...
-         data_features{i,k}.EH.Recovery.BVP_feats_names] = ...
-            BVP_features_extr(bvp_sig_cpy);
-        %toc
-        %GSR processing
-        gsr_sig_cpy.raw = gsr_sig_recovery.raw(start_gsr:stop_gsr);
-        [data_features{i,k}.EH.Recovery.GSR_feats(window_num,:), ...
-         data_features{i,k}.EH.Recovery.GSR_feats_names] = ...
-            GSR_features_extr(gsr_sig_cpy);       
-        start_bvp = start_bvp + overlap_bvp;
-        stop_bvp  = stop_bvp  + overlap_bvp;
-        start_gsr = start_gsr + overlap_gsr;
-        stop_gsr  = stop_gsr  + overlap_gsr;
-        window_num = window_num + 1;
-      end
-      
-      %Check in case recovery is smaller than operational_window
-      %NOTE!!! --> if this is the case, just use the recovery to normalize
-      %data for intra-differences within the subject or for analytical
-      %purposes
-      if window_num == 1
-        %BVP processing
-        %To measure the time taken for each physio-processing uncomment the
-        %tic-toc commands
-        %tic
-        bvp_sig_cpy.raw = bvp_sig_recovery.raw;
-        [data_features{i,k}.EH.Recovery.BVP_feats(window_num,:), ...
-         data_features{i,k}.EH.Recovery.BVP_feats_names] = ...
-            BVP_features_extr(bvp_sig_cpy);
-        %toc
-        %GSR processing
-        gsr_sig_cpy.raw = gsr_sig_recovery.raw;
-        [data_features{i,k}.EH.Recovery.GSR_feats(window_num,:), ...
-         data_features{i,k}.EH.Recovery.GSR_feats_names] = ...
-            GSR_features_extr(gsr_sig_cpy); 
-      end
+%       start   = 1;
+%       stop    = operational_window*samprate_bbddlab;
+%       overlap =  overlapin_window*samprate_bbddlab;
+%       window_num = 1;
+%       bvp_sig_cpy = bvp_sig_labels;
+%       while(stop<length(bvp_sig_labels.raw))
+%         bvp_sig_cpy.raw = bvp_sig_labels.raw(start:stop);
+%         [data_features{i,k}.BINDI.Labels.BVP_feats(window_num,:), ...
+%          data_features{i,k}.BINDI.Labels.BVP_feats_names] = ...
+%             BVP_features_extr(bvp_sig_cpy);
+%         %TBD...        
+%         start = start + overlap;
+%         stop  = stop  + overlap;
+%         window_num = window_num + 1;
+%       end
+%       
+%       Recovery
+%       start   = 1;
+%       stop    = operational_window*samprate_bbddlab;
+%       overlap =  overlapin_window*samprate_bbddlab;
+%       window_num = 1;
+%       bvp_sig_cpy = bvp_sig_recovery;
+%       while(stop<length(bvp_sig_recovery.raw))
+%         bvp_sig_cpy.raw = bvp_sig_recovery.raw(start:stop);
+%         [data_features{i,k}.BINDI.Recovery.BVP_feats(window_num,:), ...
+%          data_features{i,k}.BINDI.Recovery.BVP_feats_names] = ...
+%             BVP_features_extr(bvp_sig_cpy);
+%         %TBD...        
+%         start = start + overlap;
+%         stop  = stop  + overlap;
+%         window_num = window_num + 1;
+%       end
       
     end 
   end
@@ -546,7 +493,7 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
     error('Number of volunteers or trials exceed the maximun allowed');
   end
   
-  for i=1:volunteers
+  for i=5:volunteers
     for k=1:trials
      
      %Sampling rate
@@ -625,9 +572,9 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
           (length(bvp_sig.raw)/samprate_biospeech - 1/samprate_biospeech);
      iterations = 2;
      for w=1:iterations
-%        figure;
-%        plot(time,bvp_sig.raw)
-%        hold on;
+       figure;
+       plot(time,bvp_sig.raw)
+       hold on;
        imfs = emd(bvp_sig.raw,'Display',0);
        z =bvp_sig.raw';
        [~,b] = size(imfs);
@@ -643,11 +590,11 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech(data_in, response_in)
        bvp_sig.raw=bvp_sig.raw';
        
        %Draw result:
-%        figure;
-%        plot(time,fridge,'k--','linewidth',4);
-%        hold on;
-%        contour(time,F(1,t),abs(sst(t,:)));
-%        ylim([0.5 3.5]);
+       figure;
+       plot(time,fridge,'k--','linewidth',4);
+       hold on;
+       contour(time,F(1,t),abs(sst(t,:)));
+       ylim([0.5 3.5]);
      end
      
      % 1.5: BVP Automatic Gain Control over WST-Systolic extracted
@@ -799,13 +746,10 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
   %It is based on the BioSpeech database
   % Input: data_in --> this is an array of tables
   %        each table corresponds to BVP and GSR extracted features
-  %        In case of having a need to normalize there would be two fields,
-  %        data_in.Baseline and data_in.Experiment, the first can be taken
-  %        for performing the normalization procedure
   
   %Get the number of volunteers and trials
   %Max Volunteers are 42 and max trial are 1
-  [volunteers, trials] = size(data_in.Experiments.features_windows);
+  [volunteers, trials] = size(data_in.features_windows);
   %check values
   if volunteers > 84 || trials > 1
     error('Number of volunteers or trials exceed the maximun allowed');
@@ -817,35 +761,9 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
   if ~isempty(response_in)
     for i=1:volunteers
       for k=1:trials
-        peri{:,:,i}   =[ (data_in.Experiments.features_windows{i,k}.BVP_feats(:,:)) ...
-                         (data_in.Experiments.features_windows{i,k}.GSR_feats(:,:))];
+        peri{:,:,i}   =[ (data_in.features_windows{i,k}.BVP_feats(:,:)) (data_in.features_windows{i,k}.GSR_feats(:,:))];
         [win, ~] = size(peri{:,:,i});
         labels{:,:,i} = response_in{i, k}.binary_labels(11:11+win-1); 
-      end
-    end
-  end
-  
-  %% Stage 3.1: Option to normalize data with baseline:
-  % This step is optional and should be subjected to application neeeds
-  normalizeBybaseline = 0;  
-  if normalizeBybaseline
-    for i=1:volunteers/2
-      for k=1:trials
-        peri_norm_mu  = [ mean(data_in.Baseline.features_windows{i,k}.BVP_feats(:,:)) ...
-                         mean(data_in.Baseline.features_windows{i,k}.GSR_feats(:,:))];
-        peri_norm_std = [ std(data_in.Baseline.features_windows{i,k}.BVP_feats(:,:)) ...
-                         std(data_in.Baseline.features_windows{i,k}.GSR_feats(:,:))];
-        [rows,columns]=find(~peri_norm_std);
-        if ~isempty(rows) || ~isempty(columns)
-          peri{:,:,i}(rows,columns)   = (peri{:,:,i}(rows,columns) - peri_norm_mu(rows,columns));
-          peri{:,:,i+volunteers/2}(rows,columns)   = (peri{:,:,i+volunteers/2}(rows,columns) - peri_norm_mu(rows,columns));
-          [rows,columns]=find(peri_norm_std);
-          peri{:,:,i}(rows,columns)   = (peri{:,:,i}(rows,columns) - peri_norm_mu(rows,columns)) ./ peri_norm_std(rows,columns);
-          peri{:,:,i+volunteers/2}(rows,columns)   = (peri{:,:,i+volunteers/2}(rows,columns) - peri_norm_mu(rows,columns)) ./ peri_norm_std(rows,columns);     
-        else
-          peri{:,:,i}   = (peri{:,:,i} - peri_norm_mu) ./ peri_norm_std;
-          peri{:,:,i+volunteers/2}   = (peri{:,:,i+volunteers/2} - peri_norm_mu) ./ peri_norm_std;          
-        end
       end
     end
   end
@@ -878,17 +796,17 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
       %% Stage 5: Trainning the model - Validation
       % Training for #volunteers except 'i'
       peri_temp = peri;
-      peri_temp(:,:,[i i+42+1]) = [];
+      peri_temp(:,:,[i i+42]) = [];
       %peri_temp(:,:,i+42) = [];
       labels_temp = labels;
-      labels_temp(:,:,[i i+42+1]) = [];
+      labels_temp(:,:,[i i+42]) = [];
       %labels_temp(:,:,i+42) = [];
       [result_train{i}] = trainModels_tvt(peri_temp, labels_temp, 'database',4,'model',1);
       %% Stage 6: Testing the model - Test
       %SVM
       for k = 1:5
-        [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42+1})]);
-        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42+1}+1))], string(tPredictions));
+        [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
         [gl,pl]=size(confuM_t);
         if gl==1 && pl==1
           sent = 0;
@@ -900,8 +818,8 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
         gmeant(k) =sqrt(sent *spet);
         confuM{k} =confuM_t;
       end
-      [tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42+1})]);
-      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42+1}+1))], string(tPredictions));
+      [tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
       [gl,pl]=size(confuM_t);
       if gl==1 && pl==1
         sent = 0;
@@ -947,8 +865,8 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
       
       %ENS
       for k = 1:5
-        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
-        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42+1})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42+1}+1))], string(tPredictions));
         [gl,pl]=size(confuM_t);
         if gl==1 && pl==1
           sent = 0;
@@ -960,8 +878,8 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
         gmeant(k) =sqrt(sent *spet);
         confuM{k} =confuM_t;
       end
-      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42})]);
-      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42}+1))], string(tPredictions));
+      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,i+42+1})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i+42+1}+1))], string(tPredictions));
       [gl,pl]=size(confuM_t);
       if gl==1 && pl==1
         sent = 0;
@@ -978,7 +896,7 @@ function Results_BioSpeech = EMP_DTE_Physio_BioSpeech_JustTrain(data_in, respons
     end
   end
   %% Stage 6: Give back results
-  %Results_BioSpeech.features_windows = data_features;
+  Results_BioSpeech.features_windows = data_features;
   Results_BioSpeech.results_windows  = result_train;
   %Results_BioSpeech.features_all     = feat_all;
   %...TBD
