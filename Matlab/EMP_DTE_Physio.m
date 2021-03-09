@@ -235,16 +235,16 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
      fprintf('Volunteer %d, Trial %d, extracting...\n',i,k);
         
       %Create the BVP signals
-%       bvp_sig_neutro   = BVP_create_signal(data_in{i,k}.EH.Neutro.raw.bvp_filt, samprate_bbddlab_bvp);
+%        bvp_sig_neutro   = BVP_create_signal(data_in{i,k}.EH.Neutro.raw.bvp_filt, samprate_bbddlab_bvp);
       bvp_sig_video    = BVP_create_signal(data_in{i,k}.EH.Video.raw.bvp_filt, samprate_bbddlab_bvp);
-%       bvp_sig_labels   = BVP_create_signal(data_in{i,k}.EH.Labels.raw.bvp_filt, samprate_bbddlab_bvp);
-%       bvp_sig_recovery = BVP_create_signal(data_in{i,k}.EH.Recovery.raw.bvp_filt, samprate_bbddlab_bvp);
+       bvp_sig_labels   = BVP_create_signal(data_in{i,k}.EH.Labels.raw.bvp_filt, samprate_bbddlab_bvp);
+       bvp_sig_recovery = BVP_create_signal(data_in{i,k}.EH.Recovery.raw.bvp_filt, samprate_bbddlab_bvp);
       
       %Create the GSR signals
-%       gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+%        gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       gsr_sig_video    = GSR_create_signal(data_in{i,k}.EH.Video.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
-%       gsr_sig_labels   = GSR_create_signal(data_in{i,k}.GSR.Labels.raw.gsr_uS_filtered, samprate_bbddlab_gsr);
-%       gsr_sig_recovery = GSR_create_signal(data_in{i,k}.GSR.Recovery.raw.gsr_uS_filtered, samprate_bbddlab_gsr);
+       gsr_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered, samprate_bbddlab_gsr);
+       gsr_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered, samprate_bbddlab_gsr);
       
       %% Stage 2: Extracting Features %%
       % Deal with window and overlapping
@@ -338,6 +338,39 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       end
       
       %Labels
+      start_bvp   = 1;
+      stop_bvp    = operational_window*samprate_bbddlab_bvp;
+      start_gsr   = 1;
+      stop_gsr    = operational_window*samprate_bbddlab_gsr;
+      overlap_bvp = overlapin_window*samprate_bbddlab_bvp;
+      overlap_gsr = overlapin_window*samprate_bbddlab_gsr;      
+      window_num  = 1;
+      bvp_sig_cpy = bvp_sig_labels;
+      gsr_sig_cpy = gsr_sig_labels;
+      while(stop_bvp<length(bvp_sig_labels.raw) && ...
+            stop_gsr<length(gsr_sig_labels.raw))
+        %BVP processing
+        %To measure the time taken for each physio-processing uncomment the
+        %tic-toc commands
+        %tic
+        bvp_sig_cpy.raw = bvp_sig_labels.raw(start_bvp:stop_bvp);
+        [data_features{i,k}.EH.labels.BVP_feats(window_num,:), ...
+         data_features{i,k}.EH.labels.BVP_feats_names] = ...
+            BVP_features_extr(bvp_sig_cpy);
+        %toc
+        %GSR processing
+        gsr_sig_cpy.raw = gsr_sig_labels.raw(start_gsr:stop_gsr);
+        [data_features{i,k}.EH.labels.GSR_feats(window_num,:), ...
+         data_features{i,k}.EH.labels.GSR_feats_names] = ...
+            GSR_features_extr(gsr_sig_cpy);       
+        start_bvp = start_bvp + overlap_bvp;
+        stop_bvp  = stop_bvp  + overlap_bvp;
+        start_gsr = start_gsr + overlap_gsr;
+        stop_gsr  = stop_gsr  + overlap_gsr;
+        window_num = window_num + 1;
+      end
+      
+      
 %       start   = 1;
 %       stop    = operational_window*samprate_bbddlab;
 %       overlap =  overlapin_window*samprate_bbddlab;
@@ -355,6 +388,38 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
 %       end
 %       
 %       Recovery
+        start_bvp   = 1;
+        stop_bvp    = operational_window*samprate_bbddlab_bvp;
+        start_gsr   = 1;
+        stop_gsr    = operational_window*samprate_bbddlab_gsr;
+        overlap_bvp = overlapin_window*samprate_bbddlab_bvp;
+        overlap_gsr = overlapin_window*samprate_bbddlab_gsr;      
+        window_num  = 1;
+        bvp_sig_cpy = bvp_sig_recovery;
+        gsr_sig_cpy = gsr_sig_recovery;
+        while(stop_bvp<length(bvp_sig_recovery.raw) && ...
+            stop_gsr<length(gsr_sig_recovery.raw))
+        %BVP processing
+        %To measure the time taken for each physio-processing uncomment the
+        %tic-toc commands
+        %tic
+        bvp_sig_cpy.raw = bvp_sig_recovery.raw(start_bvp:stop_bvp);
+        [data_features{i,k}.EH.recovery.BVP_feats(window_num,:), ...
+         data_features{i,k}.EH.recovery.BVP_feats_names] = ...
+            BVP_features_extr(bvp_sig_cpy);
+        %toc
+        %GSR processing
+        gsr_sig_cpy.raw = gsr_sig_recovery.raw(start_gsr:stop_gsr);
+        [data_features{i,k}.EH.recovery.GSR_feats(window_num,:), ...
+         data_features{i,k}.EH.recovery.GSR_feats_names] = ...
+            GSR_features_extr(gsr_sig_cpy);       
+        start_bvp = start_bvp + overlap_bvp;
+        stop_bvp  = stop_bvp  + overlap_bvp;
+        start_gsr = start_gsr + overlap_gsr;
+        stop_gsr  = stop_gsr  + overlap_gsr;
+        window_num = window_num + 1;
+        end
+
 %       start   = 1;
 %       stop    = operational_window*samprate_bbddlab;
 %       overlap =  overlapin_window*samprate_bbddlab;
