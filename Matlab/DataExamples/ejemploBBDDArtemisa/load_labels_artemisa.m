@@ -46,7 +46,7 @@ opts.EmptyLineRule = "read";
 time_format= 'HH.mm.ss.SSS';
 % Specify variable properties    
     
-    for j = init_directory:patients_total
+    for j = init_directory:patients_total-1
       
 
         try 
