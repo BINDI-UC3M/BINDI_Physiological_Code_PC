@@ -243,8 +243,8 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       %Create the GSR signals
 %        gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       gsr_sig_video    = GSR_create_signal(data_in{i,k}.EH.Video.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
-       gsr_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered, samprate_bbddlab_gsr);
-       gsr_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered, samprate_bbddlab_gsr);
+       gsr_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+       gsr_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       
       %% Stage 2: Extracting Features %%
       % Deal with window and overlapping
