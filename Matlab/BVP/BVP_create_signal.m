@@ -10,7 +10,7 @@
 function Signal = BVP_create_signal(rawBVP, sampRate)
 
   if(nargin ~= 2)
-	error('Usage: BVP_aqn_variable(rawBVP, sampRate)');
+	error('Usage: BVP_create_signal(rawBVP, sampRate)');
   end
 
   %Create an empty structure signal

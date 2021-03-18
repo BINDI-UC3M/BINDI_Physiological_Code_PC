@@ -39,8 +39,7 @@ GSR_raw = Signal__get_raw(GSRsignal);
 featuresNames = {'nbPeaks', 'ampPeaks', 'riseTime', ...
                  'recoveryTime', 'aup', 'meanGSR', 'stdGSR',...
                  'firstQuartileGSR','thirdQuartileGSR','sp0005','sp0515',...
-                 'sp_energyRatio'};%,...
-%                  'dfa','rrate','det','lmax','ent','lam','tt','corDim'};
+                 'sp_energyRatio','dfa','rrate','det','lmax','ent','lam','tt','corDim'};
 %featuresNames = {'meanGSR', 'stdGSR'};
 GSR_feats_names = featuresSelector(featuresNames,varargin{:});
 
@@ -154,7 +153,7 @@ if(~isempty(GSR_feats_names))
     %rqa_stat - RQA statistics - [recrate DET LMAX ENT TND LAM TT]
     if any(strcmp('rrate',GSR_feats_names))
       %Determining embedding dimension m and time lag (delay time) t
-      [y,eLag,eDim]=phaseSpaceReconstruction(GSR_raw,'MaxLag',500);
+      [y,eLag,eDim]=phaseSpaceReconstruction(GSR_raw,'MaxLag',199);
       
       % phase space plot
       %y = phasespace(GSR_raw,3,10);
