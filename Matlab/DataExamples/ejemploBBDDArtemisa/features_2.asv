@@ -1,0 +1,11 @@
+
+
+% Max and min diferences
+
+
+for n_video=1:4
+
+    for n_voluntaria=1:21
+        [feature_mat(n_video,n_voluntaria).max_diff_da,feature_mat(n_video,n_voluntaria).max_diff_index_da]=max(diff(resultados_nt_reordered(n_video+1,n_voluntaria).da));
+    end
+end
