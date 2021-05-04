@@ -32,7 +32,7 @@ data = readtable(file,opts);
 
 for loop1=1:size(data.order)
     
-   if data.order==2
+   if data.order(loop1)==2
       
        resultados_nt_reordered(1,loop1).da=resultados_nt{1,loop1}(1,1);
        resultados_nt_reordered(2,loop1).da=resultados_nt{1,loop1}(12:16,1);
