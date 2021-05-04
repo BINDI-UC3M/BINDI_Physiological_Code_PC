@@ -80,3 +80,49 @@ for voluntaria=1:21
     
     
 end
+
+
+
+
+figure
+plot([feature_mat_a(1,:).first_peak_pos],[feature_mat_a(1,:).first_valley_pos],"*");
+
+figure
+hist([feature_mat_a(1,:).num_valleys])
+figure
+hist([feature_mat_a(2,:).num_valleys])
+
+
+
+
+figure
+subplot(2,3,1)
+test=[feature_mat_a(1,:).num_valleys];
+test=horzcat(test,[feature_mat_a(2,:).num_valleys]);
+test=horzcat(test,[feature_mat_a(3,:).num_valleys]);
+vect(1:21)=1;
+vect(22:42)=2;
+vect(43:63)=3;
+boxplot(test,vect);
+
+boxplot([feature_mat_a(1,:).num_valleys]);
+hold on
+boxplot([feature_mat_a(2,:).num_valleys]);
+boxplot([feature_mat_a(3,:).num_valleys]);
+
+
+subplot(2,3,4)
+boxplot([feature_mat_a(1,:).num_peaks]);
+hold on
+boxplot([feature_mat_a(2,:).num_peaks]);
+boxplot([feature_mat_a(3,:).num_peaks]);
+
+
+
+
+
+
+
+
+
+
