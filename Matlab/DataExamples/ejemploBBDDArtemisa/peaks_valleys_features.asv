@@ -55,13 +55,11 @@ function feature_mat = peaks_valeys_features(nt_data,name_fig)
         temp_sig_pos=horzcat(feature_mat.peaks_pos,feature_mat.valleys_pos);
         [~,index]=sort(temp_sig_pos);
         temp_sig=temp_sig(index);
-        
-        
-        umbral=mean(temp_sig)*0.10;
+        umbral=mean(nt_data)*0.10;
         if umbral <100 && umbral >3
             umbral= 2.5;
         end
-        [pks,pks_locs,vall,vall_locs] = extract_peaks_valleys(temp_sig,0.1*mean(umbral),"segunda it");
+        [pks,pks_locs,vall,vall_locs] = extract_peaks_valleys(temp_sig,0.1*mean(temp_sig),"segunda it");
         
         feature_mat.peaks_pos=feature_mat.peaks_pos(feature_mat.peaks==pks);
         feature_mat.peaks=pks;
@@ -92,11 +90,7 @@ function feature_mat = peaks_valeys_features(nt_data,name_fig)
         if feature_mat.num_valleys==0 && feature_mat.num_peaks==0
             feature_mat.type=0;
         elseif feature_mat.num_valleys==1 && feature_mat.num_peaks==1
-            if feature_mat.order(1)==1
-              feature_mat.type=1;
-            else
-                
-            end
+            feature_mat.type=1;
         elseif feature_mat.num_valleys==2 && feature_mat.num_peaks==1
             feature_mat.type=2;
         elseif feature_mat.num_valleys==1 && feature_mat.num_peaks==2
@@ -146,17 +140,17 @@ function [peaks,peaks_locs,valleys,valleys_locs] = extract_peaks_valleys(in_data
         [peaks,peaks_locs] = findpeaks(data,'MinPeakProminence',min_promenance,'SortStr','descend');
         
         peaks_locs=peaks_locs-1;
-%         figure
-%         findpeaks(data,'MinPeakProminence',min_promenance,'Annotate','extents')
-%         hold on
-%         title(name);
+        figure
+        findpeaks(data,'MinPeakProminence',min_promenance,'Annotate','extents')
+        hold on
+        title(name);
         
         temp_1=-1*(in_data-mean(in_data))+mean(in_data);  
         data=horzcat(min(temp_1),temp_1,min(temp_1));              
         [valleys,valleys_locs] = findpeaks(data,'MinPeakProminence',min_promenance,'SortStr','descend');
         valleys_locs=valleys_locs-1;
         valleys=in_data(valleys_locs);
-%         findpeaks(data,'MinPeakProminence',min_promenance,'Annotate','extents')
+        findpeaks(data,'MinPeakProminence',min_promenance,'Annotate','extents')
 
 
 end
