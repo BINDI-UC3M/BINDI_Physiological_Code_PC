@@ -80,3 +80,5 @@ for loop1=1:size(data.order)
     
     
 end
+
+clear loop1 data opts variables_num voluntarias_num file
