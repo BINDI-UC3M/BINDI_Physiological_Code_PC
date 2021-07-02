@@ -633,8 +633,8 @@ function [picos, valles] = delineateFirstDiffPPG(s_input)
         listeValley = [listeValley iSpl];
         id_vtv = id_vtv + 1;
         id_ptv = id_ptv + 1;
-        valles(id_ptp).posicion = round(listeValley(end));
-        valles(id_vtp).valor = s_input(round(listeValley(end)));
+        valles(id_ptv).posicion = round(listeValley(end));
+        valles(id_vtv).valor = s_input(round(listeValley(end)));
       end
   end
 end

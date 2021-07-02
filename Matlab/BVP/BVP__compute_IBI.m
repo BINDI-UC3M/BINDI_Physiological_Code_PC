@@ -58,7 +58,7 @@ if(isempty(Signal__get_raw(BVPSignal.IBI)))
     % PICtoBPM hampel has been used to remove outliners (3*std - see doc)
     IBI = movmedian(IBI, [2 2]);
     BVPSignal.IBI = Signal__set_raw(BVPSignal.IBI,IBI);
-    Signal__assert_range(BVPSignal.IBI, 0.25, 1.5, 1);
+    Signal__assert_range(BVPSignal.IBI, 0.25, 2, 1);
     
 	%Resample the signal with the one requested for IBI
     % ...TBD Work to do related with the resampling - interpolating
