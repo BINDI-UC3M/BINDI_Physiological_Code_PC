@@ -249,7 +249,7 @@ function Results_BBDDLab_EH = EMP_DTE_Physio_BBDDLab_EH(data_in, response_in)
       %% Stage 2: Extracting Features %%
       % Deal with window and overlapping
       operational_window = 20; %seconds
-      overlapin_window   = 1;  %seconds
+      overlapin_window   = 10;  %seconds
       
       %Neutro
 %       start_bvp   = 1;
