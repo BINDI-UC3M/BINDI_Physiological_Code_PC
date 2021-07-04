@@ -110,8 +110,8 @@ function plot_dataBBDDLab(s,pa,pb,va,vb)
         tb = (tb(end)+1/200):1/200:(tb(end)+length(bvp_recov)/200);
         plot(tb, bvp_recov,'g')  
         ylabel('A.U.') 
-        title(['Volunteer ' s{i,j}.ParticipantNum ' Stimulus' num2str(j)])
-        legend({'Neutro','Video','Labels'})
+        title(['Volunteer ' s{i,j}.ParticipantNum ' Total Stimuli:' num2str(j)])
+        legend({'Neutro','Video','Labels','Recovery'})
         
         subplot(3,1,2)
         tg = tg(end):1/10:(tg(end)+length(gsr_neutro)/10 - 1/10);
@@ -124,8 +124,8 @@ function plot_dataBBDDLab(s,pa,pb,va,vb)
         tg = (tg(end)+1/10):1/10:(tg(end)+length(gsr_recov)/10);
         plot(tg, gsr_recov,'g')  
         ylabel('uSiemens') 
-        title(['Volunteer ' s{i,j}.ParticipantNum ' Stimulus' num2str(j)])
-        legend({'Neutro','Video','Labels'})
+        title(['Volunteer ' s{i,j}.ParticipantNum ' Total Stimuli:' num2str(j)])
+        legend({'Neutro','Video','Labels','Recovery'})
         
         subplot(3,1,3)
         ts = ts(end):1/10:(ts(end)+length(skt_neutro)/10 - 1/10);
@@ -138,8 +138,8 @@ function plot_dataBBDDLab(s,pa,pb,va,vb)
         ts = (ts(end)+1/10):1/10:(ts(end)+length(skt_recov)/10);
         plot(ts, skt_recov,'g')  
         ylabel('ºC') 
-        title(['Volunteer ' s{i,j}.ParticipantNum ' Stimulus' num2str(j)])
-        legend({'Neutro','Video','Labels'})
+        title(['Volunteer ' s{i,j}.ParticipantNum ' Total Stimuli:' num2str(j)])
+        legend({'Neutro','Video','Labels','Recovery'})
         
 %         bvp=[];
 %         bvp_neutro=[];
