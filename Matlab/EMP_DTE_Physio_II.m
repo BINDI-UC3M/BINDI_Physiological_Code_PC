@@ -98,6 +98,12 @@ function Results = EMP_DTE_Physio_II(info)
         % If you are not sure about this function or its behavior, 
         % please contact technician.
         Results = EMP_DTE_Physio_BioSpeech_JustTrain(info);
+      case 'Artemisa_EH'
+        % NOTE: Take into account that in this case, the features should
+        % have been previously extracted and being stored into data_in.
+        % If you are not sure about this function or its behavior, 
+        % please contact technician.
+        Results = EMP_DTE_Physio_Artemisa_EH(data_in);
       otherwise
         error('Not implemented yet.');
   end   

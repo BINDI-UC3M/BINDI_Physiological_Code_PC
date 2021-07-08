@@ -177,8 +177,8 @@ for i = 1:filetypes_num
 
   switch lower(fExt)
     case '.psd'
-      % A MATLAB file
-      disp("File is in the expected extension\n");
+%       % A MATLAB file
+%       disp("File is in the expected extension\n");
     otherwise  % Under all circumstances SWITCH gets an OTHERWISE!
       error('Unexpected file extension: %s', fExt);
   end
@@ -366,13 +366,13 @@ function out = empatia_preprocess_esignals(data_struct)
     for i = 1:videos-1
       fprintf('Patient %d, Video %d filtering...\n',j, i);
       %Neutro
-      data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered = ...
-          filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Neutro.raw.gsr);
-	  data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered_dn = ...
-          downsample(data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered,downsample_gsr);
-      data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered_dn_sm = ...
-          movmedian(movmean(data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered_dn,...
-                           (Fs/downsample_gsr)),(Fs/downsample_gsr)/2);
+%       data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered = ...
+%           filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Neutro.raw.gsr);
+% 	  data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered_dn = ...
+%           downsample(data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered,downsample_gsr);
+%       data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered_dn_sm = ...
+%           movmedian(movmean(data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered_dn,...
+%                            (Fs/downsample_gsr)),(Fs/downsample_gsr)/2);
 %       data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered_tonic = ... 
 %           movmedian(data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered,[Fs*window_gsr Fs*window_gsr]);
 %       data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered_phasic = ...
@@ -471,21 +471,21 @@ function out = empatia_preprocess_esignals(data_struct)
 %           getHeartRate_eh(data_struct{j,i}.EH.Recovery.raw.bvp,1);
 %       data_struct{j,i}.EH.Recovery.raw.hrv = diff(data_struct{j,i}.EH.Recovery.raw.hr);
       
-      data_struct{j,i}.EH.Neutro.raw.bvp_filt = ...
-          filtfilt(FIRs.Coeffs_BVP,1,data_struct{j,i}.EH.Neutro.raw.bvp);
-      data_struct{j,i}.EH.Neutro.raw.bvp_filt = ...
-          data_struct{j,i}.EH.Neutro.raw.bvp_filt - ...
-          BVP_removebaselinewander_signal(data_struct{j,i}.EH.Neutro.raw.bvp_filt,Fs);
+%       data_struct{j,i}.EH.Neutro.raw.bvp_filt = ...
+%           filtfilt(FIRs.Coeffs_BVP,1,data_struct{j,i}.EH.Neutro.raw.bvp);
+%       data_struct{j,i}.EH.Neutro.raw.bvp_filt = ...
+%           data_struct{j,i}.EH.Neutro.raw.bvp_filt - ...
+%           BVP_removebaselinewander_signal(data_struct{j,i}.EH.Neutro.raw.bvp_filt,Fs);
       data_struct{j,i}.EH.Video.raw.bvp_filt = ...
           filtfilt(FIRs.Coeffs_BVP,1,data_struct{j,i}.EH.Video.raw.bvp);
+      bvp_temp    = BVP_create_signal(data_struct{j,i}.EH.Video.raw.bvp_filt, 200);
       data_struct{j,i}.EH.Video.raw.bvp_filt = ...
-          data_struct{j,i}.EH.Video.raw.bvp_filt - ...
-          BVP_removebaselinewander_signal(data_struct{j,i}.EH.Video.raw.bvp_filt,Fs);
+          Signal__get_raw(BVP_removebaselinewander_signal(bvp_temp,Fs));
       data_struct{j,i}.EH.Labels.raw.bvp_filt = ...
           filtfilt(FIRs.Coeffs_BVP,1,data_struct{j,i}.EH.Labels.raw.bvp);
+      bvp_temp    = BVP_create_signal(data_struct{j,i}.EH.Labels.raw.bvp_filt, 200);
       data_struct{j,i}.EH.Labels.raw.bvp_filt = ...
-          data_struct{j,i}.EH.Labels.raw.bvp_filt - ...
-          BVP_removebaselinewander_signal(data_struct{j,i}.EH.Labels.raw.bvp_filt,Fs);
+          Signal__get_raw(BVP_removebaselinewander_signal(bvp_temp,Fs));
       
       if(length(data_struct{j,i}.EH.Recovery.raw.bvp)>(3*length(FIRs.Coeffs_BVP)))
         data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
@@ -498,9 +498,9 @@ function out = empatia_preprocess_esignals(data_struct)
         data_struct{j,i}.EH.Recovery.raw.bvp_filt = smooth(data_struct{j,i}.EH.Recovery.raw.bvp,Fs/2);
       end
       
+      bvp_temp    = BVP_create_signal(data_struct{j,i}.EH.Recovery.raw.bvp_filt, 200);
       data_struct{j,i}.EH.Recovery.raw.bvp_filt = ...
-          data_struct{j,i}.EH.Recovery.raw.bvp_filt - ...
-          BVP_removebaselinewander_signal(data_struct{j,i}.EH.Recovery.raw.bvp_filt,Fs); 
+         Signal__get_raw( BVP_removebaselinewander_signal(bvp_temp,Fs));
         
         %AGC
 %       iterations = 2;
@@ -600,12 +600,12 @@ function out = empatia_preprocess_esignals(data_struct)
       
       %SKT 
       %%Neutro
-      data_struct{j,i}.EH.Neutro.raw.skt_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Neutro.raw.skt);
-      data_struct{j,i}.EH.Neutro.raw.skt_filt_dn = ...
-          downsample(data_struct{j,i}.EH.Neutro.raw.skt_filt,downsample_gsr);
-      data_struct{j,i}.EH.Neutro.raw.skt_filt_dn_sm = ...
-          movmedian(movmean(data_struct{j,i}.EH.Neutro.raw.skt_filt_dn,...
-                           (Fs/downsample_gsr)),(Fs/downsample_gsr)/2); 
+%       data_struct{j,i}.EH.Neutro.raw.skt_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Neutro.raw.skt);
+%       data_struct{j,i}.EH.Neutro.raw.skt_filt_dn = ...
+%           downsample(data_struct{j,i}.EH.Neutro.raw.skt_filt,downsample_gsr);
+%       data_struct{j,i}.EH.Neutro.raw.skt_filt_dn_sm = ...
+%           movmedian(movmean(data_struct{j,i}.EH.Neutro.raw.skt_filt_dn,...
+%                            (Fs/downsample_gsr)),(Fs/downsample_gsr)/2); 
       %%Video
       data_struct{j,i}.EH.Video.raw.skt_filt = filtfilt(FIRs.Coeffs_GSR,1,data_struct{j,i}.EH.Video.raw.skt);
       data_struct{j,i}.EH.Video.raw.skt_filt_dn = ...
@@ -655,88 +655,88 @@ function out = empatia_preprocess_esignals(data_struct)
 %           downsample(data_struct{j,i}.EH.Recovery.raw.emg_filt,downsample_gsr);
       
 %       
-%       f = figure;
-%       set(gcf, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1]);
-%       f.Name = "patient " + j +  " / Trial" + i;
-%       subplot(3,1,1);
-% %       len_ppg = length(data_struct{j,i}.EH.Neutro.raw.bvp_filt);
-% %       t = linspace(0,len_ppg/Fs,len_ppg);
-% %       plot(t,data_struct{j,i}.EH.Neutro.raw.bvp_filt);
-% %       ylabel('a.u.')
-% %       title("patient " + j +  " / Trial" + i + " Neutro");
-% %       subplot(4,1,2);
-%       len_ppg = length(data_struct{j,i}.EH.Video.raw.bvp_filt);
+      f = figure;
+      set(gcf, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1]);
+      f.Name = "patient " + j +  " / Trial" + i;
+      subplot(3,1,1);
+%       len_ppg = length(data_struct{j,i}.EH.Neutro.raw.bvp_filt);
 %       t = linspace(0,len_ppg/Fs,len_ppg);
-%       plot(t,data_struct{j,i}.EH.Video.raw.bvp_filt);
+%       plot(t,data_struct{j,i}.EH.Neutro.raw.bvp_filt);
 %       ylabel('a.u.')
-%       title("patient " + j +  " / Trial" + i + " Video");
-% %       subplot(4,1,3);
-% %       len_ppg = length(data_struct{j,i}.EH.Labels.raw.bvp_filt);
-% %       t = linspace(0,len_ppg/Fs,len_ppg);
-% %       plot(t,data_struct{j,i}.EH.Labels.raw.bvp_filt);
-% %       ylabel('a.u.')
-% %       title("patient " + j +  " / Trial" + i + " Labels");
-% %       subplot(4,1,4);
-% %       len_ppg = length(data_struct{j,i}.EH.Recovery.raw.bvp_filt);
-% %       t = linspace(0,len_ppg/Fs,len_ppg);
-% %       plot(t,data_struct{j,i}.EH.Recovery.raw.bvp_filt);
-% %       ylabel('a.u.')
-% %       title("patient " + j +  " / Trial" + i + " Recovery");
-%       
-% %       f = figure;
-% %       f.Name = "GSR patient " + j +  " / Trial" + i;
-% %       subplot(4,1,1);
-% %       len_ppg = length(data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered);
-% %       t = linspace(0,len_ppg/Fs,len_ppg);
-% %       plot(t,data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered);
-% %       ylabel('uSiemens.')
-% %       title("patient " + j +  " / Trial" + i + " Neutro");
-%       subplot(3,1,2);
-%       len_ppg = length(data_struct{j,i}.EH.Video.raw.gsr_uS_filtered);
+%       title("patient " + j +  " / Trial" + i + " Neutro");
+%       subplot(4,1,2);
+      len_ppg = length(data_struct{j,i}.EH.Video.raw.bvp_filt);
+      t = linspace(0,len_ppg/Fs,len_ppg);
+      plot(t,data_struct{j,i}.EH.Video.raw.bvp_filt);
+      ylabel('a.u.')
+      title("patient " + j +  " / Trial" + i + " Video");
+%       subplot(4,1,3);
+%       len_ppg = length(data_struct{j,i}.EH.Labels.raw.bvp_filt);
 %       t = linspace(0,len_ppg/Fs,len_ppg);
-%       plot(downsample(t,downsample_gsr),data_struct{j,i}.EH.Video.raw.gsr_uS_filtered_dn);
+%       plot(t,data_struct{j,i}.EH.Labels.raw.bvp_filt);
+%       ylabel('a.u.')
+%       title("patient " + j +  " / Trial" + i + " Labels");
+%       subplot(4,1,4);
+%       len_ppg = length(data_struct{j,i}.EH.Recovery.raw.bvp_filt);
+%       t = linspace(0,len_ppg/Fs,len_ppg);
+%       plot(t,data_struct{j,i}.EH.Recovery.raw.bvp_filt);
+%       ylabel('a.u.')
+%       title("patient " + j +  " / Trial" + i + " Recovery");
+      
+%       f = figure;
+%       f.Name = "GSR patient " + j +  " / Trial" + i;
+%       subplot(4,1,1);
+%       len_ppg = length(data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered);
+%       t = linspace(0,len_ppg/Fs,len_ppg);
+%       plot(t,data_struct{j,i}.EH.Neutro.raw.gsr_uS_filtered);
+%       ylabel('uSiemens.')
+%       title("patient " + j +  " / Trial" + i + " Neutro");
+      subplot(3,1,2);
+      len_ppg = length(data_struct{j,i}.EH.Video.raw.gsr_uS_filtered);
+      t = linspace(0,len_ppg/Fs,len_ppg);
+      plot(downsample(t,downsample_gsr),data_struct{j,i}.EH.Video.raw.gsr_uS_filtered_dn);
+      ylabel('uSiemens')
+      title("patient " + j +  " / Trial" + i + " Video");
+%       subplot(4,1,3);
+%       len_ppg = length(data_struct{j,i}.EH.Labels.raw.gsr_uS_filtered);
+%       t = linspace(0,len_ppg/Fs,len_ppg);
+%       plot(t,data_struct{j,i}.EH.Labels.raw.gsr_uS_filtered);
 %       ylabel('uSiemens')
-%       title("patient " + j +  " / Trial" + i + " Video");
-% %       subplot(4,1,3);
-% %       len_ppg = length(data_struct{j,i}.EH.Labels.raw.gsr_uS_filtered);
-% %       t = linspace(0,len_ppg/Fs,len_ppg);
-% %       plot(t,data_struct{j,i}.EH.Labels.raw.gsr_uS_filtered);
-% %       ylabel('uSiemens')
-% %       title("patient " + j +  " / Trial" + i + " Labels");
-% %       subplot(4,1,4);
-% %       len_ppg = length(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered);
-% %       t = linspace(0,len_ppg/Fs,len_ppg);
-% %       plot(t,data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered);
-% %       ylabel('uSiemens')
-% %       title("patient " + j +  " / Trial" + i + " Recovery");
-%       
-%       
-% %       f = figure;
-% %       f.Name = "SKT patient " + j +  " / Trial" + i;
-% %       subplot(4,1,1);
-% %       len_ppg = length(data_struct{j,i}.EH.Neutro.raw.skt);
-% %       t = linspace(0,len_ppg/Fs,len_ppg);
-% %       plot(t,data_struct{j,i}.EH.Neutro.raw.skt);
-% %       ylabel('ºC')
-% %       title("patient " + j +  " / Trial" + i + " Neutro");
-%       subplot(3,1,3);
-%       len_ppg = length(data_struct{j,i}.EH.Video.raw.skt_filt);
+%       title("patient " + j +  " / Trial" + i + " Labels");
+%       subplot(4,1,4);
+%       len_ppg = length(data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered);
 %       t = linspace(0,len_ppg/Fs,len_ppg);
-%       plot(downsample(t,downsample_gsr),data_struct{j,i}.EH.Video.raw.skt_filt_dn);
+%       plot(t,data_struct{j,i}.EH.Recovery.raw.gsr_uS_filtered);
+%       ylabel('uSiemens')
+%       title("patient " + j +  " / Trial" + i + " Recovery");
+      
+      
+%       f = figure;
+%       f.Name = "SKT patient " + j +  " / Trial" + i;
+%       subplot(4,1,1);
+%       len_ppg = length(data_struct{j,i}.EH.Neutro.raw.skt);
+%       t = linspace(0,len_ppg/Fs,len_ppg);
+%       plot(t,data_struct{j,i}.EH.Neutro.raw.skt);
 %       ylabel('ºC')
-%       title("patient " + j +  " / Trial" + i + " Video");
-% %       subplot(4,1,3);
-% %       len_ppg = length(data_struct{j,i}.EH.Labels.raw.skt);
-% %       t = linspace(0,len_ppg/Fs,len_ppg);
-% %       plot(t,data_struct{j,i}.EH.Labels.raw.skt);
-% %       ylabel('ºC')
-% %       title("patient " + j +  " / Trial" + i + " Labels");
-% %       subplot(4,1,4);
-% %       len_ppg = length(data_struct{j,i}.EH.Recovery.raw.skt);
-% %       t = linspace(0,len_ppg/Fs,len_ppg);
-% %       plot(t,data_struct{j,i}.EH.Recovery.raw.skt);
-% %       ylabel('ºC')
-% %       title("patient " + j +  " / Trial" + i + " Recovery");
+%       title("patient " + j +  " / Trial" + i + " Neutro");
+      subplot(3,1,3);
+      len_ppg = length(data_struct{j,i}.EH.Video.raw.skt_filt);
+      t = linspace(0,len_ppg/Fs,len_ppg);
+      plot(downsample(t,downsample_gsr),data_struct{j,i}.EH.Video.raw.skt_filt_dn);
+      ylabel('ºC')
+      title("patient " + j +  " / Trial" + i + " Video");
+%       subplot(4,1,3);
+%       len_ppg = length(data_struct{j,i}.EH.Labels.raw.skt);
+%       t = linspace(0,len_ppg/Fs,len_ppg);
+%       plot(t,data_struct{j,i}.EH.Labels.raw.skt);
+%       ylabel('ºC')
+%       title("patient " + j +  " / Trial" + i + " Labels");
+%       subplot(4,1,4);
+%       len_ppg = length(data_struct{j,i}.EH.Recovery.raw.skt);
+%       t = linspace(0,len_ppg/Fs,len_ppg);
+%       plot(t,data_struct{j,i}.EH.Recovery.raw.skt);
+%       ylabel('ºC')
+%       title("patient " + j +  " / Trial" + i + " Recovery");
 
       %Setting pre-processing Flag
       data_struct{j,i}.Filtered = 1;
