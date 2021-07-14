@@ -18,39 +18,45 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features(data_in)
       %Create the BVP signals
 %       bvp_sig_neutro   = BVP_create_signal(data_in{i,k}.EH.Neutro.raw.bvp_filt, samprate_bbddlab_bvp);
       bvp_sig_video    = BVP_create_signal(data_in{i,k}.EH.Video.raw.bvp_filt, samprate_bbddlab_bvp);
-      bvp_sig_labels   = BVP_create_signal(data_in{i,k}.EH.Labels.raw.bvp_filt, samprate_bbddlab_bvp);
-      bvp_sig_recovery = BVP_create_signal(data_in{i,k}.EH.Recovery.raw.bvp_filt, samprate_bbddlab_bvp);
+%       bvp_sig_labels   = BVP_create_signal(data_in{i,k}.EH.Labels.raw.bvp_filt, samprate_bbddlab_bvp);
+%       bvp_sig_recovery = BVP_create_signal(data_in{i,k}.EH.Recovery.raw.bvp_filt, samprate_bbddlab_bvp);
       
       %Create the GSR signals
 %       gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       gsr_sig_video    = GSR_create_signal(data_in{i,k}.EH.Video.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
-      gsr_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
-      gsr_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+%       gsr_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+%       gsr_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+      
+      %Create the SKT signals
+%       gsr_sig_neutro   = GSR_create_signal(data_in{i,k}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+      skt_sig_video    = SKT_create_signal(data_in{i,k}.EH.Video.raw.skt_filt_dn_sm, samprate_bbddlab_gsr);
+%       skt_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+%       skt_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       
       
        % 1.4: BVP advanced data processing: Wavelet Synchrosqueezed Transform
-     time=0:1/samprate_biospeech:...
-          (length(bvp_sig.raw)/samprate_biospeech - 1/samprate_biospeech);
+     time=0:1/samprate_bbddlab_bvp:...
+          (length(bvp_sig_video.raw)/samprate_bbddlab_bvp - 1/samprate_bbddlab_bvp);
      iterations = 2;
      for w=1:iterations
 %        figure;
-%        plot(time,bvp_sig.raw)
+%        plot(time,bvp_sig_video.raw)
 %        hold on;
-       imfs = emd(bvp_sig.raw,'Display',0);
-       z =bvp_sig.raw';
+       imfs = emd(bvp_sig_video.raw,'Display',0);
+       z =bvp_sig_video.raw';
        [~,b] = size(imfs);
        for j=3:b
          z = z - imfs(:,j);
        end
-       [sst,F] = wsst(z,samprate_biospeech);
+       [sst,F] = wsst(z,samprate_bbddlab_bvp);
        t=find(F>0.8 & F<3.5);
        [fridge,iridge] = wsstridge(sst(t,:),2,F(1,t),'NumRifges',1);
        xrec = iwsst(sst(t,:),iridge);
-       bvp_sig.raw = xrec(:,1) ;%+ xrec(:,2);
-       %plot(time,bvp_sig.raw);
-       bvp_sig.raw=bvp_sig.raw';
+       bvp_sig_video.raw = xrec(:,1) ;%+ xrec(:,2);
+%        plot(time,bvp_sig_video.raw);
+       bvp_sig_video.raw=bvp_sig_video.raw';
        
-       %Draw result:
+%        Draw result:
 %        figure;
 %        plot(time,fridge,'k--','linewidth',4);
 %        hold on;
@@ -74,6 +80,7 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features(data_in)
       window_num  = 1;
       bvp_sig_cpy = bvp_sig_video;
       gsr_sig_cpy = gsr_sig_video;
+      skt_sig_cpy = skt_sig_video;
       while(stop_bvp<length(bvp_sig_video.raw) && ...
             stop_gsr<length(gsr_sig_video.raw))
         %BVP processing
@@ -89,7 +96,13 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features(data_in)
         gsr_sig_cpy.raw = gsr_sig_video.raw(start_gsr:stop_gsr);
         [data_features{i,k}.EH.Video.GSR_feats(window_num,:), ...
          data_features{i,k}.EH.Video.GSR_feats_names] = ...
-            GSR_features_extr(gsr_sig_cpy);       
+            GSR_features_extr(gsr_sig_cpy);      
+        %skt processing
+%         skt_sig_cpy.raw = skt_sig_video.raw(start_gsr:stop_gsr);
+%         [data_features{i,k}.EH.Video.SKT_feats(window_num,:), ...
+%          data_features{i,k}.EH.Video.SKT_feats_names] = ...
+%             SKT_features_extr(skt_sig_cpy);
+        
         start_bvp = start_bvp + overlap_bvp;
         stop_bvp  = stop_bvp  + overlap_bvp;
         start_gsr = start_gsr + overlap_gsr;
@@ -194,9 +207,9 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features(data_in)
   %...TBD
   
   %% Stage 5: Give back results
-  Results_BBDDLab_EH.features = data_features;
-  Results_BBDDLab_EH.operational_window = operational_window;
-  Results_BBDDLab_EH.overlapin_window = overlapin_window;
+  Results.features = data_features;
+  Results.operational_window = operational_window;
+  Results.overlapin_window = overlapin_window;
   %...TBD
   
   %% Stage 6: Perform EDA (exploratory data analysis)
