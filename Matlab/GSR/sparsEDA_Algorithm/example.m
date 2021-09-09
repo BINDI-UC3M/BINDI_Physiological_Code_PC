@@ -1,6 +1,6 @@
 %% clears
 clc
-clear all
+%clear all
 close all
 
 %% DATA 1
@@ -12,12 +12,12 @@ signal = data.conductance';
 sr = 16;
 graphics = 1;
 epsilon  = 1;
-Kmax   = 40;
-dmin = 1.25*sr;  % Minimum distance between activations
-rho = 0.025;
+Kmax   = 80;
+dmin = 1*sr;  % Minimum distance between activations
+rho = 0.25;
 
 %% 
-[driver, SCL, MSE] = sparsEDA(signal,sr,graphics,epsilon,Kmax,dmin,rho);
+[driver, SCL, SCR, signalRs, MSE] = sparsEDA(signal,sr,graphics,epsilon,Kmax,dmin,rho);
 
 
 
