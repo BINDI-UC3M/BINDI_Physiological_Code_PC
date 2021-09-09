@@ -74,3 +74,16 @@ for voluntaria=1:length(allraw)
     
     linkaxes(ax,'x');
 end
+
+
+
+
+for voluntaria=1:length(allraw)
+
+    figure
+%     ax(1)=subplot(num_var,1,1);
+    plot(allraw{1,voluntaria}.gsr_uS_filtered)
+    hold on
+    plot(allraw{1,voluntaria}.index,allraw{1,voluntaria}.gsr_uS(allraw{1,voluntaria}.index),'*r')
+    
+end
