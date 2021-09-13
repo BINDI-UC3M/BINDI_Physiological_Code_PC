@@ -106,10 +106,10 @@ if strcmpi(solver, 'quadprog')
     % Use Matlab's quadprog
     H = [M'*M, M'*C, M'*B; C'*M, C'*C, C'*B; B'*M, B'*C, B'*B+gamma*speye(nB)];
     f = [alpha*sum(A,1)'-M'*y; -(C'*y); -(B'*y)];
-
+    %options =  optimoptions('Display','off');
     [z, obj] = quadprog(H, f, [-A zeros(n,length(f)-n)], zeros(n, 1), ...
         [], [], [], [], [], optimset('Algorithm', 'interior-point-convex', ...
-        'TolFun', 1e-13));
+        'TolFun', 1e-13),'Display','off');
     %z = qp([], H, f, [], [], [], [], zeros(n,1), [A zeros(n,length(f)-n)], []); 
     obj = obj + .5 * (y' * y);
 elseif strcmpi(solver, 'sedumi')

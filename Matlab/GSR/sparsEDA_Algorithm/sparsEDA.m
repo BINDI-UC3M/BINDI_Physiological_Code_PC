@@ -1,4 +1,4 @@
-function [driver, SCL, signalRs,MSE] = sparsEDA(signalIn,sr,graphics,epsilon,Kmax,dmin,rho)
+function [driver, SCL, SCRest, signalRs,MSE] = sparsEDA(signalIn,sr,graphics,epsilon,Kmax,dmin,rho)
     % Authors, F. Hernando-Gallego, D. Luengo-Garcia and A. Artes-Rodriguez
     % Dpt. of Signal Theory and Communications
     % Universidad Carlos III de Madrid

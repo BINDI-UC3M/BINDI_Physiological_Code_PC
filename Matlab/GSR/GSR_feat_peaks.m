@@ -49,12 +49,14 @@ if(nargin < 1)
 	error('Usage: [nbPeaks, ampPeaks, riseTime, posPeaks, GSRsignal] = GSR_feat_peaks(GSRsignal, ampThresh)');
 end
 
-%% Two alternative GSR_feat_peaks methods (component separation)
+%% Three alternative GSR_feat_peaks methods (component separation)
 % A) SparsEDA based - built-in algorithm to extract SCL and substract it to
 %    signal to get SCR. No operations yet deployed with SCR driver.
-% B) DTE-UC3M Like based on peak-through methodology
+% B) cvxEDA given by DOI: 10.1109/TBME.2015.2474131
+% C) DTE-UC3M Like based on peak-through methodology
 % separation = 1 / SparsEDA
-% separation = 2 / UC3M
+% separation = 2 / cvxEDA
+% separation = 3 / UC3M
 separation = 2;
 
   if separation == 1
@@ -64,26 +66,58 @@ separation = 2;
     Kmax   = 40;
     samprate = Signal__get_samprate(GSRsignal);
     sr=samprate;
-    dmin = 1.25*sr;  % Minimum distance between activations
-    rho = 0.025;
+    dmin = 1*sr;  % Minimum distance between activations
+    rho = 0.25;
     reAdjust = 0;
     
     %% Apply SparsEDA
-    if(length(GSR_raw)/sr < 80)
+    if(length(GSR_raw)/sr < 120)
       reAdjust = 1;
-      dif = ceil(80 - length(GSR_raw)/sr);
+      dif = ceil(200 - length(GSR_raw)/sr);
       difhalf = ceil(dif/2);
       GSR_raw = [GSR_raw(1)*ones(difhalf*sr,1); GSR_raw';GSR_raw(end)*ones(difhalf*sr,1);];
+    else
+      GSR_raw = GSR_raw';
     end
-    [driver, SCL, signalOut ,~] = sparsEDA(GSR_raw,sr,graphics,epsilon,Kmax,dmin,rho);
-    GSR_phasic = signalOut - SCL';
+    [driver, SCL, SCR, signalOut ,~] = sparsEDA(GSR_raw,sr,graphics,epsilon,Kmax,dmin,rho);
+    [P,Q] = rat(10/8);
+    SCR = resample(SCR,P,Q);
+    signalOut = resample(signalOut,P,Q);
+    GSR_phasic = SCR;%signalOut - SCL';
     if reAdjust
-      GSR_phasic = GSR_phasic(difhalf*8:(end-difhalf*8));
+      GSR_phasic = GSR_phasic(difhalf*10:(end-difhalf*10));
     end
+    GSR_phasic = smooth(interp(GSR_phasic',2),sr*1.5);
     phasicGSR = GSR_phasic;
+    peakOffset_th = 0.01;
+  elseif separation == 2
+    samprate = Signal__get_samprate(GSRsignal);
+    %[GSR_phasic, p, GSR_tonic, l, d, e, obj] = cvxEDA(GSR_raw, 1/samprate);
+    [GSR_phasic,GSR_tonic] = calculate_SCR_SCL(GSR_raw);
+    phasicGSR = GSR_phasic;
+    peakOffset_th = 0.01;
+    %figure, hold all
+    %tm = (1:length(GSR_raw))'/samprate;
+    %plot(tm, (GSR_raw))
+    %plot(tm, GSR_phasic)
+    %plot(tm, p)
+    %plot(tm, GSR_tonic)
+    
+%     tWindowSec = 4;
+%     %Search low and high peaks
+%     %low peaks are the GSR appex reactions (highest sudation)
+%     %High peaks are used as starting points for the reaction
+%     samprate = Signal__get_samprate(GSRsignal);
+%     GSR_median = movmedian(phasicGSR, [tWindowSec*samprate tWindowSec*samprate]);
+%     GSR_phasic = phasicGSR - GSR_median;
+%     %GSR_phasic = detrend(GSR);
+%     phasicGSR = GSR_phasic;
+%     %GSR_tonic  = GSR-detrend(GSR);
+%     %GSR_tonic  = GSR_median;
+    
+    %peakOffset_th = 0;
   else
     tWindowSec = 4;
-
     %Search low and high peaks
     %low peaks are the GSR appex reactions (highest sudation)
     %High peaks are used as starting points for the reaction
@@ -93,16 +127,10 @@ separation = 2;
     GSR_median = movmedian(GSR, [tWindowSec*samprate tWindowSec*samprate]);
     GSR_phasic = GSR - GSR_median;
     %GSR_phasic = detrend(GSR);
-%     [GSR_phasic, p, GSR_tonic, l, d, e, obj] = cvxEDA(zscore(GSR), 1/samprate);
-%     figure, hold all
-%     tm = (1:length(GSR))'/samprate;
-%     plot(tm, (GSR))
-%     plot(tm, GSR_phasic)
-%     plot(tm, p)
-%     plot(tm, GSR_tonic)
     phasicGSR = GSR_phasic;
     %GSR_tonic  = GSR-detrend(GSR);
     %GSR_tonic  = GSR_median;
+    peakOffset_th = 0;
   end
     
     stdSCR = std(GSR_phasic);
@@ -117,14 +145,13 @@ separation = 2;
     aup=[];        %area under identified scr
     %uS units
     peakOnset_th = 0.01;
-    peakOffset_th = 0;
     %SCR minimum duration is 1 sec
     SCRminDuration = samprate*1; 
     onsets=[];
     offsets=[];
     ctr_peak = 1;
     finding_offset = 0;
-    for i=1:length(GSR_raw)-1 
+    for i=1:length(GSR_phasic)-1 
       %Find peak onset >peakOnset_th (uS)
       if GSR_phasic(i)>peakOnset_th && GSR_phasic(i+1)>GSR_phasic(i) && finding_offset==0
         onsets=[onsets;i];
@@ -158,17 +185,33 @@ separation = 2;
     end
 end
 
+function [SCR,SCL] = calculate_SCR_SCL(signal)
+%% 	Calculate SCR and SCL
+                % Creo matriz D2:
+                matrix_size=length(signal);
 
+                diag_ppal=(ones(matrix_size-2,1));
+                diag_2=(-2*ones(matrix_size-3,1));
+                diag_3=(ones(matrix_size-4,1));
 
+                A=double(diag(diag_ppal,0));
+                B=A+double(diag(diag_2,1));
+                C=B+double(diag(diag_3,2));
 
+                vector1=double((zeros(matrix_size-2,1)));
+                vector1(matrix_size-3:matrix_size-2,1)=[1 -2];
+                vector2=double((zeros(matrix_size-2,1)));
+                vector2(matrix_size-2,1)=1;
 
+                D2=[C vector1 vector2];
 
+                D2_t=D2.';
 
+                landa=1500; 
 
+                Ident=double((diag(ones(matrix_size,1))));
 
+                SCL=(Ident+((landa)^2).*(D2_t*D2))\signal'; 
 
-
-
-
-
-
+                SCR = signal-SCL';
+end
