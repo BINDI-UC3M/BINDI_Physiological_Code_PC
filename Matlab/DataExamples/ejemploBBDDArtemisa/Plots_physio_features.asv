@@ -26,8 +26,8 @@ for voluntaria=1:21
      
 
 end
-% features_s=features_norm;
-features_s=features_in;
+features_s=features_norm;
+% features_s=features_in;
 for voluntaria=1:21
     
         
@@ -42,10 +42,10 @@ for voluntaria=1:21
         pos_v4=length(features_s.features{voluntaria,4}.EH.Video.GSR_feats(:,1))+pos_v3;
         
         temp_video_index=cell(size(temp_sig));
-        temp_video_index(1:pos_v1)={['Relax - ' labels_reordered{voluntaria}.emotions{2}]};
-        temp_video_index(pos_v1+1:pos_v2)={['VG - ' labels_reordered{voluntaria}.emotions{3}]};
-        temp_video_index(pos_v2+1:pos_v3)={['Alegria - ' labels_reordered{voluntaria}.emotions{4}]};
-        temp_video_index(pos_v3+1:pos_v4)={['Miedo - ' labels_reordered{voluntaria}.emotions{5}]};
+        temp_video_index(1:pos_v1)={strcat(['Tranquilidad' newline, labels_reordered{1}.emotions{2}])};
+        temp_video_index(pos_v1+1:pos_v2)={strcat('Miedo VG\n', labels_reordered{1}.emotions{3})};
+        temp_video_index(pos_v2+1:pos_v3)={strcat('Alegria\n', labels_reordered{1}.emotions{4})};
+        temp_video_index(pos_v3+1:pos_v4)={strcat('Miedo no VG\n', labels_reordered{1}.emotions{5})};
         
 %                 temp_video_index(pos_v1+1:pos_v2)={'Miedo VG'};
 %         temp_video_index(pos_v2+1:pos_v3)={'Alegria'};
@@ -80,8 +80,8 @@ end
    
    
    
-%    features_s=features_norm;
-  features_s=features_in;
+   features_s=features_norm;
+%   features_s=features_in;
    for voluntaria=1:21
     
         
@@ -95,16 +95,11 @@ end
         pos_v3=length(features_s.features{voluntaria,3}.EH.Video.GSR_feats(:,6))+pos_v2;
         pos_v4=length(features_s.features{voluntaria,4}.EH.Video.GSR_feats(:,6))+pos_v3;
         
-%         temp_video_index=cell(size(temp_sig));
-%         temp_video_index(1:pos_v1)={'Tranquilidad'};
-%         temp_video_index(pos_v1+1:pos_v2)={'Miedo VG'};
-%         temp_video_index(pos_v2+1:pos_v3)={'Alegria'};
-%         temp_video_index(pos_v3+1:pos_v4)={'Miedo no VG'};
         temp_video_index=cell(size(temp_sig));
-        temp_video_index(1:pos_v1)={['Relax - ' labels_reordered{voluntaria}.emotions{2}]};
-        temp_video_index(pos_v1+1:pos_v2)={['VG - ' labels_reordered{voluntaria}.emotions{3}]};
-        temp_video_index(pos_v2+1:pos_v3)={['Alegria - ' labels_reordered{voluntaria}.emotions{4}]};
-        temp_video_index(pos_v3+1:pos_v4)={['Miedo - ' labels_reordered{voluntaria}.emotions{5}]};
+        temp_video_index(1:pos_v1)={'Tranquilidad'};
+        temp_video_index(pos_v1+1:pos_v2)={'Miedo VG'};
+        temp_video_index(pos_v2+1:pos_v3)={'Alegria'};
+        temp_video_index(pos_v3+1:pos_v4)={'Miedo no VG'};
     
        h(voluntaria)=figure
        boxplot(temp_sig,temp_video_index);
@@ -149,23 +144,18 @@ for voluntaria=1:21
         features_s.features{voluntaria,4}.EH.Labels.GSR_feats(:,1)' ...
             features_s.features{voluntaria,4}.EH.Recovery.GSR_feats(:,1)' ]
         
-        pos_v1=length(features_s.features{voluntaria,1}.EH.Video.GSR_feats(:,6));
-        pos_v2=length(features_s.features{voluntaria,2}.EH.Video.GSR_feats(:,6))+pos_v1;
-        pos_v3=length(features_s.features{voluntaria,3}.EH.Video.GSR_feats(:,6))+pos_v2;
-        pos_v4=length(features_s.features{voluntaria,4}.EH.Video.GSR_feats(:,6))+pos_v3;
-        
-%         temp_video_index=[length(features_s.features{voluntaria,1}.EH.Video.GSR_feats(:,1)) ...
-%             length(features_s.features{voluntaria,1}.EH.Labels.GSR_feats(:,1)) ...
-%             length(features_s.features{voluntaria,1}.EH.Recovery.GSR_feats(:,1)) ...
-%         length(features_s.features{voluntaria,2}.EH.Video.GSR_feats(:,1))...
-%         length(features_s.features{voluntaria,2}.EH.Labels.GSR_feats(:,1)) ...
-%             length(features_s.features{voluntaria,2}.EH.Recovery.GSR_feats(:,1)) ...
-%         length(features_s.features{voluntaria,3}.EH.Video.GSR_feats(:,1))...
-%         length(features_s.features{voluntaria,3}.EH.Labels.GSR_feats(:,1)) ...
-%             length(features_s.features{voluntaria,3}.EH.Recovery.GSR_feats(:,1)) ...
-%         length(features_s.features{voluntaria,4}.EH.Video.GSR_feats(:,1))...
-%         length(features_s.features{voluntaria,4}.EH.Labels.GSR_feats(:,1)) ...
-%             length(features_s.features{voluntaria,4}.EH.Recovery.GSR_feats(:,1))];
+        temp_video_index=[length(features_s.features{voluntaria,1}.EH.Video.GSR_feats(:,1)) ...
+            length(features_s.features{voluntaria,1}.EH.Labels.GSR_feats(:,1)) ...
+            length(features_s.features{voluntaria,1}.EH.Recovery.GSR_feats(:,1)) ...
+        length(features_s.features{voluntaria,2}.EH.Video.GSR_feats(:,1))...
+        length(features_s.features{voluntaria,2}.EH.Labels.GSR_feats(:,1)) ...
+            length(features_s.features{voluntaria,2}.EH.Recovery.GSR_feats(:,1)) ...
+        length(features_s.features{voluntaria,3}.EH.Video.GSR_feats(:,1))...
+        length(features_s.features{voluntaria,3}.EH.Labels.GSR_feats(:,1)) ...
+            length(features_s.features{voluntaria,3}.EH.Recovery.GSR_feats(:,1)) ...
+        length(features_s.features{voluntaria,4}.EH.Video.GSR_feats(:,1))...
+        length(features_s.features{voluntaria,4}.EH.Labels.GSR_feats(:,1)) ...
+            length(features_s.features{voluntaria,4}.EH.Recovery.GSR_feats(:,1))];
         
 %         temp_video_index=cell(size(temp_sig));
 %         temp_video_index(1:pos_v1)={'Tranquilidad'};
@@ -174,9 +164,7 @@ for voluntaria=1:21
 %         temp_video_index(pos_v3+1:pos_v4)={'Miedo no VG'};
     
        h(voluntaria)=figure
-       plot(temp_sig);
-       hold on
-       plot(temp_video_index,temp_sig(temp_video_index),'r*')
+       boxplot(temp_sig,temp_video_index);
        title(sprintf('Voluntaria:%i Evolucion del numero de picos del GSR',voluntaria));
        xlabel('Numero de muestra')
        ylabel('Picos por segundo')
