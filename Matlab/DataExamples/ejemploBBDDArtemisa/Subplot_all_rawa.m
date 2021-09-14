@@ -87,3 +87,18 @@ for voluntaria=1:length(allraw)
     plot(allraw{1,voluntaria}.index,allraw{1,voluntaria}.gsr_uS(allraw{1,voluntaria}.index),'*r')
     
 end
+
+for voluntaria=1:length(allraw)
+
+    figure
+%     ax(1)=subplot(num_var,1,1);
+    temp_time=0:1/200:(length(allraw{1,1}.gsr_uS_filtered)-1)/200;
+    plot(temp_time,allraw{1,1}.gsr_uS_filtered)
+    hold on
+    plot(temp_time(allraw{1,1}.index),allraw{1,1}.gsr_uS(allraw{1,1}.index),'*r')
+    
+end
+
+
+
+
