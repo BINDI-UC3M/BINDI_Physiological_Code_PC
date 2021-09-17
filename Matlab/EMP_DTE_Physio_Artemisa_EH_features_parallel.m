@@ -56,7 +56,7 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_parallel(data_in)
 
 
       %Create the ECG signals
-   if (isfield(data_in{i,k}.EH.Video.raw,'ecg_filt') && process_ecg(k,1)==1) 
+   if (isfield(data_in{i,k}.EH.Video.raw,'ecg_filt') && process_ecg(k,i)==1) 
       ecg_sig_video    = BVP_create_signal(data_in_comp(i).EH.Video.raw.ecg_filt, samprate_bbddlab_bvp);
 %       skt_sig_labels   = ECG_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
 %       skt_sig_recovery = ECG_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
@@ -141,7 +141,7 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_parallel(data_in)
         window_num = window_num + 1;
       end
       
-     if (isfield(data_in{i,k}.EH.Video.raw,'ecg_filt') && process_ecg(k,1)==1) 
+     if (isfield(data_in{i,k}.EH.Video.raw,'ecg_filt') && process_ecg(k,i)==1) 
 %       ECG only
       start_ecg   = 1;
       stop_ecg    = operational_window*samprate_bbddlab_bvp;
