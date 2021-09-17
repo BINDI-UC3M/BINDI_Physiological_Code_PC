@@ -51,7 +51,7 @@ end
 
 
 % Plot online heart variables
-for voluntaria=1:length(allraw)
+for voluntaria=5: 5  %length(allraw)
 
     if isfield(allraw{1,voluntaria},'ecg') && ~isempty(allraw{1,voluntaria}.ecg)
         num_var=2;
@@ -101,4 +101,11 @@ end
 
 
 
+for voluntaria=1:length(allraw)
+    figure
+%  ax(2)=subplot(num_var,1,2);
+    plot(allraw{1,voluntaria}.resp)
+     hold on
+    plot(allraw{1,voluntaria}.index,allraw{1,voluntaria}.resp(allraw{1,voluntaria}.index),'*r')
 
+end

@@ -6,6 +6,10 @@ Plots_physio_features_boxplot(features_norm,'GSR',1,'N picos sparsEDA norm media
 
 Plots_physio_features_boxplot(features_norm,'GSR',6,'Media sparsEDA norm media','uS',labels_reordered);
 
+feat_select= heart_features_selections(Feat_GSR_BVP_ECG);
+features_norm=norm_features_GSR_per_subject(feat_gsr_sparsEDA_sin_ventanas,'mean','HR');
+Plots_physio_features_boxplot(features_s,physio_sig,n_feat,feat_name,plot_units,labels_s)
+
 function features_norm=norm_features_GSR_per_subject(features_in,type,physio_sig)
 field_s=sprintf('%s_feats',physio_sig);
 [n_voluntarias, n_videos]=size(features_in.features);

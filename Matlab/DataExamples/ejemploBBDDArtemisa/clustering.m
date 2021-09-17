@@ -1,5 +1,6 @@
-temp_feat_mat=feat_mat_zscore_vol
+% temp_feat_mat=feat_mat_zscore_vol
 % temp_feat_mat=feat_mat
+temp_feat_mat=feat_mat_norm
 
 max_cluster=21
 

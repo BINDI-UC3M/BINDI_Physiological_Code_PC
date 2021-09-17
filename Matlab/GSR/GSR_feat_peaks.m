@@ -92,7 +92,7 @@ separation = 2;
     peakOffset_th = 0.01;
   elseif separation == 2
     samprate = Signal__get_samprate(GSRsignal);
-    %[GSR_phasic, p, GSR_tonic, l, d, e, obj] = cvxEDA(GSR_raw, 1/samprate);
+%     [GSR_phasic, p, GSR_tonic, l, d, e, obj] = cvxEDA(GSR_raw, 1/samprate);
     [GSR_phasic,GSR_tonic] = calculate_SCR_SCL(GSR_raw);
     phasicGSR = GSR_phasic;
     peakOffset_th = 0.01;

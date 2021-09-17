@@ -26,7 +26,8 @@ function [feat_mat,vec_video,vec_emo_binaria,indexs]=features2Mat(in)
 %             feat_mat(n_vol_past:n_vol+n_vol_past-1,:)=zscore(feat_mat(n_vol_past:n_vol+n_vol_past-1,:));
 %               temp_vec_mean(,:)=mean(feat_mat(n_vol_past:n_vol+n_vol_past-1,:));
               temp_vec_mean=zeros(n_vol,44);
-              feat_mat(n_vol_past:n_vol+n_vol_past-1,:)=normalize(feat_mat(n_vol_past:n_vol+n_vol_past-1,:),'center','mean' ,'scale',temp_vec_mean);
+              feat_mat(n_vol_past:n_vol+n_vol_past-1,:)=normalize(feat_mat(n_vol_past:n_vol+n_vol_past-1,:)); 
+%               ,'center','mean' ,'scale','std'
 %              feat_mat(n_vol_past:n_vol+n_vol_past-1,:)=(feat_mat(n_vol_past:n_vol+n_vol_past-1,:)-mean(feat_mat(n_vol_past:n_vol+n_vol_past-1,:)))./mean(feat_mat(n_vol_past:n_vol+n_vol_past-1,:));
             n_vol_past=n_vol_past+n_vol;
             n_vol=0;
