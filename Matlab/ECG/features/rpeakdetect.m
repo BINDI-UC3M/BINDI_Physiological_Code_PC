@@ -80,14 +80,14 @@ end
  % remove mean
  x = x-mean(x);
 
- % FIR filtering stage
- bpf=x; %Initialise
-if( (samp_freq == 128) && (exist('filterECG128Hz') ~= 0) )
-        bpf = filterECG128Hz(x);
-end
-if( (samp_freq == 256) && (exist('filterECG256Hz') ~= 0) )
-        bpf = filterECG256Hz(x);
-end
+%  % FIR filtering stage
+  bpf=x; %Initialise
+% if( (samp_freq == 128) && (exist('filterECG128Hz') ~= 0) )
+%         bpf = filterECG128Hz(x);
+% end
+% if( (samp_freq == 256) && (exist('filterECG256Hz') ~= 0) )
+%         bpf = filterECG256Hz(x);
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

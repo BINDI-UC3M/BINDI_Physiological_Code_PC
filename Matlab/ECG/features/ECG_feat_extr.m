@@ -1,181 +1,207 @@
-%This file is part of TEAP.
-%
-%TEAP is free software: you can redistribute it and/or modify
-%it under the terms of the GNU General Public License as published by
-%the Free Software Foundation, either version 3 of the License, or
-%(at your option) any later version.
-%
-%TEAP is distributed in the hope that it will be useful,
-%but WITHOUT ANY WARRANTY; without even the implied warranty of
-%MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%GNU General Public License for more details.
-%
-%You should have received a copy of the GNU General Public License
-%along with TEAP.  If not, see <http://www.gnu.org/licenses/>.
-% 
-%> @file ECG_feat_extr.m
-%> @brief Computes  ECG features
-%TODO: clarifiy the help
-%TODO call on other simple function instead of having all the computation
-%TODO: changes all any statement to all or ismember because I think it can
-%lead to problems (variable computation while it should not compute it)
-%in one file
-%
-% Inputs:
-%> @param  ECGSignal: the ECG signal (already subtracted from one lead)
-%> @param  varargin: you can choose which features to extract
-%>      default or no input will result in extracting all the features
-%>      (see feature Extractor)
-%> featues names include:
-%>  - meanIBI: mean interbeat interval
-%>  - HRV: heart rate variability (deviation of IBI)
-%>  - MSE: Multi-Scale Entropy at 5 levels 1-5 (5 features)
-%>  - sp0001: Spectral power 0-0.1Hz,
-%>  - sp0102: Spectral power 0.1-0.2Hz,
-%>  - sp0203: Spectral power 0.2-0.3Hz,
-%>  - sp0304: Spectral power 0.3-0.4Hz,
-%>  - energyRatio: Spectral energy ratio between f<0.08Hz/f>0.15Hz and f<5.0Hz
-%>  - tachogram_LF: Low frequency spectral power in tachogram (HRV)  [0.01-0.08Hz]
-%>  - tachogram_MF: Medium frequency spectral power in tachogram (HRV)  [0.08-0.15Hz]
-%>  - tachogram_HF: High frequency spectral power in tachogram (HRV)  [0.15-0.5Hz]
-%>  - tachogram_energy_ratio: Energy ratio for tachogram spectral content (MF/(LF+HF))
-% 
-%> @retval  ECG_features: vector of features among the following features
-%> @retval  ECG_feats_names: the names of the features is the same order than in
-%>                   'ECG_features'
-%> @retval  Bulk: if the input to the function is a Bulk than the Bulk is returned
-%>        with the updated ECG signal, including IBI. Otherwise NaN is
-%>        returned
+%> @file BVP_features_extr.m
+%> @brief Computes @b BVP features
+%> @param  BVPsignal: the BVP signal.
+%> @param  varargin: you can choose which features to extract (see featureSelector)
 %>
+%>            the list of available features is:
+%>           - mean_: averaged BVP - ralated to blood pressure
+%>           - HRV: heart rate variability calculated based on the standard
+%>           deviation IBI differences
+%>           - meanIBI: mean heart rate (beat per minute)
+%>           - MSE: Multi-Scale Entropy at 5 levels 1-5
+%>           - sp0001: spectral power in 0.0-0.1Hz band
+%>           - sp0102: spectral power in 0.1-2.1Hz band
+%>           - sp0203: spectral power in 0.2-3.1Hz band
+%>           - sp0304: spectral power in 0.3-4.1Hz band
+%>           - sp_energyRatio: spectral power ratio between 0.0-0.08Hz and
+%>           0.15-0.5Hz bands
+%>           - tachogram_LF: Tachogram's low freqneucy spectral content
+%>           <0.08Hz
+%>           - tachogram_MF: Tachogram's medium freqneucy spectral content
+%>           0.08Hz> and <0.15Hz
+%>           - tachogram_HF: Tachogram's high freqneucy spectral content
+%>           0.15Hz> and <0.5Hz
+%>           - tachogram_energy_ratio: energu ratio tachogram_MFSP/(tachogram_HSP+tachogram_LFSP)
 % 
-%> @author Copyright Guillaume Chanel 2013, 2015
+%> @retval  BVP_feats: list of features values
+%> @retval  BVP_feats_names: names of the computed features (it is good pratice to
+%>                   check this vector since the order of requested features
+%>                   can be different than the requested one)
+%> @retval  Bulk: if the input to the function is a Bulk than the Bulk is returned
+%>        with the updated BVP signal, including IBI. Otherwise NaN is
+%>        returned
+% 
+%> @author Copyright Guillaume Chanel 2013
 %> @author Copyright Frank Villaro-Dixon, 2014
-function [ECG_features, ECG_feats_names, Bulk] = ECG_feat_extr(ECGSignal,varargin)
+%> @author Copyright UC3M, 2016
+function [BVP_feats, BVP_feats_names, Bulk] = ECG_feat_extr(BVPSignal,varargin)
 
-%Make sure we have an ECG signal and get the bulk for saving IBI (if needed)
-[ECGSignal, Bulk] = ECG__assert_type(ECGSignal);
-if(nargout < 3) %No bulk requested -> do not need to keep it
-	Bulk = [];
-end
+% Check inputs and define unknown values
+narginchk(1, Inf);
+
+%Make sure we have an BVP signal
+% [BVPSignal] = BVP__assert_type(BVPSignal);
 
 % Define full feature list and get features selected by user
-%TODO: confirm with Mohammad that the changes are ok (suppression of 'sp0103'
-featuresNames = {'meanIBI', 'HRV','MSE','sp0001','sp0102','sp0203','sp0304','energyRatio','tachogram_LF','tachogram_MF','tachogram_HF',...
-	'tachogram_energy_ratio','dfa_ecg','dfa_ibi','rrate','det','lmax','ent','lam','tt','corDim'};
-featuresNamesIBI = {'meanIBI', 'HRV','MSE','energyRatio','tachogram_LF','tachogram_MF','tachogram_HF','tachogram_energy_ratio'};
-ECG_feats_names = featuresSelector(featuresNames,varargin{:});
 
-%Compute the results
-if(~isempty(ECG_feats_names))
-	
-	%Compute IBI if a features needing it is requested
-	if(any(ismember(featuresNamesIBI,ECG_feats_names)))
+% With No-linear features
+% featuresNames = {'mean_', 'HRV', 'rmsHRV', 'meanIBI',  ...
+% 	'sp0001', 'sp0102', 'sp0203', 'sp0304', 'sp_energyRatio', ...
+% 	'tachogram_LF', 'tachogram_MF', 'tachogram_HF', 'tachogram_energy_ratio',...
+%   'dfa_bvp','dfa_ibi','rrate','det','lmax','ent','lam','tt','corDim'};
+
+% Without No-linear features
+featuresNamesIBI = {'mean_', 'HRV', 'meanIBI', 'tachogram_LF', 'tachogram_MF',...
+                    'tachogram_HF', 'tachogram_energy_ratio'};
+%BVP general features
+% featuresNames = {'mean_', 'HRV_std','HRV_rmssd', 'meanIBI', 'MSE1','MSE2','MSE3','MSE4','MSE5',  ...
+% 	'sp0001', 'sp0102', 'sp0203', 'sp0304', 'sp_energyRatio', ...
+% 	'tachogram_LF', 'tachogram_MF', 'tachogram_HF', 'tachogram_energy_ratio', ...
+%     'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
+% 	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF'};
+featuresNames = {'mean_', 'HRV_sdnn','HRV_rmssd', 'meanIBI',...
+    'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
+	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF',...
+    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi',...
+    'dfa_bvp'};%,'rrate','det','lmax','ent','lam','tt','corDim'};
+BVP_feats_names = featuresSelector(featuresNames,varargin{:});
+
+%If some features are selected
+if(~isempty(BVP_feats_names))
+
+	%Compute the results
+
+	%First compute IBI if needed by the requested features
+	if(any(ismember(featuresNamesIBI,BVP_feats_names)))
 		%Compute IBI
-		ECGSignal = ECG__compute_IBI( ECGSignal );
-		IBI = Signal__get_raw(ECGSignal.IBI);
-		IBI_sp = Signal__get_samprate(ECGSignal.IBI);
-		
-		%Update the Bulk with the new ECG signal
-		if(~isempty(Bulk))
-			Bulk = Bulk_update_signal(Bulk, Signal__get_signame(ECGSignal), ECGSignal);
-		end
+% 		BVPSignal = BVP__compute_IBI( BVPSignal );
+        BVPSignal = ECG__compute_IBI( BVPSignal );
+		IBI = Signal__get_raw(BVPSignal.IBI);
+        IBI_sp_bvp = Signal__get_samprate(BVPSignal.IBI);
+        
+        %In case IBI is interpolated performed downsampling 
+	    %BVPSignal.IBI.interp = downsample(BVPSignal.IBI.interp,IBI_sp_bvp/32);
+        %BVPSignal.IBI = Signal__set_samprate(BVPSignal.IBI,IBI_sp_bvp);
+        IBI_sp = Signal__get_samprate(BVPSignal.IBI);
+        %IBI = BVPSignal.IBI.interp;
+        
+        %Check variance to avoid zero var
+        if std(IBI)==0
+          IBI(1)=IBI(1)+0.001/IBI_sp;
+          BVPSignal.IBI = Signal__set_raw(BVPSignal.IBI,IBI);
+        end
 	end
-	
-	%Get information of ECG signal
-	ECG = Signal__get_raw(ECGSignal);
-	ECG_sp = Signal__get_samprate(ECGSignal);
-	%set the welch window size
-	%welch_window_size_ECG = ECG_sp* 20;
-    welch_window_size_ECG = floor(length(ECG)-ECG_sp);
-	%welch_window_size_IBI= IBI_sp* 20;
-    welch_window_size_IBI= floor(length(IBI)/2);
-	
-	%meanIBI is computed
-	if any(strcmp('meanIBI',ECG_feats_names)) || any(strcmp('HRV',ECG_feats_names))
-		HRV = std(IBI);
+
+	%Get the raw signals
+	rawSignal = Signal__get_raw(BVPSignal);
+	samprate = Signal__get_samprate(BVPSignal);
+	%averaged BVP - ralated to blood pressure
+
+	if any(strcmp('mean_',BVP_feats_names))
+		mean_ = mean(rawSignal);
+	end
+
+	if any(strcmp('meanIBI',BVP_feats_names)) || any(strcmp('HRV',BVP_feats_names))
+		HRV_sdnn = std(IBI);
+        %HRV_rmssd = sqrt((sum(abs(diff(IBI)).^2))/length(IBI));
+        for i = 1:(length(IBI)-1)
+          HRV_rmssd(i)= (IBI(i)-IBI(i+1))^2;
+        end
+        HRV_rmssd = sqrt(mean(HRV_rmssd));
+        rmsHRV = rms(IBI);
 		meanIBI = mean(IBI);
 	end
-	if any(strcmp('MSE',ECG_feats_names))
+	if any(strncmp('MSE',BVP_feats_names,3))
 		%multi-scale entropy for 5 scales on hrv
-		[MSE] = multiScaleEntropy(IBI,5);
+		[MSE] = multiScaleEntropy(IBI,5); 
+        MSE1 = MSE(1);
+        MSE2 = MSE(2);
+        MSE3 = MSE(3);
+        MSE4 = MSE(4);
+        MSE5 = MSE(5);
+    end
+   
+    %PWelch processing windows
+    %IBI = BVPSignal.IBI.interp;
+    welch_window_size_BVP = floor(length(rawSignal)-samprate);
+	%welch_window_size_IBI = IBI_sp*20;
+    welch_window_size_IBI = floor(length(IBI)/2);
+    
+	if length(rawSignal)< welch_window_size_BVP +samprate
+		warning('Signal is too short for this welch window size');
 	end
-	if length(ECG)< welch_window_size_ECG +ECG_sp
-		warning('singal to short for the welch size');
-	end
-	if length(ECG)< welch_window_size_ECG +1
-		warning('singal to short for the welch size - PSD features cannot be calcualted');
-		sp0001 = NaN;sp0102 = NaN;sp0203 = NaN; sp0304 = NaN;energyRatio = NaN;
+	if length(rawSignal)< welch_window_size_BVP +1
+		warning('Signal is too short for this welch window size and the PSD features cannot be calculated');
+		sp0001 = NaN;sp0102 = NaN;sp0203 = NaN; sp0304 = NaN;sp_energyRatio = NaN;
+
 	else
-		if any(strcmp('sp0001',ECG_feats_names)) || any(strcmp('sp0102',ECG_feats_names)) ...
-				|| any(strcmp('sp0203',ECG_feats_names)) || any(strcmp('sp0304',ECG_feats_names)) ...
-				|| any(strcmp('energyRatio',ECG_feats_names))
-			
-			[P, f] = pwelch(ECG, welch_window_size_ECG, [], [], ECG_sp);
-			P=P/sum(P);
+
+		if any(strncmp('sp',BVP_feats_names,2))
+			%[P, f] = pwelch(rawSignal, welch_window_size_BVP, [], [], samprate);
+            [P, f] = pwelch(rawSignal, welch_window_size_BVP, [], [], samprate);
+            P=P/sum(P);
 			%power spectral featyres
-			%WARN: check that this resolution is obrainable with the ECG sampling rate
 			sp0001 = log(sum(P(f>0.0 & f<=0.1))+eps);
 			sp0102 = log(sum(P(f>0.1 & f<=0.2))+eps);
 			sp0203 = log(sum(P(f>0.2 & f<=0.3))+eps);
 			sp0304 = log(sum(P(f>0.3 & f<=0.4))+eps);
-			energyRatio = log(sum(P(f<0.08))/sum(P(f>0.15 & f<0.5))+eps);
+			sp_energyRatio = log(sum(P(f<0.08))/sum(P(f>0.15 & f<0.5))+eps);
 		end
-		if length(IBI)< welch_window_size_IBI +IBI_sp
-			warning('singal to short for the welch size');
-		end
-		if length(IBI)< welch_window_size_IBI +1
-			warning('singal to short for the welch size - PSD features cannot be calcualted');
-			tachogram_LF = NaN;tachogram_MF = NaN;tachogram_HF = NaN;
-			tachogram_energy_ratio = NaN;
-		else
-			%tachogram features; psd features on inter beat intervals
-			%R. McCraty, M. Atkinson, W. Tiller, G. Rein, and A. Watkins, ï¿½The
-			%effects of emotions on short-term power spectrum analysis of
-			%heart rate variability,ï¿½ The American Journal of Cardiology, vol. 76,
-			%no. 14, pp. 1089 ï¿½ 1093, 1995
-			if any(strcmp('tachogram_LF',ECG_feats_names)) ...
-					|| any(strcmp('tachogram_MF',ECG_feats_names)) ||  any(strcmp('tachogram_HF',ECG_feats_names)) ...
-					|| any(strcmp('tachogram_energy_ratio',ECG_feats_names))
-				
-				%Handle the case were IBI could not be computed
-				if(~isnan(IBI))
-					[Pt, ft] = pwelch(IBI, welch_window_size_IBI, [], [], IBI_sp);
-					%WARN: check that this is possible with the IBI sampling rate
-					%WARN: these values are sometimes negative because of the log, doesn't it appear as strange for a user ?
-					tachogram_LF = log(sum(Pt(ft>0.01 & ft<=0.08))+eps);
-					tachogram_MF = log(sum(Pt(ft>0.08 & ft<=0.15))+eps);
-					tachogram_HF = log(sum(Pt(ft>0.15 & ft<=0.5))+eps);
-					tachogram_energy_ratio = tachogram_MF/(tachogram_LF+tachogram_HF);
-				else
-					tachogram_LF = NaN;
-					tachogram_MF = NaN;
-					tachogram_HF = NaN;
-					tachogram_energy_ratio = NaN;
-				end
-			end
-		end
-    end
+	end
+% 	if length(IBI)< welch_window_size_IBI +IBI_sp
+%  		warning('Signal is too short for this welch window size');
+% 	end
+% 	if length(IBI)< welch_window_size_IBI +1
+%  		warning('Signal is too short for this welch window size and the PSD features cannot be calculated');
+% 		tachogram_LF = NaN;tachogram_MF = NaN;tachogram_HF = NaN;
+% 		tachogram_energy_ratio = NaN;
+% 	else
+% 		%tachogram features; psd features on inter beat intervals
+% 		%R. McCraty, M. Atkinson, W. Tiller, G. Rein, and A. Watkins, "The
+% 		%effects of emotions on short-term power spectrum analysis of
+% 		%heart rate variability," The American Journal of Cardiology, vol. 76,
+% 		%no. 14, pp. 1089 -1093, 1995
+% 		if any(strcmp('tachogram_LF',BVP_feats_names)) ...
+% 				|| any(strcmp('tachogram_MF',BVP_feats_names)) ||  any(strcmp('tachogram_HF',BVP_feats_names)) ...
+% 				|| any(strcmp('tachogram_energy_ratio',BVP_feats_names))
+% 			[Pt, ft] = pwelch(IBI, welch_window_size_IBI, [], [], IBI_sp);
+%             %[Pt, ft] = pwelch(IBI, [], [], [], IBI_sp);
+% 			clear tachogram %TODO: delete ? Why is it useful ?
+% 			%WARN: check that this is possible with the IBI sampling rate
+% 			%WARN: these values are sometimes negative because of the log, doesn't it appear as strange for a user ?
+% 			tachogram_LF = log(sum(Pt(ft>0.01 & ft<=0.08))+eps);
+% 			tachogram_MF = log(sum(Pt(ft>0.08 & ft<=0.15))+eps);
+% 			tachogram_HF = log(sum(Pt(ft>0.15 & ft<=0.5))+eps);
+% 			tachogram_energy_ratio = tachogram_MF/(tachogram_LF+tachogram_HF);
+%         end
+%     end
     
     %Faster faster ..
-    ECG=downsample(ECG,4);
+    %rawSignal=downsample(rawSignal,4);
     
      %dfa - Detrended Fluctuation Analysis
-    if any(strcmp('dfa_ecg',ECG_feats_names))
-     pts = round(length(ECG)/10):10:length(ECG);
-	 [dfa_out,~] = DFA_fun(ECG,pts);
-     dfa_ecg = dfa_out(1);
-     pts = round(length(IBI)/10):10:length(IBI);
-     [dfa_out,~] = DFA_fun(IBI,pts);
-     dfa_ibi = dfa_out(1);
+    if any(strcmp('dfa_bvp',BVP_feats_names))
+     pts = round(length(rawSignal)/10):10:length(rawSignal);
+	 [dfa_out,~] = DFA_fun(rawSignal,pts);
+     dfa_bvp = dfa_out(1);
+     %pts = round(length(IBI)/10):10:length(IBI);
+%      pts = 3:2:length(IBI);
+%      [dfa_out,~] = DFA_fun(IBI,pts);
+%      dfa_ibi = dfa_out(1);
+%      %Check values 
+%      if (isnan(dfa_bvp) || isnan(dfa_ibi)) || ...
+%         (isinf(dfa_bvp) || isinf(dfa_ibi)) 
+%        error('NaN detected');
+%      end
     end
     
     %rqa_stat - RQA statistics - [recrate DET LMAX ENT TND LAM TT]
-    if any(strcmp('rrate',ECG_feats_names))
+    if any(strcmp('rrate',BVP_feats_names))
       %Determining embedding dimension m and time lag (delay time) t
-      [y,eLag,eDim]=phaseSpaceReconstruction(ECG,'MaxLag',500);
+      [y,eLag,eDim]=phaseSpaceReconstruction(rawSignal,'MaxLag',1,'MaxDim',3);
       
       % phase space plot
-      y = phasespace(ECG,eDim,eLag);
+      %y = phasespace(IBI,3,10);
 %       figure('Position',[100 400 460 360]);
 %       plot3(y(:,1),y(:,2),y(:,3),'-','LineWidth',1);
 %       title('GSR time-delay embedding - state space plot','FontSize',10,'FontWeight','bold');
@@ -193,7 +219,7 @@ if(~isempty(ECG_feats_names))
       %S. Schinkel, O. Dimigen, and N. Marwan, “Selection of Recurrence
       %Threshold for Signal Detection,” The European Physical J.-Special
       %Topics, vol. 164, no. 1, pp. 45-53, 2008
-      e_thr=0.1*mean(mean(recurdata));
+      e_thr=0.1*mean(mean(recurdata))*2;
 
       % black-white recurrence plot
       %tdrecurr_y(recurdata,e_thr);
@@ -214,25 +240,103 @@ if(~isempty(ECG_feats_names))
       %(Note: it is the measure of chaotic signal complexity in multidimensional 
       % phase space and is the slope of the correlation integral versus 
       % the range of radius of similarity)
-      corDim=correlationDimension(ECG,eLag,eDim,'NumPoints',100);
+      corDim=correlationDimension(rawSignal,eLag,eDim,'NumPoints',100);
+    end
+
+    %% Extra features for frequency domain
+    %feat = BVP_Features_Fdomain(IBI,BVPSignal.IBI.timelocations, IBI_sp_bvp);
+    IBI = Signal__get_raw(BVPSignal.IBI);
+    %% Extract PSD
+    [fft_HRV, vector_frecuencia] = fft_signal_wrist_BVP(IBI, BVPSignal.IBI.timelocations, IBI_sp_bvp);
+    %%Normalized w.r.t the total PSD - units are dB/Hz
+    fft_HRV = fft_HRV/sum(fft_HRV);
+
+    %% Extract exact frequency band information
+    [LF_signal, HF_signal, UHF_signal] = bandas_frec(fft_HRV, vector_frecuencia);
+    sum_LF = f_sum_frec(LF_signal)*100;
+    sum_HF = f_sum_frec(HF_signal)*100;
+    sum_UHF = f_sum_frec(UHF_signal)*100;
+    %% Energy for the different bands
+    %Check values, in case of having a low HR, there will be not enough UHF
+    if sum_LF==0
+      LF_energia = sum_LF;
+    else
+      LF_energia = abs(log(sum_LF));
+    end
+    if sum_HF==0
+      HF_energia = sum_HF;
+    else
+      HF_energia = abs(log(sum_HF));
+    end
+    if sum_UHF==0
+      UHF_energia = sum_UHF;
+    else
+      UHF_energia = abs(log(sum_UHF));
+    end
+    if isnan(LF_energia) || isnan(HF_energia) || isnan(UHF_energia)
+        error('NaN detected');
+    end
+    if isinf(LF_energia) || isinf(HF_energia) || isinf(UHF_energia)
+        error('NaN detected');
     end
     
-	%Setup feature vector
-	ECG_features = [];
-	for i = 1:length(ECG_feats_names)
-		eval(['ECG_features = cat(2, ECG_features, ' ECG_feats_names{i} ');']);
+    %% Ratios between LF and HF bands (SNS(7) / PNS(9))
+    Ratio_LFHF = abs(LF_energia/HF_energia);
+    %% Normalized energy
+    LFnorm = abs(LF_energia/(LF_energia+HF_energia));
+    HFnorm = abs(HF_energia/(LF_energia+HF_energia));
+    %% Realtive energy of the freq bands
+    Rel_power_LF = abs(relative_power(LF_energia, HF_energia, UHF_energia));
+    Rel_power_HF = abs(relative_power(HF_energia, LF_energia, UHF_energia));
+    Rel_power_UHF = abs(relative_power(UHF_energia, HF_energia, LF_energia));
+    
+    %% Extra features for Poincaré-Plot (Lorenz)
+    %SD2: Identity line from 0-x - Longitudinal
+    for i = 1:(length(IBI)-1)
+        sd2(i)=(sqrt(2)/2)*(IBI(i)+IBI(i+1));
     end
-
-    %MSE actually contains five features so rename features MSE as MSE1, MSE2... if it exists
-    %TODO: just a temporary hack ?
-    idx = find(ismember(ECG_feats_names, 'MSE'));
-    if ~isempty(idx)
-        ECG_feats_names = {ECG_feats_names{1:idx-1} 'MSE1' 'MSE2' 'MSE3' 'MSE4' 'MSE5' ECG_feats_names{idx+1:end}};
+    sd2 = std(sd2);
+    %S1: Identity line from x-0 - Transversal
+    for i = 1:(length(IBI)-1)
+        sd1(i)=(sqrt(2)/2)*(IBI(i)-IBI(i+1));
     end
+    sd1 = std(sd1);
+    
+    %Check values 
+    if (isnan(sd1) || isnan(sd2)) || ...
+       (isinf(sd1) || isinf(sd2)) 
+      error('NaN detected');
+    end
+    
+    %Longitudinal factor as ref indicated
+    Lsd2 = 4*sd2;
+    %Transversal factor as ref indicated
+    Tsd1 = 4*sd1;
+    %Cardiac Sympathetic Index (CSI) as ref indicated
+    if Lsd2==0 || Tsd1==0
+      csi = 0;
+    else
+      csi = Lsd2/Tsd1;
+    end
+    %Modified Cardiac Sympathetic Index (MCSI) as ref indicated
+    mcsi = Lsd2*csi;
+    %Cadiac Vagal Index (CVI) as ref indicated
+    if Lsd2==0 || Tsd1==0
+      cvi = 0;
+    else
+      cvi = log10(Lsd2*Tsd1);
+    end
+    
+    %% Extra features for morphological features
+    %TBD...
 
-else
-	ECG_features = [];
+	%Write the values to the final vector output
+	BVP_feats = [];
+	for i = 1:length(BVP_feats_names)
+		eval(['BVP_feats = cat(2, BVP_feats, ' BVP_feats_names{i} ');']);
+	end
+
+	else %no features selected
+		BVP_feats = [];
+	end
 end
-
-end
-

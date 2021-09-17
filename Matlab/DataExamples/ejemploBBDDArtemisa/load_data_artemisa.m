@@ -137,10 +137,14 @@ opts.EmptyLineRule = "read";
 % Specify variable properties
 % opts = setvaropts(opts, "time", "InputFormat", "HH:mm:ss:xxxxxx");
 
-data = readtable(file,opts);
 
+load('tabla_recortes_fisio.mat')
+out_struct=remove_bad_BVP_ECG_physio_data(out_struct, tabla_recortes_physio);
+
+data = readtable(file,opts);
+out_struct= reorder_physio_data(out_struct, data.order);
  
- out_struct= reorder_physio_data(out_struct, data.order);
+ 
 %Plotting the raw data
 % out_struct = empatia_plot_allrawGsr(out_struct,1,1);
 % empatia_preprocess_allraw(out_struct,1,1);
@@ -362,6 +366,40 @@ out_s.Filtered = 0;
 
 end
 
+function out_s= remove_bad_BVP_ECG_physio_data(in_s, remove_table)
+%     [voluntaria, vid] = size(in_s);
+    out_s=in_s;
+    items=height(remove_table);
+ for j = 1:items
+
+     voluntaria=remove_table.voluntaria(j);
+     video=remove_table.video(j);
+     inicio=remove_table.inicio(j);
+     fin=remove_table.final(j); 
+
+
+    if (remove_table.sig(j)=='bvp')
+        if fin=='end'
+            out_s{voluntaria,video}.EH.Video.raw.bvp_filt=in_s{voluntaria,video}.EH.Video.raw.bvp_filt(inicio:end);
+        else
+            out_s{voluntaria,video}.EH.Video.raw.bvp_filt=in_s{voluntaria,video}.EH.Video.raw.bvp_filt(inicio:double(fin));
+        end
+
+    elseif remove_table.sig(j)=='ecg' 
+
+        if fin=='end'
+            out_s{voluntaria,video}.EH.Video.raw.ecg_filt=in_s{voluntaria,video}.EH.Video.raw.ecg_filt(inicio:end);
+        else
+            out_s{voluntaria,video}.EH.Video.raw.ecg_filt=in_s{voluntaria,video}.EH.Video.raw.ecg_filt(inicio:double(fin));
+        end
+    end
+
+
+
+end
+
+
+end
 function out_s= reorder_physio_data(in_s, order_array)
 
     out_s=in_s;

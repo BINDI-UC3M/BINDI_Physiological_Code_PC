@@ -1,6 +1,6 @@
 
 %% Function to handle the data coming from BBDDLab_Bindi
-function Results = EMP_DTE_Physio_Artemisa_EH_features_parallel(data_in)
+function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
 %    dbstop if error 
 
   %% data_in is a struct based of volunteers (rows) and trials (columns)
@@ -10,54 +10,57 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_parallel(data_in)
   samprate_bbddlab_gsr = 10;
   %create data to store features
   %data_features = struct();
-  try
-  parpool(4)
-  end
+%   try
+%   parpool(4)
+%   end
   tic
 %   data_in_dist=distributed(data_in);
 %   data_features_dist=distributed.cell(size(data_in));
-   data_in_comp=Composite();
-   data_in_comp{1}=[data_in{:,1}];
-   data_in_comp{2}=[data_in{:,2}];
-   data_in_comp{3}=[data_in{:,3}];
-   data_in_comp{4}=[data_in{:,4}];
-   
+%    data_in_comp=Composite();
+%    data_in_comp{1}=[data_in{:,1}];
+%    data_in_comp{2}=[data_in{:,2}];
+%    data_in_comp{3}=[data_in{:,3}];
+%    data_in_comp{4}=[data_in{:,4}];
+%    
    load('process_ecg_mat.mat');
-   
-  spmd
-      k=labindex;
+%   spmd
+%       k=labindex;
       
 %       data_features_comp(volunteers).EH.Video.BVP_feats=[];
 %       data_features_comp(volunteers).EH.Video.GSR_feats=[];
   for i=1:volunteers
 %       data_local= getLocalPart(data_in_dist);
-%     for k=1:trials
+     for k=1:trials
 %         data_in_dist{i,k}
      %Display some info
 %      disp('Volunteer %d, Trial %d, extracting...\n',i,k);
 
       %Create the BVP signals
 
-      bvp_sig_video    = BVP_create_signal(data_in_comp(i).EH.Video.raw.bvp_filt, samprate_bbddlab_bvp);
+%       bvp_sig_video    = BVP_create_signal(data_in_comp(i).EH.Video.raw.bvp_filt, samprate_bbddlab_bvp);
+        bvp_sig_video   = BVP_create_signal(data_in{i,k}.EH.Video.raw.bvp_filt, samprate_bbddlab_bvp);
 %       bvp_sig_labels   = BVP_create_signal(data_in{i,k}.EH.Labels.raw.bvp_filt, samprate_bbddlab_bvp);
 %       bvp_sig_recovery = BVP_create_signal(data_in{i,k}.EH.Recovery.raw.bvp_filt, samprate_bbddlab_bvp);
       
       %Create the GSR signals
 
-      gsr_sig_video    = GSR_create_signal(data_in_comp(i).EH.Video.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+%         gsr_sig_video    = GSR_create_signal(data_in_comp(i).EH.Video.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+          gsr_sig_video    = GSR_create_signal(data_in{i,k}.EH.Video.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
 %       gsr_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
 %       gsr_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       
       %Create the SKT signals
 
-      skt_sig_video    = SKT_create_signal(data_in_comp(i).EH.Video.raw.skt_filt_dn_sm, samprate_bbddlab_gsr);
+%       skt_sig_video    = SKT_create_signal(data_in_comp(i).EH.Video.raw.skt_filt_dn_sm, samprate_bbddlab_gsr);
+      skt_sig_video    = SKT_create_signal(data_in{i,k}.EH.Video.raw.skt_filt_dn_sm, samprate_bbddlab_gsr);
 %       skt_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
 %       skt_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
 
 
       %Create the ECG signals
-   if (isfield(data_in{i,k}.EH.Video.raw,'ecg_filt') && process_ecg(k,1)==1) 
-      ecg_sig_video    = BVP_create_signal(data_in_comp(i).EH.Video.raw.ecg_filt, samprate_bbddlab_bvp);
+    if (isfield(data_in{i,k}.EH.Video.raw,'ecg_filt') && process_ecg(k,1)==1) 
+%       ecg_sig_video    = BVP_create_signal(data_in_comp(i).EH.Video.raw.ecg_filt, samprate_bbddlab_bvp);
+        ecg_sig_video    = BVP_create_signal(data_in{i,k}.EH.Video.raw.ecg_filt, samprate_bbddlab_bvp);
 %       skt_sig_labels   = ECG_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
 %       skt_sig_recovery = ECG_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       
@@ -119,14 +122,14 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_parallel(data_in)
         
         
         bvp_sig_cpy.raw = bvp_sig_video.raw(start_bvp:stop_bvp);
-        [data_features_comp(i).EH.Video.BVP_feats(window_num,:), ...
-         data_features_comp(i).EH.Video.BVP_feats_names] = ...
+        [data_features{i,k}.EH.Video.BVP_feats(window_num,:), ...
+         data_features{i,k}.EH.Video.BVP_feats_names] = ...
             BVP_features_extr(bvp_sig_cpy);
         %toc
         %GSR processing
         gsr_sig_cpy.raw = gsr_sig_video.raw(start_gsr:stop_gsr);
-        [data_features_comp(i).EH.Video.GSR_feats(window_num,:), ...
-         data_features_comp(i).EH.Video.GSR_feats_names] = ...
+        [data_features{i,k}.EH.Video.GSR_feats(window_num,:), ...
+         data_features{i,k}.EH.Video.GSR_feats_names] = ...
             GSR_features_extr(gsr_sig_cpy);      
         %skt processing
 %         skt_sig_cpy.raw = skt_sig_video.raw(start_gsr:stop_gsr);
@@ -157,8 +160,8 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_parallel(data_in)
         %tic
         
         ecg_sig_cpy.raw = ecg_sig_video.raw(start_ecg:stop_ecg);
-        [data_features_comp(i).EH.Video.ECG_feats(window_num,:), ...
-         data_features_comp(i).EH.Video.ECG_feats_names] = ...
+        [data_features{i,k}.EH.Video.ECG_feats(window_num,:), ...
+         data_features{i,k}.EH.Video.ECG_feats_names] = ...
             ECG_feat_extr(ecg_sig_cpy);
 
         
@@ -261,7 +264,7 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_parallel(data_in)
 %             GSR_features_extr(gsr_sig_cpy); 
 %       end
       
-%     end 
+     end 
   end
     
   %% Stage 3: Trainning the model - Validation
@@ -269,11 +272,12 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_parallel(data_in)
   
   %% Stage 4: Testing the model - testing with unseen samples
   %...TBD
-  end
+%   end
   operational_window = 20; %seconds
   overlapin_window   = 10;  %seconds
   %% Stage 5: Give back results
-  Results.features = [data_features_comp{1};data_features_comp{2};data_features_comp{3};data_features_comp{4}]';
+%   Results.features = [data_features_comp{1};data_features_comp{2};data_features_comp{3};data_features_comp{4}]';
+ Results.features = data_features;
   Results.operational_window = operational_window;
   Results.overlapin_window = overlapin_window;
   %...TBD
