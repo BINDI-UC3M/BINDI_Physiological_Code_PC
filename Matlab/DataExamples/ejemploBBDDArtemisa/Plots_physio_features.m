@@ -1,10 +1,10 @@
 
 
-
-features_norm=norm_features_GSR_per_subject(feat,'mean','GSR');
-Plots_physio_features_boxplot(features_norm,'GSR',1,'N picos sparsEDA norm media','Picos por segundo',labels_reordered);
-
-Plots_physio_features_boxplot(features_norm,'GSR',6,'Media sparsEDA norm media','uS',labels_reordered);
+% 
+% features_norm=norm_features_GSR_per_subject(feat,'mean','GSR');
+% Plots_physio_features_boxplot(features_norm,'GSR',1,'N picos sparsEDA norm media','Picos por segundo',labels_reordered);
+% 
+% Plots_physio_features_boxplot(features_norm,'GSR',6,'Media sparsEDA norm media','uS',labels_reordered);
 
  feat_select= heart_features_selections(feat);
  features_norm=norm_features_GSR_per_subject(feat_select,'mean','HR');
@@ -26,27 +26,46 @@ field_s=sprintf('%s_feats',physio_sig);
 [n_voluntarias, n_videos]=size(features_in.features);
 
     for voluntaria=1:n_voluntarias
-    
-        pos_v1=length(features_in.features{voluntaria,1}.EH.Video.(field_s)(:,1)');
-        pos_v2=length(features_in.features{voluntaria,2}.EH.Video.(field_s)(:,1)')+pos_v1;
-        pos_v3=length(features_in.features{voluntaria,3}.EH.Video.(field_s)(:,1)')+pos_v2;
-        pos_v4=length(features_in.features{voluntaria,4}.EH.Video.(field_s)(:,1)')+pos_v3;
+    pos_v(1:4)=0;
+    n_data=0;
+    pos_v_prev=0;
+    temp_features=[];
+        for loop=1:n_videos
+            
+            if(~ isempty(features_in.features{voluntaria,loop}.EH.Video.(field_s)(:,1)))
+              pos_v(n_data)=length(features_in.features{voluntaria,loop}.EH.Video.(field_s)(:,1)')+pos_v_prev;
+              pos_v_prev=pos_v(n_data);
+              n_data=n_data+1;  
+              
+              temp_features=vertcat(temp_features,features_in.features{voluntaria,loop}.EH.Video.(field_s));
+              
+              
+%             pos_v1=length(features_in.features{voluntaria,1}.EH.Video.(field_s)(:,1)');
+%             pos_v2=length(features_in.features{voluntaria,2}.EH.Video.(field_s)(:,1)')+pos_v1;
+%             pos_v3=length(features_in.features{voluntaria,3}.EH.Video.(field_s)(:,1)')+pos_v2;
+%             pos_v4=length(features_in.features{voluntaria,4}.EH.Video.(field_s)(:,1)')+pos_v3;
 
-        temp_features=vertcat(features_in.features{voluntaria,1}.EH.Video.(field_s), ...
-             features_in.features{voluntaria,2}.EH.Video.(field_s), ...
-             features_in.features{voluntaria,3}.EH.Video.(field_s), ...
-             features_in.features{voluntaria,4}.EH.Video.(field_s));
+
+            end
+%             temp_features=vertcat(temp_features,features_in.features{voluntaria,1}.EH.Video.(field_s), ...
+%                  features_in.features{voluntaria,2}.EH.Video.(field_s), ...
+%                  features_in.features{voluntaria,3}.EH.Video.(field_s), ...
+%                  features_in.features{voluntaria,4}.EH.Video.(field_s));
+%             end
+             
+        end
         if strcmp(type,'zscore')
             temp_features_norm=zscore(temp_features);
         elseif strcmp(type,'mean')
             mean_vec=mean(temp_features);
             temp_features_norm=(temp_features-mean_vec)./mean_vec;
         end
-        features_norm.features{voluntaria,1}.EH.Video.(field_s)=temp_features_norm(1:pos_v1,:);
-        features_norm.features{voluntaria,2}.EH.Video.(field_s)=temp_features_norm(pos_v1+1:pos_v2,:);
-        features_norm.features{voluntaria,3}.EH.Video.(field_s)=temp_features_norm(pos_v2+1:pos_v3,:);
-        features_norm.features{voluntaria,4}.EH.Video.(field_s)=temp_features_norm(pos_v3+1:pos_v4,:);
-     
+        for loop2=1:n_data    
+            features_norm.features{voluntaria,1}.EH.Video.(field_s)=temp_features_norm(1:pos_v1,:);
+            features_norm.features{voluntaria,2}.EH.Video.(field_s)=temp_features_norm(pos_v1+1:pos_v2,:);
+            features_norm.features{voluntaria,3}.EH.Video.(field_s)=temp_features_norm(pos_v2+1:pos_v3,:);
+            features_norm.features{voluntaria,4}.EH.Video.(field_s)=temp_features_norm(pos_v3+1:pos_v4,:);
+        end
 
     end
 end
