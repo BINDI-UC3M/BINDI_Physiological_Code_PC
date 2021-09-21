@@ -13,13 +13,13 @@ function feat_out= heart_features_selections(feat_in)
          if(strcmp(s{loop2,loop1},'bvp'))
             feat_out.features{loop1,loop2}.EH.Video.HR_feats_names=feat_in.features{loop1,loop2}.EH.Video.BVP_feats_names;
             feat_out.features{loop1,loop2}.EH.Video.HR_feats=feat_in.features{loop1,loop2}.EH.Video.BVP_feats;
-%              feat_out.features{loop1,loop2}.EH.Video.HR_feats.source={'bvp'};
+              feat_out.features{loop1,loop2}.EH.Video.HR_feats_source={'bvp'};
             
          elseif (strcmp(s{loop2,loop1},'ecg'))
              
             feat_out.features{loop1,loop2}.EH.Video.HR_feats_names=feat_in.features{loop1,loop2}.EH.Video.ECG_feats_names;
             feat_out.features{loop1,loop2}.EH.Video.HR_feats=feat_in.features{loop1,loop2}.EH.Video.ECG_feats;
-%              feat_out.features{loop1,loop2}.EH.Video.HR_feats.source={'ecg'};
+              feat_out.features{loop1,loop2}.EH.Video.HR_feats_source={'ecg'};
          else
               feat_out.features{loop1,loop2}.EH.Video.HR_feats_names=[];
             feat_out.features{loop1,loop2}.EH.Video.HR_feats=[];
