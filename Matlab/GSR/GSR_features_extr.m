@@ -37,9 +37,9 @@ GSR_raw = Signal__get_raw(GSRsignal);
 %                  'firstQuartileGSR','thirdQuartileGSR','sp0005','sp0515',...
 %                  'sp_energyRatio', 'dfa','rrate','det','lmax','ent','lam','tt','corDim'};
 featuresNames = {'nbPeaks', 'ampPeaks', 'riseTime', ...
-                 'recoveryTime', 'aup', 'meanGSR', 'stdGSR',...
-                 'firstQuartileGSR','thirdQuartileGSR','sp0005','sp0515',...
-                 'sp_energyRatio','dfa','rrate','det','lmax','ent','lam','tt','corDim'};
+                 'recoveryTime', 'aup', 'meanGSR', 'stdGSR'};%,...
+                 %'firstQuartileGSR','thirdQuartileGSR','sp0005','sp0515',...
+                 %'sp_energyRatio','dfa','rrate','det','lmax','ent','lam','tt','corDim'};
 %featuresNames = {'meanGSR', 'stdGSR'};
 GSR_feats_names = featuresSelector(featuresNames,varargin{:});
 
@@ -93,13 +93,13 @@ if(~isempty(GSR_feats_names))
             aup = 0;
           end
         else
-          nbPeaks = nbPeaks/(length(GSRsignal.raw)/samprate);
-		  ampPeaks = mean(ampPeaks)/(length(GSRsignal.raw)/samprate);
+          nbPeaks = nbPeaks;%/(length(GSRsignal.raw)/samprate);
+		  ampPeaks = mean(ampPeaks);%/(length(GSRsignal.raw)/samprate);
           if any(strcmp('riseTime',GSR_feats_names)) || any(strcmp('recoveryTime',GSR_feats_names)) || any(strcmp('aup',GSR_feats_names))
             %absAmpPeaks = mean(absAmpPeaks);
-		    riseTime = mean(riseTime)/(length(GSRsignal.raw)/samprate);
-            recoveryTime = mean(recoveryTime)/(length(GSRsignal.raw)/samprate);
-            aup = sum(aup)/(length(GSRsignal.raw)/samprate);
+		    riseTime = mean(riseTime);%/(length(GSRsignal.raw)/samprate);
+            recoveryTime = mean(recoveryTime);%/(length(GSRsignal.raw)/samprate);
+            aup = sum(aup);%/(length(GSRsignal.raw)/samprate);
           end
         end
 		
