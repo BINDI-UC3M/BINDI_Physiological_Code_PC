@@ -2,7 +2,6 @@ function feat_out= heart_features_selections(feat_in)
 
  s=load('mat_selecion_var_pulso.mat');
  s=s.mat_seleccion_var_pulso;
- s{2,11}='nada';
  [n_voluntarias,n_videos]=size(feat_in.features);
  
  for loop1= 1 : n_voluntarias

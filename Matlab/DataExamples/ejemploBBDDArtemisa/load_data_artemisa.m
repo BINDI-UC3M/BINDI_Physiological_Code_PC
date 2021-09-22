@@ -375,22 +375,26 @@ function out_s= remove_bad_BVP_ECG_physio_data(in_s, remove_table)
      voluntaria=remove_table.voluntaria(j);
      video=remove_table.video(j);
      inicio=remove_table.inicio(j);
-     fin=remove_table.final(j); 
+     fin=cellstr(remove_table.final(j)); 
 
 
     if (remove_table.sig(j)=='bvp')
-        if fin=='end'
+        if strcmp(fin,'end')
             out_s{voluntaria,video}.EH.Video.raw.bvp_filt=in_s{voluntaria,video}.EH.Video.raw.bvp_filt(inicio:end);
         else
+            temp=cellstr(fin);
+            temp=str2num(temp{1});
             out_s{voluntaria,video}.EH.Video.raw.bvp_filt=in_s{voluntaria,video}.EH.Video.raw.bvp_filt(inicio:double(fin));
         end
 
     elseif remove_table.sig(j)=='ecg' 
 
-        if fin=='end'
+        if strcmp(fin,'end')
             out_s{voluntaria,video}.EH.Video.raw.ecg_filt=in_s{voluntaria,video}.EH.Video.raw.ecg_filt(inicio:end);
         else
-            out_s{voluntaria,video}.EH.Video.raw.ecg_filt=in_s{voluntaria,video}.EH.Video.raw.ecg_filt(inicio:double(fin));
+            temp=cellstr(fin);
+            temp=str2num(temp{1});
+            out_s{voluntaria,video}.EH.Video.raw.ecg_filt=in_s{voluntaria,video}.EH.Video.raw.ecg_filt(inicio:temp);
         end
     end
 
@@ -408,8 +412,8 @@ function out_s= reorder_physio_data(in_s, order_array)
     
         if order_array(loop1)==2
       
-            out_s{2,loop1}=in_s{4,loop1};
-            out_s{4,loop1}=in_s{2,loop1};
+            out_s{loop1,2}=in_s{loop1,4};
+            out_s{loop1,4}=in_s{loop1,2};
   
         end
     

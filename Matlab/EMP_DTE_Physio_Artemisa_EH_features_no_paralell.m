@@ -65,6 +65,15 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
 %       skt_sig_recovery = ECG_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
       
     end
+    
+          %Create the RES signals
+
+%       res_sig_video    = RES_create_signal(data_in_comp(i).EH.Video.raw.skt_filt_dn_sm, samprate_bbddlab_gsr);
+%        res_sig_video    = SKT_create_signal(data_in{i,k}.EH.Video.raw.skt_filt_dn_sm, samprate_bbddlab_gsr);
+%       skt_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+%       skt_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+
+
        % 1.4: BVP advanced data processing: Wavelet Synchrosqueezed Transform
 %      time=0:1/samprate_bbddlab_bvp:...
 %           (length(bvp_sig_video.raw)/samprate_bbddlab_bvp - 1/samprate_bbddlab_bvp);
@@ -132,10 +141,10 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
          data_features{i,k}.EH.Video.GSR_feats_names] = ...
             GSR_features_extr(gsr_sig_cpy);      
         %skt processing
-%         skt_sig_cpy.raw = skt_sig_video.raw(start_gsr:stop_gsr);
-%         [data_features_comp(i).EH.Video.SKT_feats(window_num,:), ...
-%          data_features_comp(i).EH.Video.SKT_feats_names] = ...
-%             SKT_features_extr(skt_sig_cpy);
+        skt_sig_cpy.raw = skt_sig_video.raw(start_gsr:stop_gsr);
+        [data_features{i,k}.EH.Video.SKT_feats(window_num,:), ...
+         data_features{i,k}.EH.Video.SKT_feats_names] = ...
+            SKT_features_extr(skt_sig_cpy);
         
         start_bvp = start_bvp + overlap_bvp;
         stop_bvp  = stop_bvp  + overlap_bvp;

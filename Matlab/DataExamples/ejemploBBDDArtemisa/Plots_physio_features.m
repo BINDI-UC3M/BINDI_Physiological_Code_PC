@@ -1,17 +1,21 @@
 
 dbstop if error
-% 
-% features_norm=norm_features_GSR_per_subject(feat,'mean','GSR');
-% Plots_physio_features_boxplot(features_norm,'GSR',1,'N picos sparsEDA norm media','Picos por segundo',labels_reordered);
-% 
-% Plots_physio_features_boxplot(features_norm,'GSR',6,'Media sparsEDA norm media','uS',labels_reordered);
 
- feat_select= heart_features_selections(Feat_GSR_BVP_ECG);
- features_norm=norm_features_GSR_per_subject(feat_select,'mean','HR');
+ feat_select= heart_features_selections(feat);
+
+  features_norm=norm_features_GSR_per_subject(feat,'zscore','GSR');
+Plots_physio_features_boxplot(features_norm,'GSR',1,'N picos ','Picos',labels_reordered);
+
+Plots_physio_features_boxplot(features_norm,'GSR',6,'Media ','uS',labels_reordered);
+
+
+ features_norm=norm_features_GSR_per_subject(feat_select,'zscore','HR');
+% % % 
+%  Plots_physio_features_boxplot(features_norm,'HR',4,'Media IBI','',labels_reordered);
 % 
- Plots_physio_features_boxplot(features_norm,'HR',4,'Media IBI','',labels_reordered);
 % 
 % Plots_physio_features_boxplot(features_norm,'HR',3,'HRV rmssd','',labels_reordered);
+% 
 % 
 % Plots_physio_features_boxplot(features_norm,'HR',5,'LF ','',labels_reordered);
 % 
@@ -20,7 +24,23 @@ dbstop if error
 % Plots_physio_features_boxplot(features_norm,'HR',17,'Sd1','',labels_reordered);
 % 
 % Plots_physio_features_boxplot(features_norm,'HR',18,'Sd2','',labels_reordered);
+% % 
+
 % 
+% Plots_physio_features_boxplot(feat_select,'HR',4,'Media IBI','',labels_reordered);
+% 
+% Plots_physio_features_boxplot(feat_select,'HR',3,'HRV rmssd','',labels_reordered);
+% 
+% Plots_physio_features_boxplot(feat_select,'HR',5,'LF ','',labels_reordered);
+% 
+% Plots_physio_features_boxplot(feat_select,'HR',6,'HF','',labels_reordered);
+% 
+% Plots_physio_features_boxplot(feat_select,'HR',17,'Sd1','',labels_reordered);
+% 
+% Plots_physio_features_boxplot(feat_select,'HR',18,'Sd2','',labels_reordered);
+
+
+
 function features_norm=norm_features_GSR_per_subject(features_in,type,physio_sig)
 field_s=sprintf('%s_feats',physio_sig);
 field_s_names=sprintf('%s_feats_names',physio_sig);
@@ -93,8 +113,9 @@ field_s=sprintf('%s_feats',physio_sig);
 
 %  features_s=features_norm;
 % features_s=features_in;
-for voluntaria=1:10
+for voluntaria=1:21
     
+    if(~ isempty(features_s.features{voluntaria,1}.EH.Video.(field_s)))
         
         temp_sig=[ features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat)', ...
         features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat)',...
@@ -123,10 +144,10 @@ for voluntaria=1:10
 %                 temp_video_index(pos_v1+1:pos_v2)={'Miedo VG'};
 %         temp_video_index(pos_v2+1:pos_v3)={'Alegria'};
 %         temp_video_index(pos_v3+1:pos_v4)={'Miedo no VG'}
-    
-%        h(voluntaria)=figure
+%        temp_sig=1./temp_sig*60;
+%        h(voluntaria)=figure;
 %        boxplot(temp_sig,temp_video_index);
-%        title(sprintf('Voluntaria:%i %s de GSR',voluntaria,feat_name));
+%        title(sprintf('Voluntaria:%i %s',voluntaria,feat_name));
 %        xlabel('Video')
 %        ylabel(sprintf('%s',plot_units))
        
@@ -148,15 +169,15 @@ for voluntaria=1:10
            temp_sig_total_v4=horzcat(temp_sig_total_v4,features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat)');
        end
     
-    
+    end
 end
 
     figure
     boxplot(temp_sig_total,temp_video_index_total);
-    title(sprintf('Todas las voluntarias %s de GSR',feat_name));
+    title(sprintf('Todas las voluntarias %s',feat_name));
     xlabel('Video')
     ylabel(sprintf('%s',plot_units))
-    
+    grid on
     mean(temp_sig_total_v1)
     mean(temp_sig_total_v2)
     mean(temp_sig_total_v3)
@@ -406,5 +427,104 @@ end
 
 end
 
+function Plots_physio_features_evolution(features_s,physio_sig,n_feat,feat_name,plot_units,labels_s)
 
 
+field_s=sprintf('%s_feats',physio_sig);
+% Plots gsr
+% voluntaria=1
+% features_in=features_gsr_cvx;
+% features_in=feat_gsr_sparsEDA_sin_ventanas;
+
+%  features_s=features_norm;
+% features_s=features_in;
+for voluntaria=1:10
+    
+        
+        temp_sig=[ features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat)', ...
+        features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat)',...
+        features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat)',...
+        features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat)'];    
+    
+        
+        pos_v1=length(features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat));
+        pos_v2=length(features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat))+pos_v1;
+        pos_v3=length(features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat))+pos_v2;
+        pos_v4=length(features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat))+pos_v3;
+        
+        temp_video_index=cell(size(temp_sig));
+        temp_video_index(1:pos_v1)={['Relax - ' labels_s{voluntaria}.emotions{2}]};
+        temp_video_index(pos_v1+1:pos_v2)={['VG - ' labels_s{voluntaria}.emotions{3}]};
+        temp_video_index(pos_v2+1:pos_v3)={['Alegria - ' labels_s{voluntaria}.emotions{4}]};
+        temp_video_index(pos_v3+1:pos_v4)={['Miedo - ' labels_s{voluntaria}.emotions{5}]};
+        
+        
+        temp_video_index_2=cell(size(temp_sig));
+        temp_video_index_2(1:pos_v1)={'Relax'};
+        temp_video_index_2(pos_v1+1:pos_v2)={'VG'};
+        temp_video_index_2(pos_v2+1:pos_v3)={'Alegria'};
+        temp_video_index_2(pos_v3+1:pos_v4)={'Miedo'};
+        
+%                 temp_video_index(pos_v1+1:pos_v2)={'Miedo VG'};
+%         temp_video_index(pos_v2+1:pos_v3)={'Alegria'};
+%         temp_video_index(pos_v3+1:pos_v4)={'Miedo no VG'}
+       temp_sig=1./temp_sig*60;
+       h(voluntaria)=figure
+       boxplot(temp_sig,temp_video_index);
+       title(sprintf('Voluntaria:%i %s',voluntaria,feat_name));
+       xlabel('Video')
+       ylabel(sprintf('%s',plot_units))
+       
+       if voluntaria==1 
+            temp_sig_total=temp_sig;
+            temp_video_index_total=temp_video_index_2;
+            
+            temp_sig_total_v1=features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat)';
+            temp_sig_total_v2=features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat)';
+            temp_sig_total_v3=features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat)';
+            temp_sig_total_v4=features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat)';
+       else
+           temp_sig_total=horzcat(temp_sig_total,temp_sig);
+           temp_video_index_total=horzcat(temp_video_index_total,temp_video_index_2);
+           
+           temp_sig_total_v1=horzcat(temp_sig_total_v1,features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat)');
+           temp_sig_total_v2=horzcat(temp_sig_total_v2,features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat)');
+           temp_sig_total_v3=horzcat(temp_sig_total_v3,features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat)');
+           temp_sig_total_v4=horzcat(temp_sig_total_v4,features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat)');
+       end
+    
+    
+end
+
+    figure
+    boxplot(temp_sig_total,temp_video_index_total);
+    title(sprintf('Todas las voluntarias %s',feat_name));
+    xlabel('Video')
+    ylabel(sprintf('%s',plot_units))
+    
+    mean(temp_sig_total_v1)
+    mean(temp_sig_total_v2)
+    mean(temp_sig_total_v3)
+    mean(temp_sig_total_v4)
+    
+    figure
+    ax(1)=subplot(4,1,1)
+    histogram(temp_sig_total_v1,10)
+    hold on
+    ax(2)=subplot(4,1,2)
+    histogram(temp_sig_total_v2,10)
+    ax(3)=subplot(4,1,3)
+    histogram(temp_sig_total_v3,10)
+    ax(4)=subplot(4,1,4)
+    histogram(temp_sig_total_v4,10)
+    
+    linkaxes(ax,'x')
+
+
+
+
+
+
+
+
+end
