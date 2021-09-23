@@ -34,7 +34,7 @@
 %> @author Copyright Guillaume Chanel 2013
 %> @author Copyright Frank Villaro-Dixon, 2014
 %> @author Copyright UC3M, 2016
-function [BVP_feats, BVP_feats_names, Bulk] = BVP_features_extr(BVPSignal,varargin)
+function [BVP_feats, BVP_feats_names, IBI_signal, Bulk] = BVP_features_extr(BVPSignal,varargin)
 
 % Check inputs and define unknown values
 narginchk(1, Inf);
@@ -62,8 +62,8 @@ featuresNamesIBI = {'mean_', 'HRV', 'meanIBI', 'tachogram_LF', 'tachogram_MF',..
 featuresNames = {'mean_', 'HRV_sdnn','HRV_rmssd', 'meanIBI',...
     'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
 	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF',...
-    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi',...
-    'dfa_bvp','rrate','det','lmax','ent','lam','tt','corDim'};
+    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi'};%,...
+    %'dfa_bvp','rrate','det','lmax','ent','lam','tt','corDim'};
 BVP_feats_names = featuresSelector(featuresNames,varargin{:});
 
 %If some features are selected
@@ -76,6 +76,7 @@ if(~isempty(BVP_feats_names))
 		%Compute IBI
 		BVPSignal = BVP__compute_IBI( BVPSignal );
 		IBI = Signal__get_raw(BVPSignal.IBI);
+        IBI_signal = BVPSignal.IBI;
         IBI_sp_bvp = Signal__get_samprate(BVPSignal.IBI);
         
         %In case IBI is interpolated performed downsampling 
@@ -176,7 +177,7 @@ if(~isempty(BVP_feats_names))
 %     end
     
     %Faster faster ..
-    %rawSignal=downsample(rawSignal,4);
+    rawSignal=downsample(rawSignal,4);
     
      %dfa - Detrended Fluctuation Analysis
     if any(strcmp('dfa_bvp',BVP_feats_names))
@@ -249,9 +250,17 @@ if(~isempty(BVP_feats_names))
     [fft_HRV, vector_frecuencia] = fft_signal_wrist_BVP(IBI, BVPSignal.IBI.timelocations, IBI_sp_bvp);
     %%Normalized w.r.t the total PSD - units are dB/Hz
     fft_HRV = fft_HRV/sum(fft_HRV);
+    
+    %Y = fft(BVPSignal.IBI.interp); 
+    %P2 = abs(Y/length(BVPSignal.IBI.interp));
+    %P1 = P2(1:length(BVPSignal.IBI.interp)/2+1);
+    %P1(2:end-1) = 2*P1(2:end-1);
+    %f = 100*(0:(length(BVPSignal.IBI.interp)/2))/length(BVPSignal.IBI.interp);
+    %vector_frecuencia = f; % Vector de frec(matlab representa a partir de 1)
 
     %% Extract exact frequency band information
     [LF_signal, HF_signal, UHF_signal] = bandas_frec(fft_HRV, vector_frecuencia);
+    %[LF_signal, HF_signal, UHF_signal] = bandas_frec(P1, vector_frecuencia);
     sum_LF = f_sum_frec(LF_signal)*100;
     sum_HF = f_sum_frec(HF_signal)*100;
     sum_UHF = f_sum_frec(UHF_signal)*100;

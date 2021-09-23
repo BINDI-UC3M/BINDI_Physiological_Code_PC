@@ -29,6 +29,7 @@ for n = 1:length(fft_HRV)
     % LF
     %
    if vector_frecuencia(n) >= 0.01 && vector_frecuencia(n) <= 0.15 
+   %if vector_frecuencia(n) >= 0.1 && vector_frecuencia(n) <= 0.15 
        LF_signal(aux1) = fft_HRV(n);
        aux1 = aux1 + 1;
    end
