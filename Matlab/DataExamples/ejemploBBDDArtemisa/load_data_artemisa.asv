@@ -578,26 +578,29 @@ function  [out ,allraw]= empatia_preprocess_esignals(data_struct,allraw_in)
      
      
       %RES
-%     One second window size (from TEAP)
-      windowSize = round(Fs/16);
-      filtAvgEls = ones(1, windowSize)/windowSize;
+      
       %Video
-      data_struct{j,i}.EH.Video.raw.resp_filt = ...
-          filtfilt(filtAvgEls,1,data_struct{j,i}.EH.Video.raw.resp);
-           
+      res_temp    = RES_create_signal(data_struct{j,i}.EH.Video.raw.resp, 200);
+      res_temp   = RES_filter_basic(res_temp);
+      data_struct{j,i}.EH.Video.raw.res_filt = Signal__get_raw(res_temp);
+
+      
       %Labels
-      data_struct{j,i}.EH.Labels.raw.resp_filt = ...
-          filtfilt(filtAvgEls,1,data_struct{j,i}.EH.Labels.raw.resp);
+      res_temp    = RES_create_signal(data_struct{j,i}.EH.Labels.raw.resp, 200);
+      res_temp    = RES_filter_basic(res_temp);
+      data_struct{j,i}.EH.Labels.raw.res_filt = Signal__get_raw(res_temp);
       
       %Recovery
-      data_struct{j,i}.EH.Recovery.raw.resp_filt = ...
-          filtfilt(filtAvgEls,1,data_struct{j,i}.EH.Recovery.raw.resp);
+      res_temp    = RES_create_signal(data_struct{j,i}.EH.Recovery.raw.resp, 200);
+      res_temp    = RES_filter_basic(res_temp);
+      data_struct{j,i}.EH.Recovery.raw.res_filt = Signal__get_raw(res_temp);
      
      %Complete raw signals
-      allraw{j}.resp_filt = ...
-          filtfilt(filtAvgEls,1,allraw{j}.resp);
+      res_temp    = RES_create_signal(dallraw{j}.res_filt, 200);
+      res_temp    = RES_filter_basic(res_temp);
+      data_struct{j,i}.EH.Recovery.raw.res_filt = Signal__get_raw(res_temp);
      
-  
+     allraw{j}.res_filt=filtfilt(FIRs.Coeffs_BVP,1,allraw{j}.res);
      
      
      
