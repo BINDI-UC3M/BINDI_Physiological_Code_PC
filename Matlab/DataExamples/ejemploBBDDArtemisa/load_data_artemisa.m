@@ -408,7 +408,7 @@ function out_s= reorder_physio_data(in_s, order_array)
 
     out_s=in_s;
 
-    for loop1=1:size(order_array,2)
+    for loop1=1:size(order_array,1)
     
         if order_array(loop1)==2
       

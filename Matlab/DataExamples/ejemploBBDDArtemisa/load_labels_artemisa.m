@@ -99,7 +99,7 @@ function labels_reordered= reorder_labels(in)
 
     data = readtable(file,opts);
 
-    for loop1=1:size(data.order)
+    for loop1=1:size(data.order,1)
 
        if data.order(loop1)==2
            labels_reordered{1,loop1}=in{1,loop1};

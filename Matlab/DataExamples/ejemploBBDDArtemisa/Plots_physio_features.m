@@ -1,29 +1,30 @@
 
 dbstop if error
 
+feat= feat_2_sec_overlap;
  feat_select= heart_features_selections(feat);
+% 
+%   features_norm=norm_features_GSR_per_subject(feat,'zscore','GSR');
+% Plots_physio_features_boxplot(features_norm,'GSR',1,'N picos ','Picos',labels_reordered);
+% 
+% Plots_physio_features_boxplot(features_norm,'GSR',6,'Media ','uS',labels_reordered);
 
-  features_norm=norm_features_GSR_per_subject(feat,'zscore','GSR');
-Plots_physio_features_boxplot(features_norm,'GSR',1,'N picos ','Picos',labels_reordered);
 
-Plots_physio_features_boxplot(features_norm,'GSR',6,'Media ','uS',labels_reordered);
-
-
- features_norm=norm_features_GSR_per_subject(feat_select,'zscore','HR');
+  features_norm=norm_features_GSR_per_subject(feat_select,'zscore','HR');
 % % % 
-%  Plots_physio_features_boxplot(features_norm,'HR',4,'Media IBI','',labels_reordered);
-% 
-% 
-% Plots_physio_features_boxplot(features_norm,'HR',3,'HRV rmssd','',labels_reordered);
-% 
-% 
-% Plots_physio_features_boxplot(features_norm,'HR',5,'LF ','',labels_reordered);
-% 
-% Plots_physio_features_boxplot(features_norm,'HR',6,'HF','',labels_reordered);
-% 
-% Plots_physio_features_boxplot(features_norm,'HR',17,'Sd1','',labels_reordered);
-% 
-% Plots_physio_features_boxplot(features_norm,'HR',18,'Sd2','',labels_reordered);
+ Plots_physio_features_boxplot(features_norm,'HR',4,'Media IBI','',labels_reordered);
+
+
+Plots_physio_features_boxplot(features_norm,'HR',3,'HRV rmssd','',labels_reordered);
+
+
+Plots_physio_features_boxplot(features_norm,'HR',5,'LF ','',labels_reordered);
+
+Plots_physio_features_boxplot(features_norm,'HR',6,'HF','',labels_reordered);
+
+Plots_physio_features_boxplot(features_norm,'HR',17,'Sd1','',labels_reordered);
+
+Plots_physio_features_boxplot(features_norm,'HR',18,'Sd2','',labels_reordered);
 % % 
 
 % 

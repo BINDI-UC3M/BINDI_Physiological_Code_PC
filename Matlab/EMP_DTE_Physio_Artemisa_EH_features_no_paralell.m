@@ -7,7 +7,7 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
   [volunteers, trials] = size(data_in);
   %sampling rate is 200Hz for BVP, and 10Hz for GSR and SKT
   samprate_bbddlab_bvp = 200;
-  samprate_bbddlab_gsr = 10;
+  samprate_bbddlab_gsr = 2;
   %create data to store features
   %data_features = struct();
 %   try
@@ -108,7 +108,7 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
       %% Stage 2: Extracting Features %%
       % Deal with window and overlapping
       operational_window = 20; %seconds
-      overlapin_window   = 10;  %seconds
+      overlapin_window   = 2;  %seconds
       
       %Video
       start_bvp   = 1;
@@ -132,7 +132,8 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
         
         bvp_sig_cpy.raw = bvp_sig_video.raw(start_bvp:stop_bvp);
         [data_features{i,k}.EH.Video.BVP_feats(window_num,:), ...
-         data_features{i,k}.EH.Video.BVP_feats_names] = ...
+         data_features{i,k}.EH.Video.BVP_feats_names, ...
+         data_features{i,k}.EH.Video.BVP_IBI] = ...
             BVP_features_extr(bvp_sig_cpy);
         %toc
         %GSR processing
@@ -170,7 +171,8 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
         
         ecg_sig_cpy.raw = ecg_sig_video.raw(start_ecg:stop_ecg);
         [data_features{i,k}.EH.Video.ECG_feats(window_num,:), ...
-         data_features{i,k}.EH.Video.ECG_feats_names] = ...
+         data_features{i,k}.EH.Video.ECG_feats_names, ...
+         data_features{i,k}.EH.Video.ECG_IBI] = ...
             ECG_feat_extr(ecg_sig_cpy);
 
         
@@ -283,7 +285,7 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
   %...TBD
 %   end
   operational_window = 20; %seconds
-  overlapin_window   = 10;  %seconds
+  overlapin_window   = 2;  %seconds
   %% Stage 5: Give back results
 %   Results.features = [data_features_comp{1};data_features_comp{2};data_features_comp{3};data_features_comp{4}]';
  Results.features = data_features;

@@ -1,5 +1,5 @@
 function [data_features]=plot_dataBBDDLabBVPs_Exploratory(s,va,vb)
-
+dbstop if error
     %Declaration local variables
     data_features        = {};
     bvp_acc              = {};
@@ -33,7 +33,7 @@ function [data_features]=plot_dataBBDDLabBVPs_Exploratory(s,va,vb)
 		
 		%Features are extracted based on the whole signal (no window-split)
         fprintf("Volunter %d / Video %d \n",i,j);
-        bvp_acc{i}.EH.data=[bvp_acc{i}.EH.data; (s{vol(i),j}.EH.Video.raw.bvp_filt)];
+        bvp_acc{i}.EH.data=[bvp_acc{i}.EH.data, (s{vol(i),j}.EH.Video.raw.bvp_filt)];
         
         %In case the samprate is 200Hz
         bvp_eh_s = BVP_create_signal((s{vol(i),j}.EH.Video.raw.bvp_filt)', samprate_bbddlab);
