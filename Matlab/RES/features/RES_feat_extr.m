@@ -44,10 +44,10 @@ narginchk(1, Inf);
 RESsignal = RES__assert_type(RESsignal);
 
 
-if(~Signal__has_preproc_lowpass(RESsignal))
-	warning(['For the function to work well, you should low-pass the signal' ...
-	        '. Preferably with a mean filter']);
-end
+% if(~Signal__has_preproc_lowpass(RESsignal))
+% 	warning(['For the function to work well, you should low-pass the signal' ...
+% 	        '. Preferably with a mean filter']);
+% end
 
 if(Signal__get_absolute(RESsignal) ~= true)
 	warning('The signal was baselined/relative, are you sure you want that ?');

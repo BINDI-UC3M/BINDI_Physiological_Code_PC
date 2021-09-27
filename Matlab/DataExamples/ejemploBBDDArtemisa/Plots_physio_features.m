@@ -1,30 +1,33 @@
 
-dbstop if error
+ dbstop if error
 
-feat= feat_2_sec_overlap;
- feat_select= heart_features_selections(feat);
+% feat= feat_2_sec_overlap;
+%  feat_select= heart_features_selections(feat);
 % 
 %   features_norm=norm_features_GSR_per_subject(feat,'zscore','GSR');
 % Plots_physio_features_boxplot(features_norm,'GSR',1,'N picos ','Picos',labels_reordered);
 % 
 % Plots_physio_features_boxplot(features_norm,'GSR',6,'Media ','uS',labels_reordered);
 
+vol_to_exclude=[8,0];
+Plots_physio_features_boxplot(feat_resp_test_2_40s,'RESP',12,'Media ','freq',labels_reordered,vol_to_exclude);
 
-  features_norm=norm_features_GSR_per_subject(feat_select,'zscore','HR');
-% % % 
- Plots_physio_features_boxplot(features_norm,'HR',4,'Media IBI','',labels_reordered);
-
-
-Plots_physio_features_boxplot(features_norm,'HR',3,'HRV rmssd','',labels_reordered);
-
-
-Plots_physio_features_boxplot(features_norm,'HR',5,'LF ','',labels_reordered);
-
-Plots_physio_features_boxplot(features_norm,'HR',6,'HF','',labels_reordered);
-
-Plots_physio_features_boxplot(features_norm,'HR',17,'Sd1','',labels_reordered);
-
-Plots_physio_features_boxplot(features_norm,'HR',18,'Sd2','',labels_reordered);
+% 
+%   features_norm=norm_features_GSR_per_subject(feat_select,'zscore','HR');
+% % % % 
+%  Plots_physio_features_boxplot(features_norm,'HR',4,'Media IBI','',labels_reordered);
+% 
+% 
+% Plots_physio_features_boxplot(features_norm,'HR',3,'HRV rmssd','',labels_reordered);
+% 
+% 
+% Plots_physio_features_boxplot(features_norm,'HR',5,'LF ','',labels_reordered);
+% 
+% Plots_physio_features_boxplot(features_norm,'HR',6,'HF','',labels_reordered);
+% 
+% Plots_physio_features_boxplot(features_norm,'HR',17,'Sd1','',labels_reordered);
+% 
+% Plots_physio_features_boxplot(features_norm,'HR',18,'Sd2','',labels_reordered);
 % % 
 
 % 
@@ -103,7 +106,7 @@ field_s_names=sprintf('%s_feats_names',physio_sig);
     end
 end
 
-function Plots_physio_features_boxplot(features_s,physio_sig,n_feat,feat_name,plot_units,labels_s)
+function Plots_physio_features_boxplot(features_s,physio_sig,n_feat,feat_name,plot_units,labels_s,exclude_vec)
 
 
 field_s=sprintf('%s_feats',physio_sig);
@@ -116,7 +119,8 @@ field_s=sprintf('%s_feats',physio_sig);
 % features_s=features_in;
 for voluntaria=1:21
     
-    if(~ isempty(features_s.features{voluntaria,1}.EH.Video.(field_s)))
+if (~ (sum(voluntaria==exclude_vec)>0))    
+    if(~ (isempty(features_s.features{voluntaria,1}.EH.Video.(field_s))&& voluntaria==8))
         
         temp_sig=[ features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat)', ...
         features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat)',...
@@ -171,6 +175,7 @@ for voluntaria=1:21
        end
     
     end
+end
 end
 
     figure

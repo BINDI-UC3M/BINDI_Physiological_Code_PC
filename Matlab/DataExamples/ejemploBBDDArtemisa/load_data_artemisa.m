@@ -596,6 +596,29 @@ function  [out ,allraw]= empatia_preprocess_esignals(data_struct,allraw_in)
      %Complete raw signals
       allraw{j}.resp_filt = ...
           filtfilt(filtAvgEls,1,allraw{j}.resp);
+      
+      
+      
+      
+            %RES
+%     One second window size (from TEAP)
+
+      %Video
+      data_struct{j,i}.EH.Video.raw.resp_filt2 = ...
+          filtfilt(FIRs.Coeffs_RES,1,data_struct{j,i}.EH.Video.raw.resp);
+           
+      %Labels
+      data_struct{j,i}.EH.Labels.raw.resp_filt2 = ...
+          filtfilt(FIRs.Coeffs_RES,1,data_struct{j,i}.EH.Labels.raw.resp);
+      
+      %Recovery
+      data_struct{j,i}.EH.Recovery.raw.resp_filt2 = ...
+          filtfilt(FIRs.Coeffs_RES,1,data_struct{j,i}.EH.Recovery.raw.resp);
+     
+     %Complete raw signals
+      allraw{j}.resp_filt2 = ...
+          filtfilt(FIRs.Coeffs_RES,1,allraw{j}.resp);
+     
      
   
      

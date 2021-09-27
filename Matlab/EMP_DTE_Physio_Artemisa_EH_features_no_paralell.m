@@ -68,10 +68,9 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
     
           %Create the RES signals
 
-%       res_sig_video    = RES_create_signal(data_in_comp(i).EH.Video.raw.skt_filt_dn_sm, samprate_bbddlab_gsr);
-%        res_sig_video    = SKT_create_signal(data_in{i,k}.EH.Video.raw.skt_filt_dn_sm, samprate_bbddlab_gsr);
-%       skt_sig_labels   = GSR_create_signal(data_in{i,k}.EH.Labels.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
-%       skt_sig_recovery = GSR_create_signal(data_in{i,k}.EH.Recovery.raw.gsr_uS_filtered_dn_sm, samprate_bbddlab_gsr);
+%       
+        res_sig_video    =  RES_aqn_variable(data_in{i,k}.EH.Video.raw.resp_filt2, samprate_bbddlab_bvp);
+
 
 
        % 1.4: BVP advanced data processing: Wavelet Synchrosqueezed Transform
@@ -116,11 +115,14 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
       start_gsr   = 1;
       stop_gsr    = operational_window*samprate_bbddlab_gsr;
       overlap_bvp = overlapin_window*samprate_bbddlab_bvp;
-      overlap_gsr = overlapin_window*samprate_bbddlab_gsr;      
+      overlap_gsr = overlapin_window*samprate_bbddlab_gsr;
+      start_res   = 1;
+      stop_res    = operational_window*samprate_bbddlab_bvp;
       window_num  = 1;
       bvp_sig_cpy = bvp_sig_video;
       gsr_sig_cpy = gsr_sig_video;
       skt_sig_cpy = skt_sig_video;
+      res_sig_cpy = res_sig_video;
       while(stop_bvp<length(bvp_sig_video.raw) && ...
             stop_gsr<length(gsr_sig_video.raw))
         %BVP processing
@@ -147,10 +149,18 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
          data_features{i,k}.EH.Video.SKT_feats_names] = ...
             SKT_features_extr(skt_sig_cpy);
         
+        %resp processing
+        res_sig_cpy.raw = res_sig_video.raw(start_res:stop_res);
+        [data_features{i,k}.EH.Video.RESP_feats(window_num,:), ...
+         data_features{i,k}.EH.Video.RESP_feats_names] = ...
+            RES_feat_extr(res_sig_cpy);
+        
         start_bvp = start_bvp + overlap_bvp;
         stop_bvp  = stop_bvp  + overlap_bvp;
         start_gsr = start_gsr + overlap_gsr;
         stop_gsr  = stop_gsr  + overlap_gsr;
+        start_res = start_res + overlap_bvp;
+        stop_res  = stop_res  + overlap_bvp;
         window_num = window_num + 1;
       end
       
