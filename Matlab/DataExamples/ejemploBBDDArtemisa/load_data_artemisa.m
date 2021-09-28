@@ -426,7 +426,7 @@ function  [out ,allraw]= empatia_preprocess_esignals(data_struct,allraw_in)
   %Get patients and videos number
   [patients, videos] = size(data_struct);
   %Load filter coeffs
-  FIRs = load('FIRs.mat');
+  FIRs = load('FIRs_manu.mat');
   allraw=allraw_in;
   %Set sampling frequency and processing window
   Fs = 200;

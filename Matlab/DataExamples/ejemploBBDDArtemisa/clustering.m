@@ -2,7 +2,11 @@
 % temp_feat_mat=feat_mat
 temp_feat_mat=feat_mat_norm
 
+[temp_feat_mat,vec_video,vec_emo_binaria,indexs]=features2MatV2(feat_select);
+
 max_cluster=21
+
+temp_feat_mat(isnan(temp_feat_mat))=0;
 
 for n_cluster=2:max_cluster
 
@@ -87,7 +91,7 @@ histogram(idx4(vec_emo_binaria'==1))
 % title(histr)
 
 figure
-histogram(idx4(vec_emo_binaria==2))
+histogram(idx4(vec_emo_binaria==0))
 
 
 
@@ -108,6 +112,25 @@ histogram(idx4(vec_video==3))
  figure
 histogram(idx4(vec_video==4))
  title('clusters: 4 video 4')
+ 
+ 
+ 
+figure
+histogram(idx3(vec_video==1))
+ title('clusters: 3 video 1')
+ 
+ 
+ figure
+histogram(idx3(vec_video==2))
+ title('clusters: 3 video 2')
+ 
+ figure
+histogram(idx3(vec_video==3))
+ title('clusters: 3 video 3')
+ 
+ figure
+histogram(idx3(vec_video==4))
+ title('clusters: 3 video 4')
 
 
 
