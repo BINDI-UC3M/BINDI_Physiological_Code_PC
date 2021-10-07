@@ -1,7 +1,7 @@
-function [data_features]=plot_dataBBDDLabBVPs_Exploratory(s,va,vb)
+function [data_features]=plot_dataBBDDLabBVPs_Exploratory_feat(s,va,vb,data_features)
 dbstop if error
     %Declaration local variables
-    data_features        = {};
+%     data_features        = {};
     bvp_acc              = {};
     %vol                  = [1:9,13,15:27];
     vol                  = [1:21];
@@ -53,20 +53,20 @@ dbstop if error
           %BVP processing
           %To measure the time taken for each physio-processing uncomment the
           %tic-toc commands
-          tic
-          bvp_sig_cpy.raw = bvp_eh_s.raw(start_bvp:stop_bvp);
-          [data_features{i,j}.EH.Video.BVP_feats(window_num,:), ...
-           data_features{i,j}.EH.Video.BVP_feats_names, data_features{i,j}.EH.IBI{window_num}] = ...
-              BVP_features_extr(bvp_sig_cpy);
-          toc
+%           tic
+%           bvp_sig_cpy.raw = bvp_eh_s.raw(start_bvp:stop_bvp);
+%           [data_features{i,j}.EH.Video.BVP_feats(window_num,:), ...
+%            data_features{i,j}.EH.Video.BVP_feats_names, data_features{i,j}.EH.IBI{window_num}] = ...
+%               BVP_features_extr(bvp_sig_cpy);
+%           toc
           
           start_bvp  = start_bvp + overlap_bvp;
           stop_bvp   = stop_bvp  + overlap_bvp;
           
           %Plot LF/HF plot
-          temp = [temp data_features{i,j}.EH.Video.BVP_feats(window_num,11)];
+          temp = [temp data_features{i,j}.EH.Video.HR_feats(window_num,11)];
           bar(temp,1)
-          pause(0.02)
+%           pause(0.02)
           
           window_num = window_num + 1;
         end
@@ -74,33 +74,36 @@ dbstop if error
         %Saving and agrupping temporal data
         if ismember(j,videos_t1_fear)
           temp_fear_ibi = [temp_fear_ibi; ...
-                           data_features{i,j}.EH.Video.BVP_feats(:,4)];
+                           data_features{i,j}.EH.Video.HR_feats(:,4)];
           temp_fear_rlf = [temp_fear_rlf; ...
-                           data_features{i,j}.EH.Video.BVP_feats(:,11)];
+                           data_features{i,j}.EH.Video.HR_feats(:,11)];
           %temp_fear_rr  = [temp_fear_rr; ...
-          %                 data_features{i,j}.EH.Video.BVP_feats(:,25)];
+          %                 data_features{i,j}.EH.Video.HR_feats(:,25)];
           %temp_ibi_data_fear = [temp_ibi_data_fear 
           %                      data_features{i, j}.EH.IBI.raw'];
+
+      %feat_t1_fear_rr_eh(:,i)    = temp_fear_rr;
         elseif ismember(j,videos_t1_nofear)
           temp_nofear_ibi = [temp_nofear_ibi; ...
-                             data_features{i,j}.EH.Video.BVP_feats(:,4)];
+                             data_features{i,j}.EH.Video.HR_feats(:,4)];
           temp_nofear_rlf = [temp_nofear_rlf; ...
-                             data_features{i,j}.EH.Video.BVP_feats(:,11)];
+                             data_features{i,j}.EH.Video.HR_feats(:,11)];
           %temp_nofear_rr = [temp_nofear_rr; ...
-          %                  data_features{i,j}.EH.Video.BVP_feats(:,25)];
+          %                  data_features{i,j}.EH.Video.HR_feats(:,25)];
           %temp_ibi_data_nofear = [temp_ibi_data_nofear 
           %                      data_features{i, j}.EH.IBI.raw'];
+
         else
           error('Scheisse!');
         end
 		
 		%Store to Plot IBI - Poincare Plot - Let's Mambo Jambo!
-        for k=1:window_num-1
-		  temp_ibi = [temp_ibi; data_features{i, j}.EH.IBI{k}.raw'];
-        end
-        temp_ibi = [temp_ibi; 0];
-      
-      end
+%         for k=1:window_num-1
+% 		  temp_ibi = [temp_ibi; data_features{i, j}.EH.IBI{k}.raw'];
+%         end
+%         temp_ibi = [temp_ibi; 0];
+%       
+       end
 %       
 %         figure
 %         xlim([0 25])
@@ -113,11 +116,10 @@ dbstop if error
 %         plot(temp_ibi(1:end-1),temp_ibi(2:end),'*k');
       
       %Saving and agrupping data for the entire volunteer
-      feat_t1_fear_ibi_eh(:,i)   = temp_fear_ibi;
-      feat_t1_fear_rlf_eh(:,i)   = temp_fear_rlf;
-      %feat_t1_fear_rr_eh(:,i)    = temp_fear_rr;
-      feat_t1_nofear_ibi_eh(:,i) = temp_nofear_ibi;
-      feat_t1_nofear_rlf_eh(:,i) = temp_nofear_rlf;
+%       feat_t1_fear_ibi_eh(:,i)   = temp_fear_ibi;
+%       feat_t1_fear_rlf_eh(:,i)   = temp_fear_rlf;
+%       feat_t1_nofear_ibi_eh(:,i) = temp_nofear_ibi;
+%       feat_t1_nofear_rlf_eh(:,i) = temp_nofear_rlf;
       %feat_t1_nofear_rr_eh(:,i)  = temp_nofear_rr;
       temp_fear_ibi        = [];
       temp_nofear_ibi      = [];
@@ -131,21 +133,21 @@ dbstop if error
 
     end
 
-      f=figure;
-      f.Name = "Volunteer " + s{vol(i),1}.ParticipantNum +  " // EH mean IBI ";
-      axes1 = axes;
-      hold(axes1,'on');
-      b=bar([mean(mean(feat_t1_fear_ibi_eh'))]);
-      set(b,'DisplayName','BioSignal',...
-      'FaceColor',[0.901960784313726 0.901960784313726 0.901960784313726]);
-      hold on;b=bar(2,[mean(mean(feat_t1_nofear_ibi_eh'))]);
-      set(b,'DisplayName','Proposed',...
-      'FaceColor',[0.501960784313725 0.501960784313725 0.501960784313725]);
-      errorbar(1,[mean(mean(feat_t1_fear_ibi_eh'))],[mad(mean(feat_t1_fear_ibi_eh'))/2],[mad(mean(feat_t1_fear_ibi_eh'))/2]);
-      errorbar(2,[mean(mean(feat_t1_nofear_ibi_eh'))],[mad(mean(feat_t1_nofear_ibi_eh'))/2],[mad(mean(feat_t1_nofear_ibi_eh'))/2]);
-      ylabel({'_meanIBI'});
-      set(axes1,'FontSize',14,'XTick',[1.5 4.5],'XTickLabel',{'Fear','No Fear'},...
-      'YGrid','on');
+%       f=figure;
+%       f.Name = "Volunteer " + s{vol(i),1}.ParticipantNum +  " // EH mean IBI ";
+%       axes1 = axes;
+%       hold(axes1,'on');
+%       b=bar([mean(mean(feat_t1_fear_ibi_eh'))]);
+%       set(b,'DisplayName','BioSignal',...
+%       'FaceColor',[0.901960784313726 0.901960784313726 0.901960784313726]);
+%       hold on;b=bar(2,[mean(mean(feat_t1_nofear_ibi_eh'))]);
+%       set(b,'DisplayName','Proposed',...
+%       'FaceColor',[0.501960784313725 0.501960784313725 0.501960784313725]);
+%       errorbar(1,[mean(mean(feat_t1_fear_ibi_eh'))],[mad(mean(feat_t1_fear_ibi_eh'))/2],[mad(mean(feat_t1_fear_ibi_eh'))/2]);
+%       errorbar(2,[mean(mean(feat_t1_nofear_ibi_eh'))],[mad(mean(feat_t1_nofear_ibi_eh'))/2],[mad(mean(feat_t1_nofear_ibi_eh'))/2]);
+%       ylabel({'_meanIBI'});
+%       set(axes1,'FontSize',14,'XTick',[1.5 4.5],'XTickLabel',{'Fear','No Fear'},...
+%       'YGrid','on');
       %legend(axes1,'show');
 
 %       f=figure;

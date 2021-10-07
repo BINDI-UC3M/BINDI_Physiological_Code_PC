@@ -34,7 +34,7 @@
 %> @author Copyright Guillaume Chanel 2013
 %> @author Copyright Frank Villaro-Dixon, 2014
 %> @author Copyright UC3M, 2016
-function [BVP_feats, BVP_feats_names, IBI_signal, Bulk] = BVP_features_extr(BVPSignal,varargin)
+function [BVP_feats, BVP_feats_names, IBI, Bulk] = BVP_features_extr(BVPSignal,varargin)
 
 % Check inputs and define unknown values
 narginchk(1, Inf);

@@ -123,6 +123,9 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
       gsr_sig_cpy = gsr_sig_video;
       skt_sig_cpy = skt_sig_video;
       res_sig_cpy = res_sig_video;
+      
+      cuenta=1;
+      data_features{i,k}.EH.Video.BVP_IBI.all=[];
       while(stop_bvp<length(bvp_sig_video.raw) && ...
             stop_gsr<length(gsr_sig_video.raw))
         %BVP processing
@@ -135,8 +138,10 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
         bvp_sig_cpy.raw = bvp_sig_video.raw(start_bvp:stop_bvp);
         [data_features{i,k}.EH.Video.BVP_feats(window_num,:), ...
          data_features{i,k}.EH.Video.BVP_feats_names, ...
-         data_features{i,k}.EH.Video.BVP_IBI] = ...
+         data_features{i,k}.EH.Video.BVP_IBI.window{cuenta}] = ...
             BVP_features_extr(bvp_sig_cpy);
+        data_features{i,k}.EH.Video.BVP_IBI.all=[ data_features{i,k}.EH.Video.BVP_IBI.all, data_features{i,k}.EH.Video.BVP_IBI.window{cuenta}];
+        cuenta=cuenta+1;
         %toc
         %GSR processing
         gsr_sig_cpy.raw = gsr_sig_video.raw(start_gsr:stop_gsr);
@@ -163,7 +168,7 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
         stop_res  = stop_res  + overlap_bvp;
         window_num = window_num + 1;
       end
-      
+      cuenta=1;
      if (isfield(data_in{i,k}.EH.Video.raw,'ecg_filt') && process_ecg(k,i)==1) 
 %       ECG only
       start_ecg   = 1;
@@ -173,6 +178,7 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
         
       window_num  = 1;
       ecg_sig_cpy = ecg_sig_video;
+      data_features{i,k}.EH.Video.ECG_IBI.all=[];
       while(stop_ecg<length(ecg_sig_video.raw))
         %ECG processing
         %To measure the time taken for each physio-processing uncomment the
@@ -182,10 +188,10 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
         ecg_sig_cpy.raw = ecg_sig_video.raw(start_ecg:stop_ecg);
         [data_features{i,k}.EH.Video.ECG_feats(window_num,:), ...
          data_features{i,k}.EH.Video.ECG_feats_names, ...
-         data_features{i,k}.EH.Video.ECG_IBI] = ...
+         data_features{i,k}.EH.Video.ECG_IBI.window{cuenta}] = ...
             ECG_feat_extr(ecg_sig_cpy);
-
-        
+         data_features{i,k}.EH.Video.ECG_IBI.all=[ data_features{i,k}.EH.Video.ECG_IBI.all, data_features{i,k}.EH.Video.ECG_IBI.window{cuenta}];
+        cuenta=cuenta+1;
         start_ecg = start_ecg + overlap_ecg;
         stop_ecg  = stop_ecg  + overlap_ecg;
         window_num = window_num + 1;

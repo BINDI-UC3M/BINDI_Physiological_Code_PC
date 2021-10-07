@@ -86,5 +86,11 @@ features_norm_resp=norm_phy_features(feat,'zscore','RESP');
 Plots_physio_features_boxplot(features_norm_resp,'RESP',12,'RESP: frecuencia respiratoria','',labels_reordered,Vol_excluded);
 
 
+features_norm_resp=norm_phy_features(feat,'zscore','SKT');
+
+% Plots norm
+Plots_physio_features_boxplot(features_norm_resp,'SKT',1,'SKT: media','',labels_reordered,Vol_excluded);
+
+
 
 

@@ -39,10 +39,10 @@ BW    = 0.5;    % Bandwidth
 Apass = 1;      % Bandwidth Attenuation
 [b, a] = iirpeak(Fpeak/(fs/2), BW/(fs/2), Apass);
 Resp_filt = filtfilt(b, a, raw);
-
-if length(Resp_filt) < 60*fs
-	warning('Resp signal too short cannot calculate the spectral features - result of the central respiration frequency is not going to be reliable')
-end
+% 
+% if length(Resp_filt) < 60*fs
+% 	warning('Resp signal too short cannot calculate the spectral features - result of the central respiration frequency is not going to be reliable')
+% end
 %Compute the energy spectrum
 win_length = round(length(Resp_filt)/4.5);
 nfft = sqrt(2^ceil(log2(win_length)));

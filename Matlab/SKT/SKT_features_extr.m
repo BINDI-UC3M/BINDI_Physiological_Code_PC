@@ -55,7 +55,9 @@ end
 
 
 % Define full feature list and get features selected by user
+
 featuresNames = {'mean_', 'std_', 'kurtosis_','skewness_','sp0001', 'sp0102'};
+
 % featuresNames = {'mean_', 'std_', 'kurtosis_','skewness_'};
 HST_feats_names = featuresSelector(featuresNames,varargin{:});
 
