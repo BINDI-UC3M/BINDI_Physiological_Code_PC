@@ -1,7 +1,7 @@
-function Plots_physio_features_temporal(features_s,physio_sig,n_feat,feat_name,plot_units,exclude_vec)
+function Plots_physio_features_pointcare(features_s,physio_sig,n_feat,feat_name,plot_units,exclude_vec)
 
-
-field_s=sprintf('%s_feats',physio_sig);
+physio_sig='IBI';
+field_s=sprintf('%s',physio_sig);
 % Plots gsr
 % voluntaria=1
 % features_in=features_gsr_cvx;
@@ -23,10 +23,10 @@ for voluntaria=1:21
 if (~ (sum(voluntaria==exclude_vec)>0))    
     if(~ (isempty(features_s.features{voluntaria,1}.EH.Video.(field_s))))
         
-        num_windows_v1=max([num_windows_v1 , length(features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat))]);
-        num_windows_v2=max([num_windows_v2 , length(features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat))]);
-        num_windows_v3=max([num_windows_v3 , length(features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat))]);
-        num_windows_v4=max([num_windows_v4 , length(features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat))]);
+        num_windows_v1=max([num_windows_v1 , length(features_s.features{voluntaria,1}.EH.Video.(field_s).all)]);
+        num_windows_v2=max([num_windows_v2 , length(features_s.features{voluntaria,2}.EH.Video.(field_s).all)]);
+        num_windows_v3=max([num_windows_v3 , length(features_s.features{voluntaria,3}.EH.Video.(field_s).all)]);
+        num_windows_v4=max([num_windows_v4 , length(features_s.features{voluntaria,4}.EH.Video.(field_s).all)]);
         num_vol=num_vol+1;
         
     end
@@ -45,29 +45,29 @@ if (~ (sum(voluntaria==exclude_vec)>0))
     if(~ (isempty(features_s.features{voluntaria,1}.EH.Video.(field_s))))
         cont=cont+1;
         
-        n1=length(features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat));
-        n2=length(features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat));
-        n3=length(features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat));
-        n4=length(features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat));
+%         n1=length(features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat));
+%         n2=length(features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat));
+%         n3=length(features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat));
+%         n4=length(features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat));
+%         
+%         
+%         mat_v1(1:n1,cont)=features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat);
+%         mat_v2(1:n2,cont)=features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat);
+%         mat_v3(1:n3,cont)=features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat);
+%         mat_v4(1:n4,cont)=features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat);
+%         
+%         temp_plot=[mat_v1(:,cont)', 0 ,mat_v2(:,cont)', 0 ,mat_v3(:,cont)', 0 ,mat_v4(:,cont)'];
+%         
+%         h(cont)=figure;
+%         bar(temp_plot)
+%         title(sprintf('Voluntaria:%i %s',voluntaria,feat_name));
+%         xlabel('Video')
+%         ylabel(sprintf('%s',plot_units))
         
-        
-        mat_v1(1:n1,cont)=features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat);
-        mat_v2(1:n2,cont)=features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat);
-        mat_v3(1:n3,cont)=features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat);
-        mat_v4(1:n4,cont)=features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat);
-        
-        temp_plot=[mat_v1(:,cont)', 0 ,mat_v2(:,cont)', 0 ,mat_v3(:,cont)', 0 ,mat_v4(:,cont)'];
-        
-        h(cont)=figure;
-        bar(temp_plot)
-        title(sprintf('Voluntaria:%i %s',voluntaria,feat_name));
-        xlabel('Video')
-        ylabel(sprintf('%s',plot_units))
-        
-%         temp_sig=[ features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat)', ...
-%         features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat)',...
-%         features_s.features{voluntaria,3}.EH.Video.(field_s)(:,n_feat)',...
-%         features_s.features{voluntaria,4}.EH.Video.(field_s)(:,n_feat)'];    
+%         temp_sig=[ features_s.features{voluntaria,1}.EH.Video.(field_s).all', ...
+%         features_s.features{voluntaria,2}.EH.Video.(field_s).all',...
+%         features_s.features{voluntaria,3}.EH.Video.(field_s).all',...
+%         features_s.features{voluntaria,4}.EH.Video.(field_s).all'];    
 %     
 %         
 %         pos_v1=length(features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat));
@@ -92,11 +92,23 @@ if (~ (sum(voluntaria==exclude_vec)>0))
 %         temp_video_index(pos_v2+1:pos_v3)={'Alegria'};
 %         temp_video_index(pos_v3+1:pos_v4)={'Miedo no VG'}
 %        temp_sig=1./temp_sig*60;
-%        h(voluntaria)=figure;
-%        boxplot(temp_sig,temp_video_index);
-%        title(sprintf('Voluntaria:%i %s',voluntaria,feat_name));
-%        xlabel('Video')
-%        ylabel(sprintf('%s',plot_units))
+       h(cont)=figure;
+       temp_temp=features_s.features{voluntaria,1}.EH.Video.(field_s).all;
+       plot(temp_temp(1:end-1),temp_temp(2:end),'*');
+       hold on
+       temp_temp=features_s.features{voluntaria,2}.EH.Video.(field_s).all;
+       plot(temp_temp(1:end-1),temp_temp(2:end),'*');
+       
+       temp_temp=features_s.features{voluntaria,3}.EH.Video.(field_s).all;
+       plot(temp_temp(1:end-1),temp_temp(2:end),'*');
+       
+       temp_temp=features_s.features{voluntaria,4}.EH.Video.(field_s).all;
+       plot(temp_temp(1:end-1),temp_temp(2:end),'*');
+       
+       title(sprintf('Voluntaria:%i',voluntaria));
+       xlabel('IBI n')
+       ylabel('IBI n+1')
+       legend('Video 1','Video 2','Video 3','','Video 4');
        
 %        if init==1 
 %             temp_sig_total=temp_sig;
@@ -124,14 +136,14 @@ end
 
 
 
-figure
-
- temp_plot=[ mean(mat_v1') 0 mean(mat_v2') 0 mean(mat_v3') 0 mean(mat_v4') 0];
- bar(temp_plot)
- title(sprintf('Todas las voluntarias %s',feat_name));
- xlabel('Ventanas')
- ylabel(sprintf('%s',plot_units))
-
+% figure
+% 
+%  temp_plot=[ mean(mat_v1') 0 mean(mat_v2') 0 mean(mat_v3') 0 mean(mat_v4') 0];
+%  bar(temp_plot)
+%  title(sprintf('Todas las voluntarias %s',feat_name));
+%  xlabel('Ventanas')
+%  ylabel(sprintf('%s',plot_units))
+% 
 
 
 %     figure

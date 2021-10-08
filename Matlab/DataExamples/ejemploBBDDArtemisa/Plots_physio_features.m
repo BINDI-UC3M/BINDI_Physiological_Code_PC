@@ -41,7 +41,7 @@ Plots_physio_features_boxplot(feat,'GSR',6,'GSR: Media','uS',labels_reordered,Vo
 
 feat_select= heart_features_selections(feat);
 
-Vol_excluded=[0];
+Vol_excluded=[12];
 
  features_norm=norm_phy_features(feat_select,'zscore','HR');
 % % % 
@@ -93,4 +93,18 @@ Plots_physio_features_boxplot(features_norm_resp,'SKT',1,'SKT: media','',labels_
 
 
 
+
+
+feat_select= heart_features_selections(feats);
+
+features_norm_hr=norm_phy_features(feat_select,'zscore','HR');
+
+Vol_excluded=[12];
+
+Plots_physio_features_temporal(features_norm_hr,'HR',11,'Ratio LFHF ','',Vol_excluded);
+
+
+
+
+Plots_physio_features_pointcare(feat_select,'HR',11,'Ratio LFHF ','',Vol_excluded);
 
