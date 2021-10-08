@@ -93,7 +93,7 @@ Plots_physio_features_boxplot(features_norm_resp,'SKT',1,'SKT: media','',labels_
 
 
 
-
+% Plots temporales
 
 feat_select= heart_features_selections(feats);
 
@@ -103,7 +103,9 @@ Vol_excluded=[12];
 
 Plots_physio_features_temporal(features_norm_hr,'HR',11,'Ratio LFHF ','',Vol_excluded);
 
+Plots_physio_features_temporal(feat_select,'HR',4,'IBI medio ','',Vol_excluded);
 
+% Pointcare
 
 
 Plots_physio_features_pointcare(feat_select,'HR',11,'Ratio LFHF ','',Vol_excluded);

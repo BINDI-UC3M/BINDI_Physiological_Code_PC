@@ -38,6 +38,11 @@ mat_v2=zeros(num_windows_v2,num_vol);
 mat_v3=zeros(num_windows_v3,num_vol);
 mat_v4=zeros(num_windows_v4,num_vol);
 
+mat_v1(:,:)=NaN;
+mat_v2(:,:)=NaN;
+mat_v3(:,:)=NaN;
+mat_v4(:,:)=NaN;
+
 cont=0;
 for voluntaria=1:21
     
@@ -126,7 +131,7 @@ end
 
 figure
 
- temp_plot=[ mean(mat_v1') 0 mean(mat_v2') 0 mean(mat_v3') 0 mean(mat_v4') 0];
+ temp_plot=[ mean(mat_v1','omitnan') 0 mean(mat_v2','omitnan') 0 mean(mat_v3','omitnan') 0 mean(mat_v4','omitnan') 0];
  bar(temp_plot)
  title(sprintf('Todas las voluntarias %s',feat_name));
  xlabel('Ventanas')
