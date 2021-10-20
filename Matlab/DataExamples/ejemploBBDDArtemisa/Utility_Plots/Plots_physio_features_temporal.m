@@ -130,15 +130,20 @@ end
 
 
 figure
-
+ temp_plot_std=[ std(mat_v1','omitnan') 0 std(mat_v2','omitnan') 0 std(mat_v3','omitnan') 0 std(mat_v4','omitnan') 0];
  temp_plot=[ mean(mat_v1','omitnan') 0 mean(mat_v2','omitnan') 0 mean(mat_v3','omitnan') 0 mean(mat_v4','omitnan') 0];
- bar(temp_plot)
+ errorbar(temp_plot,temp_plot_std)
+ hold on 
+%  plot(temp_plot_std)
  title(sprintf('Todas las voluntarias %s',feat_name));
  xlabel('Ventanas')
  ylabel(sprintf('%s',plot_units))
 
-
-
+figure
+plot(temp_plot)
+hold on
+plot(temp_plot+temp_plot_std)
+plot(temp_plot-temp_plot_std)
 %     figure
 %     boxplot(temp_sig_total,temp_video_index_total);
 %     title(sprintf('Todas las voluntarias %s',feat_name));
