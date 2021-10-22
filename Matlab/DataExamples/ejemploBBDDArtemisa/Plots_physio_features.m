@@ -99,11 +99,17 @@ feat_select= heart_features_selections(feats);
 
 features_norm_hr=norm_phy_features(feat_select,'zscore','HR');
 
+features_norm_gsr=norm_phy_features(feat_select,'zscore','GSR');
+
 Vol_excluded=[12];
 
 Plots_physio_features_temporal(features_norm_hr,'HR',11,'Ratio LFHF ','',Vol_excluded);
 
-Plots_physio_features_temporal(feat_select,'HR',4,'IBI medio ','',Vol_excluded);
+Plots_physio_features_temporal(features_norm_hr,'HR',4,'IBI medio ','',Vol_excluded);
+
+Plots_physio_features_temporal(features_norm_gsr,'GSR',1,'N picos ','',Vol_excluded);
+
+Plots_physio_features_temporal(features_norm_gsr,'GSR',6,'GSR mean ','',Vol_excluded);
 
 % Pointcare
 

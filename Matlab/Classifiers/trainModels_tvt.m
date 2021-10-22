@@ -75,10 +75,11 @@ function  [result] = trainModels_tvt(features, labels, varargin)
       case 4
         disp('BioSpeech Open BBDD simulation running');
         
+%         patients_open = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,...
+%                          18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,...
+%                          33,34,35,36,37,38,39,40,41];
         patients_open = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,...
-                         18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,...
-                         33,34,35,36,37,38,39,40,41];
-                     
+                         18,19];
         %Add this line if you want single Hybrid simulation
         %patients_open = [patients_open 42];
         
@@ -86,10 +87,10 @@ function  [result] = trainModels_tvt(features, labels, varargin)
         %patients_open = [patients_open patients_open+41];
         
         %Add this line if you want L2SO simulation
-        patients_open = [patients_open (patients_open(end)+1:1:patients_open(end)+39)];
+%         patients_open = [patients_open (patients_open(end)+1:1:patients_open(end)+39)];
         
         %Add this line if you want norm data into trainning
-        patients_open = [patients_open (patients_open(end)+1:1:patients_open(end)+42)];
+%         patients_open = [patients_open (patients_open(end)+1:1:patients_open(end))];
         
         patients = 41;
         trials   = 1; 
