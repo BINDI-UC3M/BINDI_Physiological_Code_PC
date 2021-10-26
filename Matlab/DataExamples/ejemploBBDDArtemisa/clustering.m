@@ -1,6 +1,6 @@
 % temp_feat_mat=feat_mat_zscore_vol
 % temp_feat_mat=feat_mat
-temp_feat_mat=feat_mat_norm
+% temp_feat_mat=feat_mat_norm
 
 [temp_feat_mat,vec_video,vec_emo_binaria,indexs]=features2MatV2(feat_select);
 

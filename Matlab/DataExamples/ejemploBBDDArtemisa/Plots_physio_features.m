@@ -105,7 +105,7 @@ Vol_excluded=[12];
 
 Plots_physio_features_temporal(features_norm_hr,'HR',11,'Ratio LFHF ','',Vol_excluded);
 
-Plots_physio_features_temporal(features_norm_hr,'HR',4,'IBI medio ','',Vol_excluded);
+Plots_physio_features_temporal(feat_select,'HR',4,'IBI medio ','',Vol_excluded);
 
 Plots_physio_features_temporal(features_norm_gsr,'GSR',1,'N picos ','',Vol_excluded);
 

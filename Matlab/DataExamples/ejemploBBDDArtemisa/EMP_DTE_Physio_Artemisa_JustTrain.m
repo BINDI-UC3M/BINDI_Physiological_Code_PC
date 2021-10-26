@@ -248,8 +248,8 @@ n_samples=4;
       for k = 1:kmax
         %% In case of performing normalization by features as well:
         % 1. For FULL LOSO
-        [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i)})]);
-        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
+        [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ zscore(peri{:,:,(i)})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
         % 2.1 For single Hybrid w/ EN
         %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
@@ -310,9 +310,13 @@ n_samples=4;
         end
         gmeant(k) =sqrt(sent *spet);
         confuM{k} =confuM_t;
-        result_train{i}.svm_test.tScores{k} = tScores;
-        result_train{i}.svm_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
-                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
+%         result_train{i}.svm_test.tScores{k} = tScores;
+%         result_train{i}.svm_test.tmulti{k} =[[string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i}+1));...
+%                                  string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i}+1))],tPredictions];
+          result_train{i}.svm_test.tmulti{k} =[[string(num2cell(labels{:,:,i}+1))],tPredictions];
+%         result_train{i}.svm_test.tScores{k} = tScores;
+%         result_train{i}.svm_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+%                                  string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
         %result_train{i}.svm_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
         %                          string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
         %result_train{i}.svm_test.tmulti{k} =[string(num2cell(labels_test+1)),tPredictions];
@@ -321,8 +325,8 @@ n_samples=4;
       %SVM testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-      [tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i)})]);
-      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
+      [tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[  zscore(peri{:,:,(i)})]);
+      confuM_t = confusionmat([ string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
       % 2.1 For single Hybrid w/ EN
       %[tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,[ zscore(peri{:,:,i})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
@@ -386,21 +390,24 @@ n_samples=4;
       
       %result_train{i}.svm_simulation.ClassifierAll = [];
       %result_train{i}.svm_simulation.Classifier    = [];
-      result_train{i}.svm_test.tScores{k+1} = tScores;
-      result_train{i}.svm_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)}+1));...
-                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)}+1))],tPredictions];
+%       result_train{i}.svm_test.tScores{k+1} = tScores;
+%       result_train{i}.svm_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)}+1));...
+%                                  string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)}+1))],tPredictions];
+%       result_train{i}.svm_test.tmulti{k} =[[string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i}+1));...
+%                                  string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i}+1))],tPredictions];
+      result_train{i}.svm_test.tmulti{k} =[[string(num2cell(labels{:,:,i}+1))],tPredictions];
       %result_train{i}.svm_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
       %                                        string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
       %result_train{i}.svm_test.tmulti{k+1} =[string(num2cell(labels_test+1)),tPredictions];
 
-      KNN Testing for the five (5-kfold) surrogate models
+%       KNN Testing for the five (5-kfold) surrogate models
 %       fs=result_train{i}.knn_simulation.sfs;
       for k = 1:kmax
 
         %% In case of performing normalization by features as well:
         % 1. For FULL LOSO
-        [tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i)})]);
-        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i+volunteers/2)}+1))], string(tPredictions),'order',{'1','2'});
+        [tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},[ zscore(peri{:,:,(i)})]);
+        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ], string(tPredictions),'order',{'1','2'});
         % 2.1 For single Hybrid w/ EN
         %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
@@ -462,8 +469,9 @@ n_samples=4;
         gmeant(k) =sqrt(sent *spet);
         confuM{k} =confuM_t;
         result_train{i}.knn_test.tScores{k} = tScores;
-        result_train{i}.knn_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
-                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
+%         result_train{i}.knn_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+%                                  string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
+        result_train{i}.knn_test.tmulti{k} =[[string(num2cell(labels{:,:,i}+1))],tPredictions];
         %result_train{i}.knn_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
         %                                      string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
         %result_train{i}.knn_test.tmulti{k} =[string(num2cell(labels_test+1)),tPredictions];
@@ -472,8 +480,8 @@ n_samples=4;
       %KNN testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-      [tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i)})]);
-      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
+      [tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ zscore(peri{:,:,(i)})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
       % 2.1 For single Hybrid w/ EN
       %[tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,[ zscore(peri{:,:,i})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
@@ -537,21 +545,22 @@ n_samples=4;
             
       %result_train{i}.knn_simulation.ClassifierAll = [];
       %result_train{i}.knn_simulation.Classifier    = [];
-      result_train{i}.knn_test.tScores{k+1} = tScores;
-      result_train{i}.knn_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
-                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
+%       result_train{i}.knn_test.tScores{k+1} = tScores;
+%       result_train{i}.knn_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+%                                  string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
+      result_train{i}.knn_test.tmulti{k} =[[string(num2cell(labels{:,:,i}+1))],tPredictions];
       %result_train{i}.knn_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
       %                                        string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
       %result_train{i}.knn_test.tmulti{k+1} =[string(num2cell(labels_test+1)),tPredictions];
       
       %ENS
-      fs=result_train{i}.ens_simulation.sfs;
+%       fs=result_train{i}.ens_simulation.sfs;
       for k = 1:kmax
 
         %% In case of performing normalization by features as well:
         % 1. For FULL LOSO
-        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i)})]);
-        confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
+        [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,(i)})]);
+        confuM_t = confusionmat([ string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
         % 2.1 For single Hybrid w/ EN
         %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},[ zscore(peri{:,:,i})]);
         %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
@@ -613,8 +622,9 @@ n_samples=4;
         gmeant(k) =sqrt(sent *spet);
         confuM{k} =confuM_t;
         result_train{i}.ens_test.tScores{k} = tScores;
-        result_train{i}.ens_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
-                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
+%         result_train{i}.ens_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
+%                                  string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
+        result_train{i}.ens_test.tmulti{k} =[[string(num2cell(labels{:,:,i}+1))],tPredictions];
         %result_train{i}.ens_test.tmulti{k} =[[string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
         %                                      string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
         %result_train{i}.ens_test.tmulti{k} =[string(num2cell(labels_test+1)),tPredictions];
@@ -623,8 +633,8 @@ n_samples=4;
       %ENS testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i}) ; zscore(peri{:,:,(i)})]);
-      confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
+      [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,(i)})]);
+      confuM_t = confusionmat([string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
       % 2.1 For single Hybrid w/ EN
       %[tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,[ zscore(peri{:,:,i})]);
       %confuM_t = confusionmat([string(num2cell(labels{:,:,i}+1))], string(tPredictions),'order',{'1','2'});
@@ -688,9 +698,12 @@ n_samples=4;
             
       %result_train{i}.ens_simulation.ClassifierAll = [];
       %result_train{i}.ens_simulation.Classifier    = [];
-      result_train{i}.ens_test.tScores{k+1} = tScores;
-      result_train{i}.ens_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)}+1));...
-                                 string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)}+1))],tPredictions];
+%       result_train{i}.ens_test.tScores{k+1} = tScores;
+%       result_train{i}.ens_test.tmulti{k+1} =[[string(num2cell(labels{:,:,vs(1,1)}+1)) ; string(num2cell(labels{:,:,vs(1,1)}+1));...
+%                                  string(num2cell(labels{:,:,vs(1,2)}+1)) ; string(num2cell(labels{:,:,vs(1,2)}+1))],tPredictions];
+%        result_train{i}.svm_test.tmulti{k} =[[string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i}+1));...
+%                                  string(num2cell(labels{:,:,i}+1)) ; string(num2cell(labels{:,:,i}+1))],tPredictions];
+      result_train{i}.ens_test.tmulti{k} =[[string(num2cell(labels{:,:,i}+1))],tPredictions];
       %result_train{i}.ens_test.tmulti{k+1} =[[ string(num2cell(labels{:,:,vs(1,1)+volunteers/2}+1));...
       %                                         string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
       %result_train{i}.ens_test.tmulti{k+1} =[string(num2cell(labels_test+1)),tPredictions];
