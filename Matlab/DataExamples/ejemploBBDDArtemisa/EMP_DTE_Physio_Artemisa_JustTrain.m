@@ -49,7 +49,7 @@ end
 
 volunteers=index-1;
 n_samples=4;
-
+% rngSeed'shuffle'
     for i=1:volunteers
       k = 1;
       win_num=length(data_in{i,k}.EH.Video.HR_feats(:,1));
@@ -83,6 +83,9 @@ n_samples=4;
         t=[];
         if k==3
             t(1:win_num-n_samples+1)=0;
+%             n_no_miedo=n_no_miedo+win_num-n_samples+1;
+%            index_no_miedo
+%             cuenta_i_no_miedo=cuenta_i_no_miedo+1;
         else
             t(1:win_num-n_samples+1)=1;
         end
@@ -113,6 +116,35 @@ n_samples=4;
                     balance((volunteers/2 + 1):volunteers,:);
 %   end
   
+
+%% Stage 4.2 Under sample to balance the dataset
+rng('shuffle')
+s = rng
+Results_BioSpeech.seed=s.Seed;
+   for i=1:volunteers
+       vect_fear=find(labels{:,:,i}==1);
+       n_diff =balance(i,2)-balance(i,1);
+       n_t_samples=balance(i,2)+balance(i,1);
+       sample_removed_index=randperm(length(vect_fear),n_diff);
+       sample_remove=vect_fear(sample_removed_index);
+       index_1=1;
+       caca=peri{:,:,i};
+       caca2=[];
+       caca3=labels{:,:,i};
+       caca4=[];
+       for j=1:n_t_samples
+           if(~sum(sample_remove==j))
+               caca2(index_1,:)=caca(j,:);
+               caca4(index_1,1)=caca3(j,1);
+%                peri_n{:,:,i}(index_1)=peri{:,:,i}(j);
+%                labels_n{:,:,i}(index_1)=labels{:,:,i}(j);
+               index_1=index_1+1;
+           end
+       end
+       peri{:,:,i}=caca2;
+       labels{:,:,i}=caca4;
+   end
+
   %% Stage 5 & 6: Trainning and testing.
   if true
     for i=1:20
