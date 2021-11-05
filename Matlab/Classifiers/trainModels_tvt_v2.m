@@ -341,14 +341,16 @@ function [results]=binaryModels(features, labels)
   %Bayesian Optimization for SVM 
    
   opts = statset('display','iter','UseParallel',true);
-  classf = @classfsvm;
+  %classf = @classfsvm;
   %classf = @(train_data, train_labels, test_data, test_labels)...
-    %sum(predict(fitcsvm(train_data, train_labels,'KernelFunction','rbf','Cost',[0,1;2 0]), test_data) ~= test_labels);
+   %sum(predict(fitcsvm(train_data, train_labels,'KernelFunction','rbf','Cost',[0,1;2 0]), test_data) ~= test_labels);
     
   [~,colum]=size(peri_temp);
   fs =1:1:colum;
   %fs=[1 4 9 10 11 18 20 24 27 28 36 37 38 39 40 ];
   %[fs, history] = sequentialfs(classf, peri_temp, double(label_temp), 'cv', c, 'options', opts);
+   parameters.featSelection = 'mrmr';
+   [fs,~,~] = feature_sel_module(peri_temp,peri_temp, label_temp, parameters);
   X_train_w_best_feature = peri_temp(:,fs);
   
   params = hyperparameters('fitcsvm',X_train_w_best_feature,double(label_temp));
@@ -954,7 +956,7 @@ end
 
 function out = classfsvm(train_data, train_labels, test_data, test_labels)
 
-    mdl = fitcsvm(train_data, train_labels,'KernelFunction','polynomial','Cost',[0,1;1.6,0],'ClassNames',{'1','2'});
+    mdl = fitcsvm(train_data, train_labels,'KernelFunction','polynomial','Cost',[0,1;1,0],'ClassNames',{'1','2'});
     
     [pred,~]=predict(mdl,test_data);
     
