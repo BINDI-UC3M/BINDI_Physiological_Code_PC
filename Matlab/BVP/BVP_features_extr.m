@@ -34,7 +34,9 @@
 %> @author Copyright Guillaume Chanel 2013
 %> @author Copyright Frank Villaro-Dixon, 2014
 %> @author Copyright UC3M, 2016
+
 function [BVP_feats, BVP_feats_names, IBI, Bulk] = BVP_features_extr(BVPSignal,varargin)
+
 
 % Check inputs and define unknown values
 narginchk(1, Inf);
@@ -62,10 +64,8 @@ featuresNamesIBI = {'mean_', 'HRV', 'meanIBI', 'tachogram_LF', 'tachogram_MF',..
 featuresNames = {'mean_', 'HRV_sdnn','HRV_rmssd', 'meanIBI',...
     'sum_LF','sum_HF','sum_UHF','LF_energia','HF_energia','UHF_energia','Ratio_LFHF', ...
 	'LFnorm','HFnorm','Rel_power_LF','Rel_power_HF','Rel_power_UHF',...
-    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi',...
-    'dfa_bvp'};
-
-%,'rrate','det','lmax','ent','lam','tt','corDim'};
+    'sd2','sd1','Lsd2','Tsd1','csi','mcsi','cvi'};%,...
+    %'dfa_bvp','rrate','det','lmax','ent','lam','tt','corDim'};
 
 BVP_feats_names = featuresSelector(featuresNames,varargin{:});
 

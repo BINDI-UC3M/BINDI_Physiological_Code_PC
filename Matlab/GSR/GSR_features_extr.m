@@ -39,9 +39,7 @@ GSR_raw = Signal__get_raw(GSRsignal);
 
 featuresNames = {'nbPeaks', 'ampPeaks', 'riseTime', ...
                  'recoveryTime', 'aup', 'meanGSR', 'stdGSR'};
-             
-             
-             %,...
+
                  %'firstQuartileGSR','thirdQuartileGSR','sp0005','sp0515',...
                  %'sp_energyRatio','dfa','rrate','det','lmax','ent','lam','tt','corDim'};
 %featuresNames = {'meanGSR', 'stdGSR'};
