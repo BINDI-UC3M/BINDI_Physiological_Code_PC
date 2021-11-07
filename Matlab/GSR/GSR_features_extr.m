@@ -36,10 +36,8 @@ GSR_raw = Signal__get_raw(GSRsignal);
 %                  'recoveryTime', 'aup', 'meanGSR', 'stdGSR',...
 %                  'firstQuartileGSR','thirdQuartileGSR','sp0005','sp0515',...
 %                  'sp_energyRatio', 'dfa','rrate','det','lmax','ent','lam','tt','corDim'};
-
 featuresNames = {'nbPeaks', 'ampPeaks', 'riseTime', ...
-                 'recoveryTime', 'aup', 'meanGSR', 'stdGSR'};
-
+                 'recoveryTime', 'aup', 'meanGSR', 'stdGSR'};%,...
                  %'firstQuartileGSR','thirdQuartileGSR','sp0005','sp0515',...
                  %'sp_energyRatio','dfa','rrate','det','lmax','ent','lam','tt','corDim'};
 %featuresNames = {'meanGSR', 'stdGSR'};
@@ -49,11 +47,9 @@ signalUnit = Signal__get_unit(GSRsignal);
 
 if strcmp(signalUnit, 'Ohm')
 %      disp('The GSR unit is Ohm');
-
      featuresNames = {'nbPeaks', 'ampPeaks', 'meanGSR', 'stdGSR',...
                  'firstQuartileGSR','thirdQuartileGSR','sp0005','sp0515',...
                  'sp_energyRatio', 'dfa','rrate','det','lmax','ent','lam','tt','corDim'};
-             
      %featuresNames = {'meanGSR', 'stdGSR'};
      GSR_feats_names = featuresSelector(featuresNames,varargin{:});
 	 raw = Signal__get_raw(GSRsignal);
