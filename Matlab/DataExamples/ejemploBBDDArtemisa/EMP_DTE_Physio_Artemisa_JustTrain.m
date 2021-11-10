@@ -101,7 +101,28 @@ n_samples=4;
 %   if normalizeBybaseline
 %     %%TBD
 %   end
-
+ peri_temp = [];
+      label_temp = [];
+      for i=1:20
+        %identify possible inf values
+        p_temp = features(:,:,i);
+        l_temp = labels(:,:,i);
+        [r,~] = find(isinf(cell2mat(p_temp(:,:))));
+        if r>0
+          p_temp(r,:) = [];
+          l_temp(r,:,:)= [];
+        end
+        
+        %In case of normalizing the set of features per volunteer
+        peri_temp  = [peri_temp ; zscore(cell2mat(p_temp))];
+        
+        %In case of NOT normalizing the set of features per volunteer
+        %peri_temp  = [peri_temp ; (cell2mat(p_temp))];
+        
+        label_temp = [label_temp ; cell2mat(l_temp)];
+      end
+   parameters.featSelection = 'mrmr';
+   [fs,~,~] = feature_sel_module(peri_temp,peri_temp, label, parameters);
 
  %% Stage 4.1: Get the balance for the dataset. Just for checking purposes.
   %Get the balance dataset
@@ -118,32 +139,32 @@ n_samples=4;
   
 
 %% Stage 4.2 Under sample to balance the dataset
-rng('shuffle')
-s = rng
-Results_BioSpeech.seed=s.Seed;
-   for i=1:volunteers
-       vect_fear=find(labels{:,:,i}==1);
-       n_diff =balance(i,2)-balance(i,1);
-       n_t_samples=balance(i,2)+balance(i,1);
-       sample_removed_index=randperm(length(vect_fear),n_diff);
-       sample_remove=vect_fear(sample_removed_index);
-       index_1=1;
-       caca=peri{:,:,i};
-       caca2=[];
-       caca3=labels{:,:,i};
-       caca4=[];
-       for j=1:n_t_samples
-           if(~sum(sample_remove==j))
-               caca2(index_1,:)=caca(j,:);
-               caca4(index_1,1)=caca3(j,1);
-%                peri_n{:,:,i}(index_1)=peri{:,:,i}(j);
-%                labels_n{:,:,i}(index_1)=labels{:,:,i}(j);
-               index_1=index_1+1;
-           end
-       end
-       peri{:,:,i}=caca2;
-       labels{:,:,i}=caca4;
-   end
+% rng('shuffle')
+% s = rng
+% Results_BioSpeech.seed=s.Seed;
+%    for i=1:volunteers
+%        vect_fear=find(labels{:,:,i}==1);
+%        n_diff =balance(i,2)-balance(i,1);
+%        n_t_samples=balance(i,2)+balance(i,1);
+%        sample_removed_index=randperm(length(vect_fear),n_diff);
+%        sample_remove=vect_fear(sample_removed_index);
+%        index_1=1;
+%        caca=peri{:,:,i};
+%        caca2=[];
+%        caca3=labels{:,:,i};
+%        caca4=[];
+%        for j=1:n_t_samples
+%            if(~sum(sample_remove==j))
+%                caca2(index_1,:)=caca(j,:);
+%                caca4(index_1,1)=caca3(j,1);
+% %                peri_n{:,:,i}(index_1)=peri{:,:,i}(j);
+% %                labels_n{:,:,i}(index_1)=labels{:,:,i}(j);
+%                index_1=index_1+1;
+%            end
+%        end
+%        peri{:,:,i}=caca2;
+%        labels{:,:,i}=caca4;
+%    end
 
   %% Stage 5 & 6: Trainning and testing.
   if true
@@ -265,7 +286,7 @@ Results_BioSpeech.seed=s.Seed;
       
       % Add this line to take just peri experiments
       %[result_train{i}] = trainModels_tvt_misscost(peri_temp, labels_temp, 'database',4,'model',1);
-      [result_train{i}] = trainModels_tvt(peri_temp, labels_temp, 'database',4,'model',1);
+      [result_train{i}] = trainModels_tvt_v2(peri_temp, labels_temp, 'database',4,'model',1);
       
       % Add this line to take peri and peribaseline
       %[result_train{i}] = trainModels_tvt(cat(3,peri_temp, peri_temp_base), cat(3,labels_temp,labels_temp_base), 'database',4,'model',1);

@@ -40,8 +40,8 @@ switch parameters.featSelection
 
         X_train = double( train_data);
         Y_train = double( labelsTrain); 
-        X_test = double( train_data(P.test,:) );
-        Y_test = double( labelsTrain(P.test) ); 
+%         X_test = double( train_data(P.test,:) );
+%         Y_test = double( labelsTrain(P.test) ); 
         % number of features
         numF = size(X_train,2);
         iFeatSelected = mRMR(X_train, Y_train, numF);

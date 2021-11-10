@@ -16,7 +16,7 @@
 %              - 3: WESAD
 %              - 4: BioSpeech
 
-function  [result] = trainModels_tvt(features, labels, varargin)
+function  [result] = trainModels_tvt_v2(features, labels, varargin)
 
   %warning('off','all')
   %warning;
