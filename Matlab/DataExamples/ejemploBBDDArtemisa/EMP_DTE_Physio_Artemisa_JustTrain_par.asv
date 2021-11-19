@@ -1,4 +1,4 @@
-function Results_BioSpeech = EMP_DTE_Physio_Artemisa_JustTrain(info)
+function Results_BioSpeech = EMP_DTE_Physio_Artemisa_JustTrain_par(info)
 
 
 dbstop if error
@@ -108,6 +108,7 @@ n_samples    = 1;
       end
     end
 %   end
+  
   %% Stage 3.1: Option to normalize data with baseline:
 %   % This step is optional and should be subjected to application neeeds
 %   normalizeBybaseline = info.normalizeBybaseline;  
@@ -180,14 +181,37 @@ n_samples    = 1;
 %    end
 
   %% Stage 5 & 6: Trainning and testing.
-  if true
-    for i=1:20
+  
+  
+if true
       
+  try
+  parpool("local",4)
+  end
+  
+spmd
+    
+    
+
+  end
+Results_BioSpeech.results_windows  = result_train;
+
+end
+
+
+
+function test()
+    
+    
+    
+ for i=1+5*(labindex-1):5*(labindex)
+    
+%       filoeID=fopen(sprintf('log_%i_%i.txt',labindex,i),'w');
       %Display some info
       fprintf('Running %d, Trainning and Testing...\n',i);
       
       %Create name file to store data
-      fname = strcat('ResultsArtemisa_V',num2str(i));
+      fname = strcat('ResultsArtemisa_test_V',num2str(i));
       fid = fopen([fname '.mat'],'w');
       fclose(fid); 
       
@@ -296,11 +320,12 @@ n_samples    = 1;
         %peri_temp(:,:,i+volunteers/2)   = [];
         %labels_temp(:,:,i+volunteers/2) = [];
       end      
-      
+      diary(sprintf('log_%i.txt',i))
+      diary on
       % Add this line to take just peri experiments
       %[result_train{i}] = trainModels_tvt_misscost(peri_temp, labels_temp, 'database',4,'model',1);
       [result_train{i}] = trainModels_tvt(peri_temp, labels_temp, 'database',4,'model',1);
-      
+      diary off
       % Add this line to take peri and peribaseline
       %[result_train{i}] = trainModels_tvt(cat(3,peri_temp, peri_temp_base), cat(3,labels_temp,labels_temp_base), 'database',4,'model',1);
       
@@ -310,12 +335,17 @@ n_samples    = 1;
 
             %% Stage 6: Testing the model - Test
       % SVM Testing for the five (5-kfold) surrogate models
-      fs=result_train{i}.svm_simulation.sfs;
+
       for k = 1:kmax
         %% In case of performing normalization by features as well:
         % 1. For FULL LOSO
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+        if(isfield(result_train{i}.svm_simulation,'sfs'))
+            fs=result_train{i}.svm_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        end
 
         [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},feat_t);
         confuM_t = confusionmat([string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
@@ -345,9 +375,14 @@ n_samples    = 1;
       %SVM testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-      
+       if(isfield(result_train{i}.svm_simulation,'sfs'))
+        fs=result_train{i}.svm_simulation.sfs;
         feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);      
+        feat_t=feat_t(:,fs);  
+       else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        
+       end
         
       [tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,feat_t);
       confuM_t = confusionmat([ string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
@@ -378,13 +413,19 @@ n_samples    = 1;
       %result_train{i}.svm_test.tmulti{k+1} =[string(num2cell(labels_test+1)),tPredictions];
 
 %       KNN Testing for the five (5-kfold) surrogate models
-       fs=result_train{i}.knn_simulation.sfs;
+%        fs=result_train{i}.knn_simulation.sfs;
       for k = 1:kmax
 
         %% In case of performing normalization by features as well:
         % 1. For FULL LOSO
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+        if(isfield(result_train{i}.knn_simulation,'sfs'))
+          fs=result_train{i}.knn_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        
+        end
         
         
         [tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},feat_t);
@@ -412,8 +453,14 @@ n_samples    = 1;
       %KNN testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+        if(isfield(result_train{i}.knn_simulation,'sfs'))
+          fs=result_train{i}.knn_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        
+        end
         
        
       [tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,feat_t);
@@ -442,14 +489,19 @@ n_samples    = 1;
       %                                        string(num2cell(labels{:,:,vs(1,2)+volunteers/2}+1))],tPredictions];
       %result_train{i}.knn_test.tmulti{k+1} =[string(num2cell(labels_test+1)),tPredictions];
       
-      %ENS
-       fs=result_train{i}.ens_simulation.sfs;
+%       %ENS
+%        fs=result_train{i}.ens_simulation.sfs;
       for k = 1:kmax
 
         %% In case of performing normalization by features as well:
         % 1. For FULL LOS        
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+        if(isfield(result_train{i}.ens_simulation,'sfs'))
+          fs=result_train{i}.ens_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        end
         
         
         [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},feat_t);
@@ -478,8 +530,13 @@ n_samples    = 1;
       %ENS testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+         if(isfield(result_train{i}.ens_simulation,'sfs'))
+            fs=result_train{i}.ens_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+         else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        end
         
         
       [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,feat_t);
@@ -533,7 +590,5 @@ n_samples    = 1;
       save(fname, 'result_train') 
       result_train{i} = [];
     end
-  end
-Results_BioSpeech.results_windows  = result_train;
-
+ end
 end

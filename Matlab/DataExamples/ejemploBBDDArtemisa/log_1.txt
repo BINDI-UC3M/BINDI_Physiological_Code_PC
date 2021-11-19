@@ -1,0 +1,247 @@
+Running 1, Trainning and Testing...
+Running 1, Trainning and Testing...
+Running 1, Trainning and Testing...
+All warnings have the state 'off'.
+BioSpeech Open BBDD simulation running
+Toward the subject-independent simulations
+|==================================================================================================================================================|
+| Iter | Eval   | Objective   | Objective   | BestSoFar   | BestSoFar   | BoxConstraint|  KernelScale | KernelFuncti-| PolynomialOr-|  Standardize |
+|      | result |             | runtime     | (observed)  | (estim.)    |              |              | on           | der          |              |
+|==================================================================================================================================================|
+|    1 | Best   |     0.32632 |     0.62927 |     0.32632 |     0.32632 |    0.0017872 |            - |       linear |            - |        false |
+|    2 | Accept |     0.39317 |     0.83591 |     0.32632 |     0.33031 |     0.088246 |       340.58 |     gaussian |            - |         true |
+|    3 | Best   |     0.15922 |      65.915 |     0.15922 |     0.22899 |      0.37496 |            - |   polynomial |            2 |        false |
+Running 1, Trainning and Testing...
+Running 1, Trainning and Testing...
+Running 1, Trainning and Testing...
+All warnings have the state 'off'.
+BioSpeech Open BBDD simulation running
+Toward the subject-independent simulations
+|==================================================================================================================================================|
+| Iter | Eval   | Objective   | Objective   | BestSoFar   | BestSoFar   | BoxConstraint|  KernelScale | KernelFuncti-| PolynomialOr-|  Standardize |
+|      | result |             | runtime     | (observed)  | (estim.)    |              |              | on           | der          |              |
+|==================================================================================================================================================|
+|    1 | Best   |      0.1632 |      7.9622 |      0.1632 |      0.1632 |     0.012365 |            - |   polynomial |            2 |         true |
+|    2 | Accept |     0.49216 |     0.97016 |      0.1632 |     0.17628 |      0.36342 |      0.79051 |     gaussian |            - |         true |
+|    3 | Accept |     0.44383 |      111.35 |      0.1632 |     0.17782 |       337.88 |            - |   polynomial |            4 |         true |
+|    4 | Accept |     0.42942 |       141.9 |      0.1632 |     0.17714 |       512.84 |            - |       linear |            - |        false |
+|    5 | Best   |     0.15388 |      13.287 |     0.15388 |     0.15421 |     0.033086 |            - |   polynomial |            2 |         true |
+|    6 | Accept |     0.16829 |      43.314 |     0.15388 |     0.16173 |       351.95 |            - |   polynomial |            2 |         true |
+|    7 | Accept |     0.21026 |      1.1226 |     0.15388 |     0.16172 |    0.0010066 |            - |   polynomial |            2 |        false |
+|    8 | Best   |    0.080119 |      2.1828 |    0.080119 |    0.080641 |    0.0010022 |            - |   polynomial |            3 |        false |
+|    9 | Accept |     0.42942 |      114.62 |    0.080119 |     0.08065 |    0.0010454 |            - |   polynomial |            4 |        false |
+|   10 | Best   |    0.079695 |      2.1977 |    0.079695 |    0.080103 |    0.0010044 |            - |   polynomial |            3 |         true |
+|   11 | Accept |     0.29377 |     0.58698 |    0.079695 |    0.080154 |    0.0010035 |            - |       linear |            - |         true |
+|   12 | Accept |     0.29377 |     0.72001 |    0.079695 |    0.080204 |       251.17 |       999.91 |     gaussian |            - |        false |
+|   13 | Accept |    0.080967 |      2.1852 |    0.079695 |    0.080507 |       982.92 |            - |   polynomial |            3 |         true |
+|   14 | Accept |    0.080119 |      33.596 |    0.079695 |    0.080251 |        999.8 |            - |   polynomial |            3 |        false |
+|   15 | Accept |    0.080119 |      2.1301 |    0.079695 |    0.080189 |    0.0010089 |            - |   polynomial |            3 |        false |
+|   16 | Accept |     0.49216 |      1.5433 |    0.079695 |    0.080191 |     0.019247 |    0.0010087 |     gaussian |            - |        false |
+|   17 | Best   |    0.051293 |      1.2151 |    0.051293 |    0.051489 |       104.78 |       4.5326 |     gaussian |            - |        false |
+|   18 | Accept |    0.051293 |       1.287 |    0.051293 |    0.051377 |       371.68 |        4.417 |     gaussian |            - |        false |
+|   19 | Accept |     0.21619 |     0.90212 |    0.051293 |    0.050939 |       5.5351 |       15.241 |     gaussian |            - |        false |
+|   20 | Accept |     0.47774 |      0.8105 |    0.051293 |    0.051273 |      0.24907 |       2.1992 |     gaussian |            - |        false |
+|==================================================================================================================================================|
+| Iter | Eval   | Objective   | Objective   | BestSoFar   | BestSoFar   | BoxConstraint|  KernelScale | KernelFuncti-| PolynomialOr-|  Standardize |
+|      | result |             | runtime     | (observed)  | (estim.)    |              |              | on           | der          |              |
+|==================================================================================================================================================|
+|   21 | Accept |    0.080967 |      2.2346 |    0.051293 |    0.051257 |      0.96053 |            - |   polynomial |            3 |         true |
+|   22 | Accept |     0.49852 |      1.1889 |    0.051293 |    0.051447 |       299.19 |      0.53301 |     gaussian |            - |        false |
+|   23 | Accept |     0.49216 |     0.76367 |    0.051293 |    0.051389 |     0.013911 |       960.42 |     gaussian |            - |        false |
+|   24 | Accept |     0.20263 |     0.80958 |    0.051293 |    0.051205 |      0.19998 |       4.2313 |     gaussian |            - |        false |
+|   25 | Best   |    0.047902 |      1.8152 |    0.047902 |    0.047884 |       592.53 |       6.0512 |     gaussian |            - |        false |
+|   26 | Accept |    0.050021 |      1.4035 |    0.047902 |    0.048073 |       377.45 |       5.0802 |     gaussian |            - |        false |
+|   27 | Accept |     0.06401 |      1.7722 |    0.047902 |    0.048081 |       9.0918 |       7.4192 |     gaussian |            - |        false |
+|   28 | Accept |    0.060619 |        2.95 |    0.047902 |     0.04815 |       715.19 |       8.0355 |     gaussian |            - |        false |
+|   29 | Accept |     0.41077 |      0.8168 |    0.047902 |    0.048149 |      0.42835 |       80.227 |     gaussian |            - |         true |
+|   30 | Accept |     0.49216 |     0.78154 |    0.047902 |    0.048165 |      0.51972 |       982.41 |     gaussian |            - |         true |
+
+__________________________________________________________
+Optimization completed.
+MaxObjectiveEvaluations of 30 reached.
+Total function evaluations: 30
+Total elapsed time: 539.0095 seconds.
+Total objective function evaluation time: 498.4263
+
+Best observed feasible point:
+    BoxConstraint    KernelScale    KernelFunction    PolynomialOrder    Standardize
+    _____________    ___________    ______________    _______________    ___________
+
+       592.53          6.0512          gaussian             NaN             false   
+
+Observed objective function value = 0.047902
+Estimated objective function value = 0.048165
+Function evaluation time = 1.8152
+
+Best estimated feasible point (according to models):
+    BoxConstraint    KernelScale    KernelFunction    PolynomialOrder    Standardize
+    _____________    ___________    ______________    _______________    ___________
+
+       592.53          6.0512          gaussian             NaN             false   
+
+Estimated objective function value = 0.048165
+Estimated function evaluation time = 1.5284
+
+|==================================================================================================================================================|
+| Iter | Eval   | Objective   | Objective   | BestSoFar   | BestSoFar   | NumNeighbors |     Distance | DistanceWeig-|     Exponent |  Standardize |
+|      | result |             | runtime     | (observed)  | (estim.)    |              |              | ht           |              |              |
+|==================================================================================================================================================|
+|    1 | Best   |    0.083934 |     0.63173 |    0.083934 |    0.083934 |            8 |  correlation |      inverse |            - |         true |
+|    2 | Accept |     0.15642 |     0.79938 |    0.083934 |    0.086816 |          607 |     spearman | squaredinver |            - |        false |
+|    3 | Accept |     0.12209 |     0.36309 |    0.083934 |    0.086182 |           10 |   seuclidean |      inverse |            - |        false |
+|    4 | Accept |     0.23442 |     0.27755 |    0.083934 |     0.14921 |           30 |  correlation |        equal |            - |         true |
+|    5 | Best   |    0.047478 |     0.28304 |    0.047478 |    0.047666 |            2 |  correlation |      inverse |            - |         true |
+|    6 | Accept |    0.048749 |     0.30167 |    0.047478 |    0.047531 |            1 |  correlation |      inverse |            - |         true |
+|    7 | Accept |     0.31496 |     0.79292 |    0.047478 |    0.047528 |         1151 |   seuclidean |      inverse |            - |        false |
+|    8 | Accept |    0.056804 |     0.33805 |    0.047478 |    0.047563 |            1 |   seuclidean |      inverse |            - |        false |
+|    9 | Accept |    0.048749 |     0.27392 |    0.047478 |    0.047562 |            1 |  correlation | squaredinver |            - |         true |
+|   10 | Accept |    0.070793 |     0.28322 |    0.047478 |    0.047574 |           13 |  correlation | squaredinver |            - |         true |
+|   11 | Accept |     0.14667 |     0.78225 |    0.047478 |    0.047572 |         1147 |  correlation | squaredinver |            - |         true |
+|   12 | Accept |    0.048326 |     0.26686 |    0.047478 |     0.04761 |            2 |  correlation | squaredinver |            - |         true |
+|   13 | Accept |     0.15261 |     0.25405 |    0.047478 |    0.047597 |            2 |    chebychev | squaredinver |            - |         true |
+|   14 | Accept |    0.050445 |     0.24593 |    0.047478 |    0.047593 |            2 |  correlation | squaredinver |            - |        false |
+|   15 | Accept |    0.075032 |     0.25581 |    0.047478 |    0.047605 |           22 |  correlation | squaredinver |            - |        false |
+|   16 | Accept |    0.050021 |     0.24027 |    0.047478 |    0.048205 |            1 |  correlation | squaredinver |            - |        false |
+|   17 | Accept |    0.050021 |     0.25117 |    0.047478 |    0.048056 |            1 |  correlation |      inverse |            - |        false |
+|   18 | Accept |      0.1153 |     0.25294 |    0.047478 |    0.047605 |           18 |  correlation |      inverse |            - |        false |
+|   19 | Accept |    0.049173 |     0.24298 |    0.047478 |    0.047617 |            2 |       cosine | squaredinver |            - |        false |
+|   20 | Accept |    0.078847 |     0.26181 |    0.047478 |    0.048164 |           31 |       cosine | squaredinver |            - |        false |
+|==================================================================================================================================================|
+| Iter | Eval   | Objective   | Objective   | BestSoFar   | BestSoFar   | NumNeighbors |     Distance | DistanceWeig-|     Exponent |  Standardize |
+|      | result |             | runtime     | (observed)  | (estim.)    |              |              | ht           |              |              |
+|==================================================================================================================================================|
+|   21 | Accept |    0.049173 |     0.25959 |    0.047478 |    0.048008 |            1 |       cosine | squaredinver |            - |        false |
+|   22 | Accept |    0.049173 |     0.23534 |    0.047478 |    0.047936 |            1 |       cosine |      inverse |            - |        false |
+|   23 | Accept |     0.11785 |     0.24283 |    0.047478 |     0.04761 |           19 |       cosine |      inverse |            - |        false |
+|   24 | Accept |    0.049173 |      0.2795 |    0.047478 |    0.047648 |            1 |       cosine | squaredinver |            - |         true |
+|   25 | Accept |     0.07376 |     0.28159 |    0.047478 |    0.048243 |           22 |       cosine | squaredinver |            - |         true |
+|   26 | Accept |    0.049173 |     0.27822 |    0.047478 |    0.048225 |            1 |       cosine |      inverse |            - |         true |
+|   27 | Accept |      0.1348 |     0.29554 |    0.047478 |    0.047581 |           26 |       cosine |      inverse |            - |         true |
+|   28 | Accept |    0.056804 |     0.25809 |    0.047478 |    0.047576 |            1 |    euclidean | squaredinver |            - |         true |
+|   29 | Accept |     0.15812 |     0.26551 |    0.047478 |    0.047563 |           33 |    euclidean | squaredinver |            - |         true |
+|   30 | Accept |     0.05638 |     0.26599 |    0.047478 |     0.04756 |            1 |    euclidean | squaredinver |            - |        false |
+
+__________________________________________________________
+Optimization completed.
+MaxObjectiveEvaluations of 30 reached.
+Total function evaluations: 30
+Total elapsed time: 45.4712 seconds.
+Total objective function evaluation time: 10.0609
+
+Best observed feasible point:
+    NumNeighbors     Distance      DistanceWeight    Exponent    Standardize
+    ____________    ___________    ______________    ________    ___________
+
+         2          correlation       inverse          NaN          true    
+
+Observed objective function value = 0.047478
+Estimated objective function value = 0.04756
+Function evaluation time = 0.28304
+
+Best estimated feasible point (according to models):
+    NumNeighbors     Distance      DistanceWeight    Exponent    Standardize
+    ____________    ___________    ______________    ________    ___________
+
+         2          correlation       inverse          NaN          true    
+
+Estimated objective function value = 0.04756
+Estimated function evaluation time = 0.33889
+
+|================================================================================================================================================================================|
+| Iter | Eval   | Objective   | Objective   | BestSoFar   | BestSoFar   |       Method | NumLearningC-|    LearnRate |  MinLeafSize | MaxNumSplits | SplitCriteri-| NumVariables-|
+|      | result |             | runtime     | (observed)  | (estim.)    |              | ycles        |              |              |              | on           | ToSample     |
+|================================================================================================================================================================================|
+|    1 | Best   |      0.1649 |      30.547 |      0.1649 |      0.1649 |  GentleBoost |          424 |      0.55245 |          481 |          448 |            - |            - |
+|    2 | Accept |     0.19203 |       8.337 |      0.1649 |     0.16598 |     RUSBoost |           24 |       0.1911 |           68 |         1295 |     deviance |            - |
+|    3 | Accept |      0.1933 |      65.127 |      0.1649 |      0.1649 |     RUSBoost |          213 |     0.077174 |           22 |           19 |          gdi |            - |
+|    4 | Best   |    0.047478 |      17.043 |    0.047478 |    0.047569 |          Bag |           58 |            - |            5 |          225 |          gdi |           37 |
+|    5 | Accept |     0.34633 |       1.115 |    0.047478 |    0.057327 |          Bag |           19 |            - |          884 |            3 |          gdi |           36 |
+|    6 | Best   |    0.044934 |      17.534 |    0.044934 |    0.045525 |          Bag |           54 |            - |            5 |          204 |          gdi |           42 |
+|    7 | Accept |     0.35778 |      3.1645 |    0.044934 |    0.046153 |          Bag |           58 |            - |          925 |           10 |          gdi |           42 |
+|    8 | Accept |     0.31284 |      27.481 |    0.044934 |     0.04511 |          Bag |          200 |            - |            7 |            2 |          gdi |           44 |
+|    9 | Accept |     0.43747 |     0.67481 |    0.044934 |    0.045411 |          Bag |           14 |            - |          925 |          132 |          gdi |            5 |
+|   10 | Accept |     0.38957 |     0.67699 |    0.044934 |    0.045356 |          Bag |           11 |            - |          439 |         1015 |          gdi |           12 |
+|   11 | Accept |      0.1259 |       2.464 |    0.044934 |    0.045229 |          Bag |           11 |            - |           12 |          169 |          gdi |           24 |
+|   12 | Accept |     0.10174 |      1.3408 |    0.044934 |    0.045347 |          Bag |           11 |            - |            2 |          657 |          gdi |            7 |
+|   13 | Accept |    0.077575 |      2.4575 |    0.044934 |    0.045503 |          Bag |           16 |            - |            2 |          101 |          gdi |           14 |
+|   14 | Accept |    0.066978 |      2.1819 |    0.044934 |    0.044793 |          Bag |           11 |            - |            3 |          136 |          gdi |           20 |
+|   15 | Accept |    0.047054 |      9.6538 |    0.044934 |    0.044721 |          Bag |           25 |            - |            1 |          675 |          gdi |           46 |
+|   16 | Accept |    0.053412 |      4.0405 |    0.044934 |     0.04497 |          Bag |           11 |            - |            2 |          363 |          gdi |           47 |
+|   17 | Best   |       0.039 |      118.89 |       0.039 |    0.038971 |          Bag |          420 |            - |            2 |          340 |          gdi |           33 |
+|   18 | Accept |      0.3599 |      5.6283 |       0.039 |    0.038965 |     RUSBoost |           45 |      0.18767 |          337 |            1 |     deviance |            - |
+|   19 | Accept |      0.3599 |      5.3883 |       0.039 |    0.038948 |     RUSBoost |           70 |      0.10659 |          695 |            2 |     deviance |            - |
+|   20 | Accept |    0.075032 |       94.84 |       0.039 |    0.038952 |     RUSBoost |          188 |      0.56788 |            1 |         1323 |     deviance |            - |
+|================================================================================================================================================================================|
+| Iter | Eval   | Objective   | Objective   | BestSoFar   | BestSoFar   |       Method | NumLearningC-|    LearnRate |  MinLeafSize | MaxNumSplits | SplitCriteri-| NumVariables-|
+|      | result |             | runtime     | (observed)  | (estim.)    |              | ycles        |              |              |              | on           | ToSample     |
+|================================================================================================================================================================================|
+|   21 | Accept |      0.1632 |      5.3015 |       0.039 |    0.038954 |     RUSBoost |           12 |     0.026975 |            1 |           32 |     deviance |            - |
+|   22 | Accept |    0.079695 |      5.3317 |       0.039 |    0.038951 |     RUSBoost |           11 |     0.019147 |            3 |         2334 |     deviance |            - |
+|   23 | Accept |    0.092412 |      1.9547 |       0.039 |    0.038956 |          Bag |           14 |            - |            1 |         1074 |     deviance |            7 |
+|   24 | Accept |      0.2251 |      2.9736 |       0.039 |    0.038957 |          Bag |           14 |            - |            3 |           17 |     deviance |           27 |
+|   25 | Accept |    0.086477 |      2.4308 |       0.039 |    0.038942 |          Bag |           15 |            - |           11 |         1722 |     deviance |           16 |
+|   26 | Accept |     0.38533 |      1.5356 |       0.039 |    0.038983 |          Bag |           30 |            - |          455 |         2164 |     deviance |            6 |
+|   27 | Best   |    0.037304 |      36.042 |    0.037304 |    0.037347 |          Bag |          104 |            - |            4 |         2213 |     deviance |           42 |
+|   28 | Accept |     0.50911 |     0.59464 |    0.037304 |    0.037351 |          Bag |           14 |            - |         1136 |            1 |     deviance |            9 |
+|   29 | Accept |    0.051717 |      2.3913 |    0.037304 |    0.037369 |          Bag |           12 |            - |            3 |         2034 |     deviance |           18 |
+|   30 | Accept |    0.088597 |      5.5798 |    0.037304 |    0.037367 |   AdaBoostM1 |           11 |     0.016624 |            1 |         1704 |     deviance |            - |
+
+__________________________________________________________
+Optimization completed.
+MaxObjectiveEvaluations of 30 reached.
+Total function evaluations: 30
+Total elapsed time: 560.2969 seconds.
+Total objective function evaluation time: 482.7256
+
+Best observed feasible point:
+    Method    NumLearningCycles    LearnRate    MinLeafSize    MaxNumSplits    SplitCriterion    NumVariablesToSample
+    ______    _________________    _________    ___________    ____________    ______________    ____________________
+
+     Bag             104              NaN            4             2213           deviance                42         
+
+Observed objective function value = 0.037304
+Estimated objective function value = 0.037367
+Function evaluation time = 36.0422
+
+Best estimated feasible point (according to models):
+    Method    NumLearningCycles    LearnRate    MinLeafSize    MaxNumSplits    SplitCriterion    NumVariablesToSample
+    ______    _________________    _________    ___________    ____________    ______________    ____________________
+
+     Bag             104              NaN            4             2213           deviance                42         
+
+Estimated objective function value = 0.037367
+Estimated function evaluation time = 36.0308
+
+------------------------------------------------------
+P1   |   0.95 (0.99,0.99)   |   0.95 (0.97,0.97)   |   0.97 (0.99,0.99)|
+------------------------------------------------------
+All warnings have the state 'off'.
+BioSpeech Open BBDD simulation running
+Toward the subject-independent simulations
+|==================================================================================================================================================|
+| Iter | Eval   | Objective   | Objective   | BestSoFar   | BestSoFar   | BoxConstraint|  KernelScale | KernelFuncti-| PolynomialOr-|  Standardize |
+|      | result |             | runtime     | (observed)  | (estim.)    |              |              | on           | der          |              |
+|==================================================================================================================================================|
+|    1 | Best   |     0.28317 |      175.18 |     0.28317 |     0.28317 |       77.534 |            - |       linear |            - |         true |
+|    2 | Accept |     0.44044 |      136.83 |     0.28317 |     0.29214 |       790.94 |            - |   polynomial |            4 |        false |
+|    3 | Best   |     0.28063 |      1.3798 |     0.28063 |     0.28069 |      0.13103 |            - |       linear |            - |        false |
+|    4 | Best   |     0.16829 |      37.496 |     0.16829 |     0.16878 |      0.31124 |            - |   polynomial |            2 |         true |
+|    5 | Accept |     0.21068 |      1.0421 |     0.16829 |     0.16845 |    0.0010029 |            - |   polynomial |            2 |        false |
+|    6 | Best   |     0.09114 |      94.902 |     0.09114 |      0.1009 |    0.0010076 |            - |   polynomial |            3 |        false |
+|    7 | Accept |    0.091988 |       125.3 |     0.09114 |    0.091574 |     0.002172 |            - |   polynomial |            3 |        false |
+|    8 | Best   |    0.090292 |      62.567 |    0.090292 |    0.090308 |       995.51 |            - |   polynomial |            3 |         true |
+|    9 | Accept |     0.49216 |     0.80078 |    0.090292 |    0.090312 |      0.11188 |       990.52 |     gaussian |            - |        false |
+|   10 | Accept |      0.4964 |      106.68 |    0.090292 |    0.090315 |     0.001002 |            - |   polynomial |            4 |         true |
+|   11 | Accept |     0.51081 |      1.9027 |    0.090292 |    0.090317 |       5.3643 |    0.0010102 |     gaussian |            - |        false |
+|   12 | Accept |     0.49216 |     0.82213 |    0.090292 |    0.090319 |     0.023029 |       968.44 |     gaussian |            - |         true |
+|   13 | Accept |     0.09114 |      31.504 |    0.090292 |     0.09073 |     0.001006 |            - |   polynomial |            3 |         true |
+|   14 | Accept |     0.09114 |      63.347 |    0.090292 |    0.090867 |    0.0010032 |            - |   polynomial |            3 |         true |
+|   15 | Accept |     0.09114 |      61.462 |    0.090292 |    0.090935 |    0.0010063 |            - |   polynomial |            3 |         true |
+|   16 | Accept |     0.49216 |       1.487 |    0.090292 |    0.090935 |    0.0010008 |    0.0010091 |     gaussian |            - |         true |
+|   17 | Accept |    0.090292 |      60.606 |    0.090292 |    0.090807 |       995.19 |            - |   polynomial |            3 |         true |
+|   18 | Accept |     0.24587 |     0.95954 |    0.090292 |      0.0903 |       988.89 |       1.3904 |     gaussian |            - |         true |
+|   19 | Accept |     0.17931 |      45.559 |    0.090292 |      0.0903 |       996.29 |            - |   polynomial |            2 |        false |
+|   20 | Accept |    0.090292 |      60.453 |    0.090292 |    0.090283 |      0.75659 |            - |   polynomial |            3 |         true |
+|==================================================================================================================================================|
+| Iter | Eval   | Objective   | Objective   | BestSoFar   | BestSoFar   | BoxConstraint|  KernelScale | KernelFuncti-| PolynomialOr-|  Standardize |
+|      | result |             | runtime     | (observed)  | (estim.)    |              |              | o

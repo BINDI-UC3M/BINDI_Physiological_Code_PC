@@ -48,17 +48,10 @@ end
   [volunteers, trials] = size(data_in);
 
 volunteers=index-1;
-n_samples_2  = 10;
-n_samples_4  = 20;
-n_samples    = 1;
-
-% n_samples_2  = 1;
-% n_samples_4  = 1;
-% n_samples    = 1;
+n_samples=4;
 % rngSeed'shuffle'
     for i=1:volunteers
       k = 1;
-       n_samples=1;
       win_num=length(data_in{i,k}.EH.Video.HR_feats(:,1));
       temp = [(data_in{i,k}.EH.Video.HR_feats(n_samples:win_num,2:23)) ...
                        (data_in{i,k}.EH.Video.GSR_feats(n_samples:win_num,:))...
@@ -76,13 +69,6 @@ n_samples    = 1;
       labels{:,:,i} = t(:); 
       
       for k=2:trials
-          if(k==2 )
-              n_samples=n_samples_2;
-          elseif(k==4 )
-              n_samples=n_samples_4;
-          else
-              n_samples=1;
-          end
           win_num=length(data_in{i,k}.EH.Video.HR_feats(:,1));
         temp = [(data_in{i,k}.EH.Video.HR_feats(n_samples:win_num,2:23)) ...
                          (data_in{i,k}.EH.Video.GSR_feats(n_samples:win_num,:))...
@@ -108,6 +94,7 @@ n_samples    = 1;
       end
     end
 %   end
+  
   %% Stage 3.1: Option to normalize data with baseline:
 %   % This step is optional and should be subjected to application neeeds
 %   normalizeBybaseline = info.normalizeBybaseline;  
@@ -180,8 +167,23 @@ n_samples    = 1;
 %    end
 
   %% Stage 5 & 6: Trainning and testing.
-  if true
-    for i=1:20
+  
+  
+     data_in_comp=Composite();
+   data_in_comp{1}=[data_in{:,1}];
+   data_in_comp{2}=[data_in{:,2}];
+   data_in_comp{3}=[data_in{:,3}];
+   data_in_comp{4}=[data_in{:,4}];
+  
+if true
+      
+  try
+  parpool(4)
+  end
+  
+spmd
+ for i=1+5*(labindex-1):5*(labindex)
+    
       
       %Display some info
       fprintf('Running %d, Trainning and Testing...\n',i);
@@ -299,7 +301,7 @@ n_samples    = 1;
       
       % Add this line to take just peri experiments
       %[result_train{i}] = trainModels_tvt_misscost(peri_temp, labels_temp, 'database',4,'model',1);
-      [result_train{i}] = trainModels_tvt(peri_temp, labels_temp, 'database',4,'model',1);
+      [result_train{i}] = trainModels_tvt_v2(peri_temp, labels_temp, 'database',4,'model',1);
       
       % Add this line to take peri and peribaseline
       %[result_train{i}] = trainModels_tvt(cat(3,peri_temp, peri_temp_base), cat(3,labels_temp,labels_temp_base), 'database',4,'model',1);
@@ -533,6 +535,8 @@ n_samples    = 1;
       save(fname, 'result_train') 
       result_train{i} = [];
     end
+ end
+
   end
 Results_BioSpeech.results_windows  = result_train;
 

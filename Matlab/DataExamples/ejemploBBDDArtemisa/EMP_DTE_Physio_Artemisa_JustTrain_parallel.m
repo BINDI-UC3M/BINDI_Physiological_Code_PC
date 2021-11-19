@@ -48,7 +48,7 @@ end
   [volunteers, trials] = size(data_in);
 
 volunteers=index-1;
-n_samples=4;
+n_samples=0;
 
     for i=1:volunteers
       k = 1;
@@ -68,7 +68,11 @@ n_samples=4;
       labels_loto{i,k} = t(:);
       labels{:,:,i} = t(:); 
       
-      for k=2:trials
+%       for k=2:trials
+%           if(k==2 || k==4)
+%               
+%           else
+%           end
           win_num=length(data_in{i,k}.EH.Video.HR_feats(:,1));
         temp = [(data_in{i,k}.EH.Video.HR_feats(n_samples:win_num,2:23)) ...
                          (data_in{i,k}.EH.Video.GSR_feats(n_samples:win_num,:))...
