@@ -310,12 +310,19 @@ n_samples    = 1;
 
             %% Stage 6: Testing the model - Test
       % SVM Testing for the five (5-kfold) surrogate models
-      fs=result_train{i}.svm_simulation.sfs;
+%       fs=result_train{i}.svm_simulation.sfs;
+        if(isfield(result_train{i}.svm_simulation,'sfs'))
+            fs=result_train{i}.svm_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        end
       for k = 1:kmax
         %% In case of performing normalization by features as well:
         % 1. For FULL LOSO
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+%         feat_t=[ zscore(peri{:,:,(i)})];
+%         feat_t=feat_t(:,fs);
 
         [tPredictions, tScores] = predict(result_train{i}.svm_simulation.Classifier.Trained{k},feat_t);
         confuM_t = confusionmat([string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
@@ -346,8 +353,13 @@ n_samples    = 1;
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
       
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);      
+        if(isfield(result_train{i}.svm_simulation,'sfs'))
+            fs=result_train{i}.svm_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        end      
         
       [tPredictions, tScores] = predict(result_train{i}.svm_simulation.ClassifierAll,feat_t);
       confuM_t = confusionmat([ string(num2cell(labels{:,:,(i)}+1))], string(tPredictions),'order',{'1','2'});
@@ -378,13 +390,20 @@ n_samples    = 1;
       %result_train{i}.svm_test.tmulti{k+1} =[string(num2cell(labels_test+1)),tPredictions];
 
 %       KNN Testing for the five (5-kfold) surrogate models
-       fs=result_train{i}.knn_simulation.sfs;
+%        fs=result_train{i}.knn_simulation.sfs;
+        if(isfield(result_train{i}.knn_simulation,'sfs'))
+            fs=result_train{i}.svm_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        end
       for k = 1:kmax
 
         %% In case of performing normalization by features as well:
         % 1. For FULL LOSO
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+%         feat_t=[ zscore(peri{:,:,(i)})];
+%         feat_t=feat_t(:,fs);
         
         
         [tPredictions, tScores] = predict(result_train{i}.knn_simulation.Classifier.Trained{k},feat_t);
@@ -412,8 +431,14 @@ n_samples    = 1;
       %KNN testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+      
+        if(isfield(result_train{i}.knn_simulation,'sfs'))
+            fs=result_train{i}.svm_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        end
         
        
       [tPredictions, tScores] = predict(result_train{i}.knn_simulation.ClassifierAll,feat_t);
@@ -443,13 +468,20 @@ n_samples    = 1;
       %result_train{i}.knn_test.tmulti{k+1} =[string(num2cell(labels_test+1)),tPredictions];
       
       %ENS
-       fs=result_train{i}.ens_simulation.sfs;
+%        fs=result_train{i}.ens_simulation.sfs;
+        if(isfield(result_train{i}.ens_simulation,'sfs'))
+            fs=result_train{i}.svm_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        end
       for k = 1:kmax
 
         %% In case of performing normalization by features as well:
         % 1. For FULL LOS        
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+%         feat_t=[ zscore(peri{:,:,(i)})];
+%         feat_t=feat_t(:,fs);
         
         
         [tPredictions, tScores] = predict(result_train{i}.ens_simulation.Classifier.Trained{k},feat_t);
@@ -478,8 +510,15 @@ n_samples    = 1;
       %ENS testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-        feat_t=[ zscore(peri{:,:,(i)})];
-        feat_t=feat_t(:,fs);
+%         feat_t=[ zscore(peri{:,:,(i)})];
+%         feat_t=feat_t(:,fs);
+        if(isfield(result_train{i}.ens_simulation,'sfs'))
+            fs=result_train{i}.svm_simulation.sfs;
+            feat_t=[ zscore(peri{:,:,(i)})];
+            feat_t=feat_t(:,fs);
+        else
+            feat_t=[ zscore(peri{:,:,(i)})];
+        end
         
         
       [tPredictions, tScores] = predict(result_train{i}.ens_simulation.ClassifierAll,feat_t);
