@@ -1,7 +1,7 @@
 
 %% Function to handle the data coming from BBDDLab_Bindi
 function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
-%    dbstop if error 
+    dbstop if error 
 
   %% data_in is a struct based of volunteers (rows) and trials (columns)
   [volunteers, trials] = size(data_in);
@@ -107,17 +107,27 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
       %% Stage 2: Extracting Features %%
       % Deal with window and overlapping
       operational_window = 20; %seconds
-      overlapin_window   = 2;  %seconds
+      overlapin_window   = 8;  %seconds
       
       %Video
-      start_bvp   = 1;
-      stop_bvp    = operational_window*samprate_bbddlab_bvp;
-      start_gsr   = 1;
-      stop_gsr    = operational_window*samprate_bbddlab_gsr;
+%       start_bvp   = 1;
+%       stop_bvp    = operational_window*samprate_bbddlab_bvp;
+      stop_bvp    = length(bvp_sig_video.raw)-1;
+      start_bvp   = length(bvp_sig_video.raw)-operational_window*samprate_bbddlab_bvp;
+      if(start_bvp<0)
+          start_bvp=1;
+          fprintf('BVP vol:%i video:%i',i,k)
+      end
+%       start_gsr   = 1;
+%       stop_gsr    = round(operational_window*samprate_bbddlab_gsr);
+      stop_gsr    = length(gsr_sig_video.raw)-1;
+      start_gsr   = length(gsr_sig_video.raw)-round(operational_window*samprate_bbddlab_gsr);
       overlap_bvp = overlapin_window*samprate_bbddlab_bvp;
       overlap_gsr = overlapin_window*samprate_bbddlab_gsr;
-      start_res   = 1;
-      stop_res    = operational_window*samprate_bbddlab_bvp;
+%       start_res   = 1;
+%       stop_res    = round(operational_window*samprate_bbddlab_bvp);
+      stop_res    = length(res_sig_video.raw)-1;
+      start_res   = length(res_sig_video.raw)-round(operational_window*samprate_bbddlab_bvp);
       window_num  = 1;
       bvp_sig_cpy = bvp_sig_video;
       gsr_sig_cpy = gsr_sig_video;
@@ -170,10 +180,12 @@ function Results = EMP_DTE_Physio_Artemisa_EH_features_no_paralell(data_in)
       end
       cuenta=1;
      if (isfield(data_in{i,k}.EH.Video.raw,'ecg_filt') && process_ecg(k,i)==1) 
+         
 %       ECG only
-      start_ecg   = 1;
-      stop_ecg    = operational_window*samprate_bbddlab_bvp;
-     
+%       start_ecg   = 1;
+%       stop_ecg    = operational_window*samprate_bbddlab_bvp;
+      stop_ecg    = length(ecg_sig_video.raw)-1;
+      start_ecg   = length(ecg_sig_video.raw)-operational_window*samprate_bbddlab_bvp;
       overlap_ecg = overlapin_window*samprate_bbddlab_bvp;
         
       window_num  = 1;
