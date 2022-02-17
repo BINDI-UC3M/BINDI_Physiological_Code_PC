@@ -21,7 +21,8 @@ field_s_names=sprintf('%s_feats_names',physio_sig);
               pos_v_prev=pos_v(n_data+1);                
               vec_videos(n_data)=loop;
               n_data=n_data+1;
-              temp_features=vertcat(temp_features,features_in.features{voluntaria,loop}.EH.Video.(field_s));
+%               temp_features=vertcat(temp_features,features_in.features{voluntaria,loop}.EH.Video.(field_s)(:,1:23));
+              temp_features=vertcat(temp_features,features_in.features{voluntaria,loop}.EH.Video.(field_s)(:,:));
               
 
 %             pos_v1=length(features_in.features{voluntaria,1}.EH.Video.(field_s)(:,1)');

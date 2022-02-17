@@ -63,11 +63,11 @@ if (~ (sum(voluntaria==exclude_vec)>0))
         
         temp_plot=[mat_v1(:,cont)', 0 ,mat_v2(:,cont)', 0 ,mat_v3(:,cont)', 0 ,mat_v4(:,cont)'];
         
-        h(cont)=figure;
-        bar(temp_plot)
-        title(sprintf('Voluntaria:%i %s',voluntaria,feat_name));
-        xlabel('Video')
-        ylabel(sprintf('%s',plot_units))
+%         h(cont)=figure;
+%         bar(temp_plot)
+%         title(sprintf('Voluntaria:%i %s',voluntaria,feat_name));
+%         xlabel('Video')
+%         ylabel(sprintf('%s',plot_units))
         
 %         temp_sig=[ features_s.features{voluntaria,1}.EH.Video.(field_s)(:,n_feat)', ...
 %         features_s.features{voluntaria,2}.EH.Video.(field_s)(:,n_feat)',...

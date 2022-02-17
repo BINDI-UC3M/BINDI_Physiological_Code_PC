@@ -8,7 +8,7 @@ labels_reordered =load_labels_artemisa();
 
 % Feature selection
 
-feat=feats_2s_last;
+feat=features_20s_10s_last_1;
 
  
 % % % % % % % % % % % % % GSR % % % % % % % % % % % % %
@@ -38,7 +38,7 @@ Plots_physio_features_boxplot(feat,'GSR',6,'GSR: Media','uS',labels_reordered,Vo
 
 
 
-
+feat_select= heart_features_selections(feat);
 
 
 Vol_excluded=[12];
@@ -61,19 +61,26 @@ Vol_excluded=[12];
 % % 
 
 
- Plots_physio_features_boxplot(feat_select,'HR',4,'Media IBI','',labels_reordered,Vol_excluded);
+Plots_physio_features_boxplot(features_norm,'HR',4,'Media IBI','',labels_reordered,Vol_excluded);
 
 
-Plots_physio_features_boxplot(feat_select,'HR',3,'HRV rmssd','',labels_reordered,Vol_excluded);
+Plots_physio_features_boxplot(features_norm,'HR',3,'HRV rmssd','',labels_reordered,Vol_excluded);
 
-Plots_physio_features_boxplot(feat_select,'HR',11,'Ratio LFHF ','',labels_reordered,Vol_excluded);
+Vol_excluded=[ 1 3 12];
+
+Plots_physio_features_boxplot(features_norm,'HR',4,'Media IBI','',labels_reordered,Vol_excluded);
+
+
+Plots_physio_features_boxplot(features_norm,'HR',3,'HRV rmssd','',labels_reordered,Vol_excluded);
+
+% Plots_physio_features_boxplot(feat_select,'HR',11,'Ratio LFHF ','',labels_reordered,Vol_excluded);
 % Plots_physio_features_boxplot(features_norm,'HR',5,'LF ','',labels_reordered,Vol_excluded);
 % 
 % Plots_physio_features_boxplot(features_norm,'HR',6,'HF','',labels_reordered,Vol_excluded);
 
-Plots_physio_features_boxplot(feat_select,'HR',17,'Sd1','',labels_reordered,Vol_excluded);
-
-Plots_physio_features_boxplot(feat_select,'HR',18,'Sd2','',labels_reordered,Vol_excluded);
+% Plots_physio_features_boxplot(feat_select,'HR',17,'Sd1','',labels_reordered,Vol_excluded);
+% 
+% Plots_physio_features_boxplot(feat_select,'HR',18,'Sd2','',labels_reordered,Vol_excluded);
 
 
 % vol_to_exclude=[8,0];
@@ -103,9 +110,11 @@ features_norm_gsr=norm_phy_features(feat_select,'zscore','GSR');
 
 Vol_excluded=[12];
 
-Plots_physio_features_temporal(features_norm_hr,'HR',11,'Ratio LFHF ','',Vol_excluded);
+Plots_physio_features_temporal(feat_select,'HR',11,'Ratio LFHF ','',Vol_excluded);
 
-Plots_physio_features_temporal(feat_select,'HR',4,'IBI medio ','',Vol_excluded);
+Plots_physio_features_temporal(features_norm_hr,'HR',4,'IBI medio ','',Vol_excluded);
+
+Plots_physio_features_temporal(feat_select,'HRV',4,'HRV ','',Vol_excluded);
 
 Plots_physio_features_temporal(features_norm_gsr,'GSR',1,'N picos ','',Vol_excluded);
 
