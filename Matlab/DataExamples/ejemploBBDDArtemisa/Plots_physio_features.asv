@@ -64,7 +64,7 @@ Vol_excluded=[12];
 Plots_physio_features_boxplot(features_norm,'HR',4,'Normalized mean IBI per video','Seconds',labels_reordered,Vol_excluded);
 
 
-Plots_physio_features_boxplot(features_norm,'HR',3,'Normalized HRV rmssd per video','Seconds',labels_reordered,Vol_excluded);
+Plots_physio_features_boxplot(features_norm,'HR',3,'Normalized HRV rmssd per video','Second',labels_reordered,Vol_excluded);
 
 Vol_excluded=[ 1 3 12];
 

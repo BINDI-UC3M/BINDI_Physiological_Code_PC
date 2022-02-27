@@ -38,9 +38,9 @@ if (~ (sum(voluntaria==exclude_vec)>0))
         
         temp_video_index_2=cell(size(temp_sig));
         temp_video_index_2(1:pos_v1)={'Relax'};
-        temp_video_index_2(pos_v1+1:pos_v2)={'VG'};
-        temp_video_index_2(pos_v2+1:pos_v3)={'Alegria'};
-        temp_video_index_2(pos_v3+1:pos_v4)={'Miedo'};
+        temp_video_index_2(pos_v1+1:pos_v2)={'GV'};
+        temp_video_index_2(pos_v2+1:pos_v3)={'Happiness'};
+        temp_video_index_2(pos_v3+1:pos_v4)={'Fear'};
         
 %                 temp_video_index(pos_v1+1:pos_v2)={'Miedo VG'};
 %         temp_video_index(pos_v2+1:pos_v3)={'Alegria'};
@@ -78,7 +78,7 @@ end
 
     figure
     boxplot(temp_sig_total,temp_video_index_total);
-    title(sprintf('Todas las voluntarias %s',feat_name));
+    title(sprintf('%s',feat_name));
     xlabel('Video')
     ylabel(sprintf('%s',plot_units))
     grid on

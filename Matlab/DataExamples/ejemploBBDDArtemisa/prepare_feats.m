@@ -1,6 +1,6 @@
 function feat_out=prepare_feats(feat_in)
 
-feat_select= heart_features_selections(feat);
+feat_select= heart_features_selections(feat_in);
 n_voluntarias=21;
 n_videos=4;
 exclude_vec=[12];
@@ -19,8 +19,7 @@ end
 for k=1:n_voluntarias-length(exclude_vec)
     for j=1:n_videos
         if j==1
-            
-            feat_out.data_in.features_windows{k,1}.=temp_feat.features{k,j}
+           
             feat_out.data_in.features_windows{k,1}.BVP_features=temp_feat.features{k,j}
         else
         end

@@ -1,4 +1,4 @@
-function Results_BioSpeech = EMP_DTE_Physio_Artemisa_JustTrain(info)
+function Results_BioSpeech = EMP_DTE_Physio_Artemisa_JustTrain(info,labels_in)
 
 
 dbstop if error
@@ -29,14 +29,21 @@ dbstop if error
     %Get the volunteers number ID
 %     volunts = unique(response_in.Voluntaria,'rows');
 %     volunts = sort(volunts);
-exclude_vec=[12];
+ exclude_vec=[12];
+% voluntarias_grupo_2 =[ 1,  3,  6 ,7, 8 , 9,  12 , 16, 18 ,19, 21];
+% voluntarias_grupo_2 =[ 1,  3,  6 ,7, 8 , 9 , 16, 18 ,19, 21];
+% voluntarias_grupo_1 = [2,4,5,10,11,13,14,15,17,20];
+% voluntarias_grupo_1_exc = [2,4,5,10,11,12,13,14,15,17,20];
+% exclude_vec=voluntarias_grupo_1_exc;
 index=1;
 for k=1:21
     
     if (~ (sum(k==exclude_vec)>0))  
         for j=1:4
               data_in{index,j}=info.features{k,j};
+              
         end
+        temp_labels(1,index)=labels_in(1,k);
       index=index+1;
     end
   
@@ -44,17 +51,32 @@ for k=1:21
     
 end
 
+labels_in=temp_labels;
+
 
   [volunteers, trials] = size(data_in);
+  
+%   for i=1:volunteers
+%      if() 
+%       
+%       
+%   end
+  
+  
 
 volunteers=index-1;
-n_samples_2  = 10;
-n_samples_4  = 20;
-n_samples    = 1;
-
-% n_samples_2  = 1;
-% n_samples_4  = 1;
+% n_samples_2  = 10;
+% n_samples_4  = 20;
 % n_samples    = 1;
+
+% n_samples_2  = 10;
+% n_samples_4  = 20;
+% n_samples    = 1;
+
+
+n_samples_2  = 1;
+n_samples_4  = 1;
+n_samples    = 1;
 % rngSeed'shuffle'
     for i=1:volunteers
       k = 1;
@@ -72,6 +94,11 @@ n_samples    = 1;
 %       t(:) = response_in.EmocionReportada(response_in.Voluntaria==volunts(i) & response_in.Video==1);     
       t=[];
       t(1:win_num-n_samples+1)=0;
+%         if strcmp(labels_in{1,i}.emotions(k+1),'Miedo')
+%             t(1:win_num-n_samples+1)=1;
+%         else
+%             t(1:win_num-n_samples+1)=0;
+%         end
       labels_loto{i,k} = t(:);
       labels{:,:,i} = t(:); 
       
@@ -95,6 +122,11 @@ n_samples    = 1;
         %t(:) = response_in.PAD(response_in.Voluntaria==volunts(i) & response_in.Video==k);
 %         t(:) = response_in.EmocionReportada(response_in.Voluntaria==volunts(i) & response_in.Video==k);
         t=[];
+%         if strcmp(labels_in{1,i}.emotions(k+1),'Miedo')
+%             t(1:win_num-n_samples+1)=1;
+%         else
+%             t(1:win_num-n_samples+1)=0;
+%         end
         if k==3
             t(1:win_num-n_samples+1)=0;
 %             n_no_miedo=n_no_miedo+win_num-n_samples+1;
@@ -180,14 +212,16 @@ n_samples    = 1;
 %    end
 
   %% Stage 5 & 6: Trainning and testing.
+%   volunteers
   if true
-    for i=1:20
+    for i=1:volunteers
       
       %Display some info
       fprintf('Running %d, Trainning and Testing...\n',i);
       
       %Create name file to store data
       fname = strcat('ResultsArtemisa_V',num2str(i));
+%       fname = strcat('ResultsArtemisa_V',num2str(voluntarias_grupo_2(i)));
       fid = fopen([fname '.mat'],'w');
       fclose(fid); 
       
@@ -299,7 +333,7 @@ n_samples    = 1;
       
       % Add this line to take just peri experiments
       %[result_train{i}] = trainModels_tvt_misscost(peri_temp, labels_temp, 'database',4,'model',1);
-      [result_train{i}] = trainModels_tvt(peri_temp, labels_temp, 'database',4,'model',1);
+      [result_train{i}] = trainModels_tvt_v2(peri_temp, labels_temp, 'database',4,'model',1);
       
       % Add this line to take peri and peribaseline
       %[result_train{i}] = trainModels_tvt(cat(3,peri_temp, peri_temp_base), cat(3,labels_temp,labels_temp_base), 'database',4,'model',1);
@@ -310,7 +344,7 @@ n_samples    = 1;
 
             %% Stage 6: Testing the model - Test
       % SVM Testing for the five (5-kfold) surrogate models
-%       fs=result_train{i}.svm_simulation.sfs;
+      fs=result_train{i}.svm_simulation.sfs;
         if(isfield(result_train{i}.svm_simulation,'sfs'))
             fs=result_train{i}.svm_simulation.sfs;
             feat_t=[ zscore(peri{:,:,(i)})];
@@ -352,7 +386,7 @@ n_samples    = 1;
       %SVM testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-      
+         fs=result_train{i}.svm_simulation.sfs;
         if(isfield(result_train{i}.svm_simulation,'sfs'))
             fs=result_train{i}.svm_simulation.sfs;
             feat_t=[ zscore(peri{:,:,(i)})];
@@ -390,9 +424,9 @@ n_samples    = 1;
       %result_train{i}.svm_test.tmulti{k+1} =[string(num2cell(labels_test+1)),tPredictions];
 
 %       KNN Testing for the five (5-kfold) surrogate models
-%        fs=result_train{i}.knn_simulation.sfs;
+       fs=result_train{i}.knn_simulation.sfs;
         if(isfield(result_train{i}.knn_simulation,'sfs'))
-            fs=result_train{i}.svm_simulation.sfs;
+            fs=result_train{i}.knn_simulation.sfs;
             feat_t=[ zscore(peri{:,:,(i)})];
             feat_t=feat_t(:,fs);
         else
@@ -431,9 +465,8 @@ n_samples    = 1;
       %KNN testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-      
         if(isfield(result_train{i}.knn_simulation,'sfs'))
-            fs=result_train{i}.svm_simulation.sfs;
+            fs=result_train{i}.knn_simulation.sfs;
             feat_t=[ zscore(peri{:,:,(i)})];
             feat_t=feat_t(:,fs);
         else
@@ -468,9 +501,9 @@ n_samples    = 1;
       %result_train{i}.knn_test.tmulti{k+1} =[string(num2cell(labels_test+1)),tPredictions];
       
       %ENS
-%        fs=result_train{i}.ens_simulation.sfs;
+       fs=result_train{i}.ens_simulation.sfs;
         if(isfield(result_train{i}.ens_simulation,'sfs'))
-            fs=result_train{i}.svm_simulation.sfs;
+            fs=result_train{i}.ens_simulation.sfs;
             feat_t=[ zscore(peri{:,:,(i)})];
             feat_t=feat_t(:,fs);
         else
@@ -510,10 +543,10 @@ n_samples    = 1;
       %ENS testing for the "complete-data" model
       %% In case of performing normalization by features as well:
       % 1. For FULL LOSO
-%         feat_t=[ zscore(peri{:,:,(i)})];
-%         feat_t=feat_t(:,fs);
+        feat_t=[ zscore(peri{:,:,(i)})];
+        feat_t=feat_t(:,fs);
         if(isfield(result_train{i}.ens_simulation,'sfs'))
-            fs=result_train{i}.svm_simulation.sfs;
+            fs=result_train{i}.ens_simulation.sfs;
             feat_t=[ zscore(peri{:,:,(i)})];
             feat_t=feat_t(:,fs);
         else

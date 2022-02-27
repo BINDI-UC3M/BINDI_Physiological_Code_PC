@@ -501,8 +501,7 @@ svm_temp_cv = fitcsvm(X_train_w_best_feature,label_temp,'CVPartition',c,'KernelF
 %   X_train_w_best_feature = peri_temp;
   
   params = hyperparameters('fitcknn',peri_temp,double(label_temp));
-  params(1).Range = [1,20
-      ];  %100 a 900
+  params(1).Range = [1,20];  %100 a 900
   params(3).Optimize = true;
   params(4).Optimize = true;
   params(5).Optimize = true;

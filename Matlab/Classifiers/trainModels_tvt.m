@@ -337,7 +337,7 @@ function [results]=binaryModels(features, labels)
   svm_temp = fitcsvm(peri_temp,label_temp,...
              'OptimizeHyperparameters','all',...
              'HyperparameterOptimizationOptions',...
-             struct('CVPartition',c,'ShowPlots',false,'Verbose',1,'UseParallel',true));
+             struct('CVPartition',c,'ShowPlots',false,'Verbose',1,'UseParallel',true,'MaxObjectiveEvaluations',10));
 %   svm_temp = fitcsvm(peri_temp,label_temp,'Cost',[0,1;2,0],...
 %              'OptimizeHyperparameters','all',...
 %              'HyperparameterOptimizationOptions',...
@@ -427,7 +427,7 @@ function [results]=binaryModels(features, labels)
   knn_temp = fitcknn(peri_temp,label_temp,...
              'OptimizeHyperparameters','all',...
              'HyperparameterOptimizationOptions',...
-             struct('CVPartition',c,'ShowPlots',false,'Verbose',1,'UseParallel',true));
+             struct('CVPartition',c,'ShowPlots',false,'Verbose',1,'UseParallel',true,'MaxObjectiveEvaluations',10));
 
   % Perform cross-validation
   knn_temp_cv = crossval(knn_temp, 'KFold', kfold);
@@ -489,9 +489,9 @@ function [results]=binaryModels(features, labels)
   knn_simulation.Classifier = knn_temp_cv;
   knn_simulation.vPredictions = vPredictions;
   knn_simulation.vScores = vScores;
-  knn_simulation.vAccuracy = vAccuracy;
+  knn_simulation.vAccuracy = vAccuracy
   knn_simulation.roc_1.auc = auc_1;
-  knn_simulation.roc_2.auc = auc_2;
+  knn_simulation.roc_2.auc = auc_2
   knn_simulation.CM = confuM;
   
   knn_simulation.Classifier_test = row_min;
@@ -513,7 +513,7 @@ function [results]=binaryModels(features, labels)
   ens_temp = fitcensemble(peri_temp,label_temp,...
              'OptimizeHyperparameters','all',...
              'HyperparameterOptimizationOptions',...
-             struct('CVPartition',c,'ShowPlots',false,'Verbose',1,'UseParallel',true)); 
+             struct('CVPartition',c,'ShowPlots',false,'Verbose',1,'UseParallel',true,'MaxObjectiveEvaluations',10)); 
          
   % Perform cross-validation
   ens_temp_cv = crossval(ens_temp, 'KFold', kfold);
@@ -575,9 +575,9 @@ function [results]=binaryModels(features, labels)
   ens_simulation.Classifier = ens_temp_cv;
   ens_simulation.vPredictions = vPredictions;
   ens_simulation.vScores = vScores;
-  ens_simulation.vAccuracy = vAccuracy;
+  ens_simulation.vAccuracy = vAccuracy
   ens_simulation.roc_1.auc = auc_1;
-  ens_simulation.roc_2.auc = auc_2;
+  ens_simulation.roc_2.auc = auc_2
   ens_simulation.CM = confuM;
   
   ens_simulation.Classifier_test = row_min;
