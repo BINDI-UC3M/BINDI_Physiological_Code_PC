@@ -24,8 +24,8 @@ function [data_features]=plot_dataBBDDLabBVPs_Exploratory(s,va,vb)
     temp_ibi_all         = [];
     temp_ibi_data_fear   = [];
     temp_ibi_data_nofear = [];
-    plot_poincare        = 1;
-    plot_lfhf            = 0;
+    plot_poincare        = 0;
+    plot_lfhf            = 1;
 
     %Main loop based on #volunteers
     for i=2:2%length(vol)
@@ -95,7 +95,7 @@ function [data_features]=plot_dataBBDDLabBVPs_Exploratory(s,va,vb)
           
           %Plot LF/HF plot
           if plot_lfhf
-            temp = [temp data_features{i,j}.EH.Video.BVP_feats(window_num,11)];
+            temp = [temp smooth(data_features{i,j}.EH.Video.BVP_feats(window_num,11),10)];
             bar(temp,1)
            
             pause(0.02)

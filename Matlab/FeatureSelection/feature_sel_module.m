@@ -40,13 +40,13 @@ switch parameters.featSelection
 
         X_train = double( train_data);
         Y_train = double( labelsTrain); 
-        X_test = double( train_data(P.test,:) );
-        Y_test = double( labelsTrain(P.test) ); 
+        %X_test = double( train_data(P.test,:) );
+        %Y_test = double( labelsTrain(P.test) ); 
         % number of features
         numF = size(X_train,2);
         iFeatSelected = mRMR(X_train, Y_train, numF);
         
-        k = 10; % select the first 2 features
+        k = 5; % select the first 2 features
 
         % Use a support vector machine classifier
         %svmStruct = svmtrain(Y_train,X_train(:,iFeatSelected(1:k)));
@@ -85,35 +85,35 @@ switch parameters.featSelection
         iFeatSelected = iFeatSelected(1:k);
         fprintf('\nMethod mcfs (SVM): Accuracy: %.2f%%, Error-Rate: %.2f \n',100*(1-err_rate),err_rate);
     case 'ilfs'
-        P = cvpartition(labelsTrain,'Holdout',0.20);
+%         P = cvpartition(labelsTrain,'Holdout',0.20);
 
-        X_train = double( train_data(P.training,:));
-        Y_train = double( labelsTrain(P.training)); 
-        X_test = double( train_data(P.test,:) );
-        Y_test = double( labelsTrain(P.test) ); 
+        X_train = double( train_data);
+        Y_train = double( labelsTrain); 
+%         X_test = double( train_data(P.test,:) );
+%         Y_test = double( labelsTrain(P.test) ); 
         % number of features
-        numF = size(X_train,2);
+%         numF = size(X_train,2);
         % Infinite Latent Feature Selection - ICCV 2017
-        [iFeatSelected, weights] = ILFS(X_train, Y_train , 10, 0 );
+        [iFeatSelected, weights] = ILFS(X_train, Y_train , 10, 1 );
         
         k = 10; % select the first 2 features
 
         % Use a support vector machine classifier
-        svmStruct = svmtrain(Y_train,X_train(:,iFeatSelected(1:k)));
-        C = svmpredict(Y_test, X_test(:,iFeatSelected(1:k)),svmStruct);
-        err_rate = sum(Y_test~= C)/P.TestSize; % mis-classification rate
-        conMat = confusionmat(Y_test,C); % the confusion matrix
+%         svmStruct = svmtrain(Y_train,X_train(:,iFeatSelected(1:k)));
+%         C = svmpredict(Y_test, X_test(:,iFeatSelected(1:k)),svmStruct);
+%         err_rate = sum(Y_test~= C)/P.TestSize; % mis-classification rate
+%         conMat = confusionmat(Y_test,C); % the confusion matrix
         iFeatSelected = iFeatSelected(1:k);
 %         fprintf('\nMethod ilfs (SVM): Accuracy: %.2f%%, Error-Rate: %.2f \n',100*(1-err_rate),err_rate);
     case 'lasso'
-        P = cvpartition(labelsTrain,'Holdout',0.30);
+        %P= cvpartition(labelsTrain,'Holdout',0.30);
 
-        X_train = double( train_data(P.training,:));
-        Y_train = double( labelsTrain(P.training)); 
-        X_test = double( train_data(P.test,:) );
-        Y_test = double( labelsTrain(P.test) ); 
+        X_train = double( train_data);
+        Y_train = double( labelsTrain); 
+%         X_test = double( train_data(P.test,:) );
+%         Y_test = double( labelsTrain(P.test) ); 
         % number of features
-        numF = size(X_train,2);
+%         numF = size(X_train,2);
         lambda = 25;
         B = lasso(X_train,Y_train);
         [v,iFeatSelected]=sort(B(:,lambda),'descend');
@@ -121,12 +121,21 @@ switch parameters.featSelection
         k = 10; % select the first 2 features
 
         % Use a support vector machine classifier
-        svmStruct = svmtrain(Y_train,X_train(:,iFeatSelected(1:k)));
-        C = svmpredict(Y_test, X_test(:,iFeatSelected(1:k)),svmStruct);
-        err_rate = sum(Y_test~= C)/P.TestSize; % mis-classification rate
-        conMat = confusionmat(Y_test,C); % the confusion matrix
+%         svmStruct = svmtrain(Y_train,X_train(:,iFeatSelected(1:k)));
+%         C = svmpredict(Y_test, X_test(:,iFeatSelected(1:k)),svmStruct);
+%         err_rate = sum(Y_test~= C)/P.TestSize; % mis-classification rate
+%         conMat = confusionmat(Y_test,C); % the confusion matrix
         iFeatSelected = iFeatSelected(1:k);
-        fprintf('\nMethod ilfs (SVM): Accuracy: %.2f%%, Error-Rate: %.2f \n',100*(1-err_rate),err_rate);
+        %fprintf('\nMethod ilfs (SVM): Accuracy: %.2f%%, Error-Rate: %.2f \n',100*(1-err_rate),err_rate);
+        
+    case 'relief'
+        X_train = double( train_data);
+        Y_train = double( labelsTrain); 
+        [iFeatSelected, w] = reliefF( X_train, Y_train, 20);
+        k=10;
+        iFeatSelected = iFeatSelected(1:k);
+        disp('Selected:\n')
+        iFeatSelected
     case 'none'
         iFeatSelected = 1:size(train_data,2);
 end

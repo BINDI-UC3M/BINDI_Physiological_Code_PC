@@ -26,8 +26,11 @@ function [data_features]=plot_dataBBDDLabGSRs_Exploratory(s,va,vb)
         
         %In case the samprate is 10Hz
         samprate_bbddlab = 10;
-        gsr_eh_s = GSR_create_signal(downsample((s{vol(i),j}.EH.Video.raw.gsr_uS_filtered_sm),20)', samprate_bbddlab);
-        gsr_new_s = GSR_create_signal(downsample((s{vol(i),j}.GSR.Video.raw.gsr_uS_filtered_sm),20)', samprate_bbddlab);
+        %In case we just run again the features
+        %gsr_eh_s = GSR_create_signal(downsample((s{vol(i),j}.EH.Video.raw.gsr_uS_filtered_sm),20)', samprate_bbddlab);
+        %gsr_new_s = GSR_create_signal(downsample((s{vol(i),j}.GSR.Video.raw.gsr_uS_filtered_sm),20)', samprate_bbddlab);
+        gsr_eh_s = GSR_create_signal((s{vol(i),j}.EH.Video.raw.gsr_uS_filtered_sm)', samprate_bbddlab);
+        gsr_new_s = GSR_create_signal((s{vol(i),j}.GSR.Video.raw.gsr_uS_filtered_sm)', samprate_bbddlab);
         
         %In case the samprate is 200Hz
         %gsr_eh_s = GSR_create_signal((s{vol(i),j}.EH.Video.raw.gsr_uS_filtered_sm)', samprate_bbddlab);

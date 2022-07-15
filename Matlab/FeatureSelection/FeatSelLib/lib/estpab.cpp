@@ -93,12 +93,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   void *img1 = (void *)mxGetData(prhs[0]);
   long len1 = mxGetNumberOfElements(prhs[0]);
   mxClassID type1 = mxGetClassID(prhs[0]);
-  printf("Len1 = %i\n",len1);
+  //printf("Len1 = %i\n",len1);
 
   void *img2 = (void *)mxGetData(prhs[1]);
   long len2 = mxGetNumberOfElements(prhs[1]);
   mxClassID type2 = mxGetClassID(prhs[1]);
-  printf("Len2 = %i\n",len2);
+  //printf("Len2 = %i\n",len2);
   
 	
   if (!img1 || !img2 || !len1 || !len2)
@@ -134,25 +134,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   switch(type1)
   {
     case mxINT8_CLASS: copyvecdata((char *)img1,len1,vec1,nrealstate1); 
-	  printf("type1 case1\n");
+	  //printf("type1 case1\n");
 	  break;
     case mxUINT8_CLASS: copyvecdata((unsigned char *)img1,len1,vec1,nrealstate1); 
-	  printf("type1 case2\n");
+	  //printf("type1 case2\n");
 	  break;
     case mxDOUBLE_CLASS: copyvecdata((double *)img1,len1,vec1,nrealstate1); 
-	  printf("type1 case3\n");
+	  //printf("type1 case3\n");
 	  break;
   }  
   switch(type2)
   {
     case mxINT8_CLASS: copyvecdata((char *)img2,len2,vec2,nrealstate2); 
-	  printf("type2 case1\n");
+	  //printf("type2 case1\n");
 	  break;
     case mxUINT8_CLASS: copyvecdata((unsigned char *)img2,len2,vec2,nrealstate2); 
-	  printf("type2 case2\n");
+	  //printf("type2 case2\n");
 	  break;
     case mxDOUBLE_CLASS: copyvecdata((double *)img2,len2,vec2,nrealstate2); 
-	  printf("type2 case3\n");
+	  //printf("type2 case3\n");
 	  break;
   }  
 
@@ -168,8 +168,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     // printf("Second vector #state = %i\n",nrealstate2);
   }
   
-  printf("First vector #state = %i\n",nstate1);
-  printf("Second vector #state = %i\n",nstate2);
+  //printf("First vector #state = %i\n",nstate1);
+  //printf("Second vector #state = %i\n",nstate2);
 
   //generate the joint-distribution table
 

@@ -42,7 +42,8 @@ function [stds,rds]=plot_dataBBDDLabGSRs(s,pa,pb,va,vb)
         gsreh_video  = zscore(gsreh_video);
         gsreh_labels = zscore(gsreh_labels);
         gsreh_recov = zscore(gsreh_recov);
-        gsreh = [gsreh; gsreh_neutro; gsreh_video; gsreh_labels; gsreh_recov];
+        %gsreh = [gsreh; gsreh_neutro; gsreh_video; gsreh_labels; gsreh_recov];
+        gsreh = [gsreh;  gsreh_video; ];
 
         gsrnew_neutro = s{i, j}.GSR.Neutro.raw.gsr_uS_filtered_dn_sm;
         gsrnew_video  = s{i, j}.GSR.Video.raw.gsr_uS_filtered_dn_sm;
@@ -52,7 +53,8 @@ function [stds,rds]=plot_dataBBDDLabGSRs(s,pa,pb,va,vb)
         gsrnew_video  = zscore(gsrnew_video);
         gsrnew_labels = zscore(gsrnew_labels);
         gsrnew_recov  = zscore(gsrnew_recov);
-        gsrnew = [gsrnew; gsrnew_neutro; gsrnew_video; gsrnew_labels; gsrnew_recov];
+        %gsrnew = [gsrnew; gsrnew_neutro; gsrnew_video; gsrnew_labels; gsrnew_recov];
+        gsrnew = [gsrnew; gsrnew_video;];
 
         %gsr_filtered is the ADC codes
         gsrb_neutro = (movmedian(movmean(downsample(s{i, j}.BINDI.Neutro.raw.gsr_filtered,20),10),5));
@@ -149,8 +151,8 @@ function [stds,rds]=plot_dataBBDDLabGSRs(s,pa,pb,va,vb)
         
         %estímulo a estimulo nos guardamos las stds de cada sensor
         [r,c]=size(stds);
-        stds(r+1,1)= std(gsreh);
-        stds(r+1,2)= std(gsrnew);
+        stds(r+1,1)= abs(std(gsreh))/abs((max(gsreh)-abs(min(gsreh))));
+        stds(r+1,2)= abs(std(gsrnew))/abs((max(gsrnew)-abs(min(gsrnew))));
         stds(r+1,3)= std(gsrb);
         
         %estímulo a estimulo nos guardamos el rango de cada sensor
