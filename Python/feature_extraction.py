@@ -700,6 +700,124 @@ def recurrqa_y_2(recurr_plot):
         "ENTR": ENTR, "LAM": LAM, "TT": TT
     }
 
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import find_peaks, periodogram
+from sklearn.preprocessing import minmax_scale
+
+def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
+    """
+    Visualizes the BVP signal and its extracted features for debugging and validation.
+
+    Parameters
+    ----------
+    bvp_raw : np.ndarray
+        Raw BVP signal.
+    bvp_samprate : float
+        Sampling frequency (Hz).
+    bvp_features : dict or tuple
+        Output from BVP_features_extr(), ideally a dict mapping feature names to values.
+    """
+
+    #time = np.arange(len(bvp_raw)) / bvp_samprate
+    time = np.arange(len(bvp_raw)) / float(bvp_samprate)
+    bvp_raw = np.asarray(bvp_raw, dtype=float)
+
+
+    # === 1. Raw BVP Signal with Detected Peaks ===
+    peaks, _ = find_peaks(bvp_raw, distance=0.4 * bvp_samprate)
+    peaks = np.asarray(peaks, dtype=int) 
+    plt.figure(figsize=(14, 4))
+    plt.plot(time, bvp_raw, label='BVP Signal')
+    plt.plot(time[peaks], bvp_raw[peaks], 'rx', label='Detected Peaks')
+    plt.title("BVP Signal & Detected Peaks")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # === 2. Inter-Beat Intervals (IBI) ===
+    ibi_ms = np.diff(peaks / bvp_samprate)
+    plt.figure(figsize=(10, 3))
+    plt.plot(ibi_ms * 1000, marker='o')
+    plt.title("Inter-Beat Intervals (IBI)")
+    plt.xlabel("Beat index")
+    plt.ylabel("IBI (ms)")
+    plt.grid(True)
+    plt.show()
+
+    # === 3. Frequency Domain Analysis ===
+    time_diff = np.diff(peaks / bvp_samprate)
+    sampling_period = np.median(time_diff)
+    f, pxx = periodogram(ibi_ms, fs=1 / sampling_period)
+    plt.figure(figsize=(10, 4))
+    plt.semilogy(f, pxx)
+    plt.title("Power Spectral Density of IBI (HRV Frequency Domain)")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Power")
+    plt.grid(True)
+    plt.show()
+
+    # === 4. Poincaré plot (SD1–SD2 ellipse visualization) ===
+    ibi_n = ibi_ms[:-1]
+    ibi_n1 = ibi_ms[1:]
+    mean_ibi = np.mean(ibi_ms)
+    sd1 = float(bvp_features[16]) if isinstance(bvp_features, (list, tuple)) else bvp_features.get('sd1', np.nan)
+    sd2 = float(bvp_features[17]) if isinstance(bvp_features, (list, tuple)) else bvp_features.get('sd2', np.nan)
+
+    plt.figure(figsize=(5, 5))
+    plt.scatter(ibi_n, ibi_n1, alpha=0.6)
+    plt.title("Poincaré Plot (SD1 vs SD2)")
+    plt.xlabel("IBI_n (s)")
+    plt.ylabel("IBI_{n+1} (s)")
+    circle = plt.Circle((mean_ibi, mean_ibi), sd2, color='r', fill=False, label=f"SD2={sd2:.4f}")
+    plt.gca().add_artist(circle)
+    circle2 = plt.Circle((mean_ibi, mean_ibi), sd1, color='g', fill=False, label=f"SD1={sd1:.4f}")
+    plt.gca().add_artist(circle2)
+    plt.legend()
+    plt.grid(True)
+    plt.axis('equal')
+    plt.show()
+
+    # === 5. DFA visualization (optional) ===
+    if 'dfa_bvp' in bvp_features or (isinstance(bvp_features, (list, tuple)) and len(bvp_features) > 23):
+        dfa = bvp_features[23] if isinstance(bvp_features, (list, tuple)) else bvp_features.get('dfa_bvp')
+        plt.figure(figsize=(6, 4))
+        plt.plot(
+            np.log10(np.arange(1, len(bvp_raw)//10 + 1)),
+            np.log10(minmax_scale(bvp_raw[:len(bvp_raw)//10])),
+            'k.'
+        )
+
+        plt.title(f"DFA Visualization (α ≈ {dfa:.3f})")
+        plt.xlabel("log(window size)")
+        plt.ylabel("log(fluctuation)")
+        plt.grid(True)
+        plt.show()
+
+    # === 6. Recurrence Plot (Optional Nonlinear Dynamics Visualization) ===
+    try:
+        from pyunicorn.timeseries import RecurrencePlot
+        rp = RecurrencePlot(bvp_raw, dim=1, tau=1, eps=None, metric='euclidean')
+        plt.figure(figsize=(5, 5))
+        plt.imshow(rp.recurrence_matrix(), cmap='binary', origin='lower')
+        plt.title("Recurrence Plot")
+        plt.xlabel("Time")
+        plt.ylabel("Time")
+        plt.show()
+    except Exception as e:
+        print(f"Skipping recurrence plot (missing pyunicorn): {e}")
+
+    # === 7. Print feature summary ===
+    print("\n=== Extracted Features Summary ===")
+    if isinstance(bvp_features, dict):
+        for k, v in bvp_features.items():
+            print(f"{k:<15}: {v:.6f}")
+    else:
+        print(bvp_features)
+
+
 def BVP_features_extr(bvp_raw, bvp_samprate, window_size):
 #     the list of available features is:
 #           - mean_: averaged BVP - ralated to blood pressure
@@ -727,7 +845,7 @@ def BVP_features_extr(bvp_raw, bvp_samprate, window_size):
     bvp_mean = np.mean(bvp_raw)
    
     bvp_raw = np.array(bvp_raw)
-    print(bvp_raw)
+    
     # función de SCIPY para encontrar los picos
     peaks, _ = find_peaks(bvp_raw, distance=0.4 * bvp_samprate)
     peak_times = peaks / bvp_samprate
@@ -1533,6 +1651,9 @@ if __name__ == '__main__':
             bvp_sig_cpy = bvp_vector_file[start_bvp:stop_bvp]
             bvp_features, bvp_names = BVP_features_extr(bvp_sig_cpy,samprate_bvp,window_size)
             
+            # Convert to dict for readability
+            bvp_features_dict = dict(zip(bvp_names, bvp_features))
+            debug_BVP_features(bvp_sig_cpy, samprate_bvp, bvp_features_dict)
             # GSR processing
             gsr_sig_cpy= gsr_vector_file[start_gsr:stop_gsr]
             gsr_features, gsr_names = GSR_features_extr(gsr_sig_cpy, samprate_gsr, window_size)
