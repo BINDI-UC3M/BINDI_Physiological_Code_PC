@@ -83,9 +83,7 @@ import auxBVP
 import auxGSR
 import auxSKT
 
-
 os.environ['PYOPENCL_COMPILER_OUTPUT'] = '1'
-
 
 #For the color in debug, info and warning messages
 import colorlog
@@ -716,12 +714,9 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
 
     Parameters
     ----------
-    bvp_raw : np.ndarray
-        Raw BVP signal.
-    bvp_samprate : float
-        Sampling frequency (Hz).
-    bvp_features : dict or tuple
-        Output from BVP_features_extr(), ideally a dict mapping feature names to values.
+    bvp_raw : Raw BVP signal.
+    bvp_samprate : Sampling frequency (Hz).
+    bvp_features : Output from BVP_features_extr(), ideally a dict mapping feature names to values.
     """
 
     #time = np.arange(len(bvp_raw)) / bvp_samprate
@@ -731,9 +726,9 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
 
     #1. Raw BVP Signal with Detected Peaks
 
-    #CHANGED SO IT DOES NOT DETECT EVERY PEAK
-    height = np.mean(bvp_raw) + 0.01*np.std(bvp_raw)
-    prominence = 0.02*np.std(bvp_raw)
+    #CHANGED SO IT DOES NOT DETECT EVERY PEAK -- does not work very well
+    height = np.mean(bvp_raw) + 0.2*np.std(bvp_raw)
+    prominence = 0.1*np.std(bvp_raw)
 
     peaks, _ = find_peaks(
     bvp_raw,
@@ -755,7 +750,7 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
     plt.grid(True)
     plt.show()
 
-    #DIFFERENT APPROACH FOR PEAK DETECTION
+    #DIFFERENT APPROACH FOR PEAK DETECTION -- works fine, only main peak detected
     signals, info = nk.eda_process(bvp_raw, sampling_rate=bvp_samprate)
     bvp_peaks = info["SCR_Peaks"]
     bvp_amp = info["SCR_Amplitude"]
@@ -765,7 +760,7 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
     amp_thresh = 0.2 * np.max(bvp_amp)  # 20% of main response
     idx1 = np.where(bvp_amp >= amp_thresh)[0]
 
-    # 2. Rise-time threshold
+    # 2. Rise-time threshold: peaks that are not too close together
     idx2 = np.where(rise_times >= 0.15)[0]
 
     # 3. Combine both conditions
@@ -1026,11 +1021,12 @@ def BVP_features_extr(bvp_raw, bvp_samprate, window_size):
     ibi_ms_mean =  np.mean(ibi_ms)
     logging.debug("IBI with neurokit: %.8f", ibi_ms_mean)
 
-    peaks_2, _ = find_peaks(bvp_raw, distance=0.4 * bvp_samprate)
-    peak_times = peaks_2 / bvp_samprate
-    ibi_ms = np.diff(peak_times)
-    ibi_ms_mean =  np.mean(ibi_ms)
-    logging.debug("IBI with sicpy: %.8f", ibi_ms_mean)
+    # Implementación inicial, detecta mas picos de los que queremos
+   # peaks_2, _ = find_peaks(bvp_raw, distance=0.4 * bvp_samprate)
+   # peak_times = peaks_2 / bvp_samprate
+   # ibi_ms = np.diff(peak_times)
+   # ibi_ms_mean =  np.mean(ibi_ms)
+   # logging.debug("IBI with sicpy: %.8f", ibi_ms_mean)
 
     hrv_sdnn_value_ms = np.std(ibi_ms) # overall variability
     logging.debug("hrv_sdnn_value SCIPY: %.8f", hrv_sdnn_value_ms)
@@ -1371,6 +1367,7 @@ def GSR_features_extr(gsr_raw, gsr_samprate, window_size):
     time = np.arange(len(gsr_raw)) / float(samprate_gsr)
     gsr_raw = np.asarray(gsr_raw, dtype=float)
 
+    #TODO: preguntar por el filtrado de estos picos
     plt.figure(figsize=(14, 4))
     plt.plot(time, gsr_raw, label='GSR Signal')
     plt.plot(time[peaks], gsr_raw[peaks], 'rx', label='Detected Peaks')
@@ -1859,7 +1856,7 @@ if __name__ == '__main__':
             
             # Convert to dict for readability
             bvp_features_dict = dict(zip(bvp_names, bvp_features))
-            debug_BVP_features(bvp_sig_cpy, samprate_bvp, bvp_features_dict)
+            #debug_BVP_features(bvp_sig_cpy, samprate_bvp, bvp_features_dict)
             # GSR processing
             gsr_sig_cpy= gsr_vector_file[start_gsr:stop_gsr]
             gsr_features, gsr_names = GSR_features_extr(gsr_sig_cpy, samprate_gsr, window_size)
@@ -1882,6 +1879,7 @@ if __name__ == '__main__':
             total_rows = append_features_to_csv(csv_filename,all_features)
 
             # If we now have 10 rows, call example() with them
+            ''' COMMENTED FOR DEBUGGING
             if total_rows >= 10:
                 if total_rows >= 10:
                     feature_file = './model/features.txt' #Save in the same place as the model - overwrite each time
@@ -1903,7 +1901,7 @@ if __name__ == '__main__':
                     with open(csv_filename, 'w', newline='') as csvfile:
                         writer = csv.writer(csvfile)
                         writer.writerows(remaining_rows)
-
+            '''
             #Moving to the next window
             start_bvp += overlap_bvp
             stop_bvp += overlap_bvp
