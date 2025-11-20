@@ -58,30 +58,36 @@ import matplotlib.pyplot as plt
 import scipy.integrate as spi
 import nolds
 
-from scipy.signal import find_peaks
+
+from sklearn.preprocessing import minmax_scale
+from scipy.signal import find_peaks, periodogram
 from scipy.signal import butter, filtfilt
 from scipy.spatial.distance import pdist, squareform
-from scipy.signal import find_peaks
 from scipy.stats import entropy
 from scipy.signal import decimate
 from scipy.ndimage import label, generate_binary_structure
 from scipy import stats, optimize
 from scipy.signal import stft
+from scipy.stats import linregress
 #from scipy.integrate import simps
 import os
 #import pyopencl as cl
 from scipy.io import loadmat
 
-#OTROS SCRIPTS QUE SE EJECUTAN
-import autoParser_v2 #REVISAR COMO LLAMAR A ESTO
+#OTROS SCRIPTS -- no son librerías pero los tratamos igual
+import autoParser_v2 
 import parser_bindi
 import deployment_model
+#Contienen las funciones auxiliares
+import auxBVP
+import auxGSR
+import auxSKT
 
 
 os.environ['PYOPENCL_COMPILER_OUTPUT'] = '1'
 
 
-#PARA LOS MENSAJES DE DEBUG E INFORMACIÓN
+#For the color in debug, info and warning messages
 import colorlog
 
 # Create a colored formatter
@@ -490,7 +496,7 @@ def compute_rqa(signal, dim=3, tau=1, threshold=0.1, l_min=2, v_min=2):
     
     return metrics, recurrence_matrix
 
-from scipy.stats import linregress
+
 
 def DFA_fun(data, pts=None, order=1):
     """
@@ -700,14 +706,13 @@ def recurrqa_y_2(recurr_plot):
         "ENTR": ENTR, "LAM": LAM, "TT": TT
     }
 
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.signal import find_peaks, periodogram
-from sklearn.preprocessing import minmax_scale
+
 
 def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
     """
-    Visualizes the BVP signal and its extracted features for debugging and validation.
+    This function is used to visualise the BVP signal 
+    and its extracted features for debugging and validation.
+    Some of the graphs can be commented to only obtain the features to be validated
 
     Parameters
     ----------
@@ -724,9 +729,22 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
     bvp_raw = np.asarray(bvp_raw, dtype=float)
 
 
-    # === 1. Raw BVP Signal with Detected Peaks ===
-    peaks, _ = find_peaks(bvp_raw, distance=0.4 * bvp_samprate)
+    #1. Raw BVP Signal with Detected Peaks
+
+    #CHANGED SO IT DOES NOT DETECT EVERY PEAK
+    height = np.mean(bvp_raw) + 0.01*np.std(bvp_raw)
+    prominence = 0.02*np.std(bvp_raw)
+
+    peaks, _ = find_peaks(
+    bvp_raw,
+    distance=0.33 * bvp_samprate,    
+    prominence=prominence,
+    height=height
+    )
+
+    #peaks, _ = find_peaks(bvp_raw, distance=0.4 * bvp_samprate)
     peaks = np.asarray(peaks, dtype=int) 
+    #peaks = info["PPG_Peaks"]
     plt.figure(figsize=(14, 4))
     plt.plot(time, bvp_raw, label='BVP Signal')
     plt.plot(time[peaks], bvp_raw[peaks], 'rx', label='Detected Peaks')
@@ -737,7 +755,39 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
     plt.grid(True)
     plt.show()
 
-    # === 2. Inter-Beat Intervals (IBI) ===
+    #DIFFERENT APPROACH FOR PEAK DETECTION
+    signals, info = nk.eda_process(bvp_raw, sampling_rate=bvp_samprate)
+    bvp_peaks = info["SCR_Peaks"]
+    bvp_amp = info["SCR_Amplitude"]
+    rise_times = np.array(info["SCR_RiseTime"])
+
+    # 1. Amplitude threshold: keep only strong SCRs
+    amp_thresh = 0.2 * np.max(bvp_amp)  # 20% of main response
+    idx1 = np.where(bvp_amp >= amp_thresh)[0]
+
+    # 2. Rise-time threshold
+    idx2 = np.where(rise_times >= 0.15)[0]
+
+    # 3. Combine both conditions
+    valid_idx = np.intersect1d(idx1, idx2)
+
+    bvp_filtered = bvp_peaks[valid_idx]
+
+    # 4. Minimum separation (1.5 seconds)
+    min_sep = int(1.5 * bvp_samprate)
+    bvp_filtered = bvp_filtered[np.insert(np.diff(bvp_filtered) > min_sep, 0, True)]
+
+    print(f"Detected SCR Peaks: {len(bvp_filtered)}")
+
+    plt.figure(figsize=(12,4))
+    plt.plot(time, bvp_raw, label="BVP")
+    plt.plot(time[bvp_filtered], bvp_raw[bvp_filtered], "rx", label="BVP Peaks")
+    plt.title("BVP Peaks (neurokit2)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    #2. Inter-Beat Intervals (IBI) 
     ibi_ms = np.diff(peaks / bvp_samprate)
     plt.figure(figsize=(10, 3))
     plt.plot(ibi_ms * 1000, marker='o')
@@ -747,7 +797,7 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
     plt.grid(True)
     plt.show()
 
-    # === 3. Frequency Domain Analysis ===
+    #3. Frequency Domain Analysis
     time_diff = np.diff(peaks / bvp_samprate)
     sampling_period = np.median(time_diff)
     f, pxx = periodogram(ibi_ms, fs=1 / sampling_period)
@@ -759,7 +809,7 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
     plt.grid(True)
     plt.show()
 
-    # === 4. Poincaré plot (SD1–SD2 ellipse visualization) ===
+    #Poincaré plot (SD1–SD2 ellipse visualization)
     ibi_n = ibi_ms[:-1]
     ibi_n1 = ibi_ms[1:]
     mean_ibi = np.mean(ibi_ms)
@@ -780,7 +830,7 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
     plt.axis('equal')
     plt.show()
 
-    # === 5. DFA visualization (optional) ===
+    #DFA visualization
     if 'dfa_bvp' in bvp_features or (isinstance(bvp_features, (list, tuple)) and len(bvp_features) > 23):
         dfa = bvp_features[23] if isinstance(bvp_features, (list, tuple)) else bvp_features.get('dfa_bvp')
         plt.figure(figsize=(6, 4))
@@ -796,7 +846,7 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
         plt.grid(True)
         plt.show()
 
-    # === 6. Recurrence Plot (Optional Nonlinear Dynamics Visualization) ===
+    # Recurrence Plot 
     try:
         from pyunicorn.timeseries import RecurrencePlot
         rp = RecurrencePlot(bvp_raw, dim=1, tau=1, eps=None, metric='euclidean')
@@ -809,13 +859,112 @@ def debug_BVP_features(bvp_raw, bvp_samprate, bvp_features):
     except Exception as e:
         print(f"Skipping recurrence plot (missing pyunicorn): {e}")
 
-    # === 7. Print feature summary ===
-    print("\n=== Extracted Features Summary ===")
+    # Feature summary 
+    print("\nExtracted Features Summary")
     if isinstance(bvp_features, dict):
         for k, v in bvp_features.items():
             print(f"{k:<15}: {v:.6f}")
     else:
         print(bvp_features)
+
+
+def debug_GSR_features(gsr_raw, gsr_samprate):
+    """
+    This function is used to visualise the GSR signal and extracted features:
+    - Plots raw signal
+    - Plots normalized signal
+    - Shows SCR peaks detected by neurokit
+    - Plots first differences (derivative)
+    - Shows PSD (Welch)
+    - Shows first N peak windows
+    - Prints diagnostics
+    """
+
+    logging.debug("Starting GSR Diagnostics")
+
+    gsr_raw = np.asarray(gsr_raw, dtype=float)
+    N = len(gsr_raw)
+    time = np.arange(N) / gsr_samprate
+
+    print(f"Length: {N}")
+    print(f"Min: {np.min(gsr_raw):.6f}")
+    print(f"Max: {np.max(gsr_raw):.6f}")
+    print(f"Mean: {np.mean(gsr_raw):.6f}")
+    print(f"Std:  {np.std(gsr_raw):.6f}")
+    print(f"Unique values: {len(np.unique(gsr_raw))}")
+
+    # Raw signal
+    plt.figure(figsize=(12,4))
+    plt.plot(time, gsr_raw, label="Raw GSR")
+    plt.title("Raw GSR Signal")
+    plt.xlabel("Time (s)")
+    plt.ylabel("GSR (µS)")
+    plt.grid()
+    plt.show()
+
+
+    # Normalized
+    gsr_norm = (gsr_raw - np.mean(gsr_raw)) / (np.std(gsr_raw) + 1e-8)
+
+    plt.figure(figsize=(12,4))
+    plt.plot(time, gsr_norm)
+    plt.title("Normalized GSR")
+    plt.grid()
+    plt.show()
+
+
+    # Derivative (inspect dynamics)
+    gsr_diff = np.diff(gsr_raw)
+
+    plt.figure(figsize=(12,4))
+    plt.plot(time[1:], gsr_diff)
+    plt.title("GSR First Derivative")
+    plt.grid()
+    plt.show()
+
+
+    # NeuroKit processing + SCR peaks
+    signals, info = nk.eda_process(gsr_raw, sampling_rate=gsr_samprate)
+    scr_peaks = info["SCR_Peaks"]
+
+    print(f"Detected SCR Peaks: {len(scr_peaks)}")
+
+    plt.figure(figsize=(12,4))
+    plt.plot(time, gsr_raw, label="GSR")
+    plt.plot(time[scr_peaks], gsr_raw[scr_peaks], "rx", label="SCR Peaks")
+    plt.title("SCR Peaks (neurokit2)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+
+    # Power Spectrum (Welch)
+    nperseg = min(1024, N)
+    f, Pxx = welch(gsr_raw, fs=gsr_samprate, nperseg=nperseg)
+
+    plt.figure(figsize=(12,4))
+    plt.semilogy(f, Pxx)
+    plt.title("Welch PSD")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("PSD")
+    plt.grid()
+    plt.show()
+
+    # Zoom into a few SCR peaks
+    window = int(1.5 * gsr_samprate)  # 1.5s around peaks
+
+    for idx, pk in enumerate(scr_peaks[:5]):  # first 5 peaks
+        start = max(0, pk - window)
+        end = min(N, pk + window)
+
+        plt.figure(figsize=(12,3))
+        plt.plot(time[start:end], gsr_raw[start:end])
+        plt.axvline(time[pk], color="r", linestyle="--", label="Peak")
+        plt.title(f"SCR Peak Window #{idx+1}")
+        plt.legend()
+        plt.grid()
+        plt.show()
+
 
 
 def BVP_features_extr(bvp_raw, bvp_samprate, window_size):
@@ -847,13 +996,42 @@ def BVP_features_extr(bvp_raw, bvp_samprate, window_size):
     bvp_raw = np.array(bvp_raw)
     
     # función de SCIPY para encontrar los picos
-    peaks, _ = find_peaks(bvp_raw, distance=0.4 * bvp_samprate)
+    #peaks, _ = find_peaks(bvp_raw, distance=0.4 * bvp_samprate)
+    #CHANGE IN PEAK CALCULATION + FILTERING
+    signals, info = nk.eda_process(bvp_raw, sampling_rate=bvp_samprate)
+    bvp_peaks = info["SCR_Peaks"]
+    bvp_amp = info["SCR_Amplitude"]
+    rise_times = np.array(info["SCR_RiseTime"])
+
+    # 1. Amplitude threshold: keep only strong SCRs
+    amp_thresh = 0.2 * np.max(bvp_amp)  # 20% of main response
+    idx1 = np.where(bvp_amp >= amp_thresh)[0]
+
+    # 2. Rise-time threshold
+    idx2 = np.where(rise_times >= 0.15)[0]
+
+    # 3. Combine both conditions
+    valid_idx = np.intersect1d(idx1, idx2)
+
+    bvp_filtered = bvp_peaks[valid_idx]
+
+    # 4. Minimum separation (1.5 seconds)
+    min_sep = int(1.5 * bvp_samprate)
+    peaks = bvp_filtered[np.insert(np.diff(bvp_filtered) > min_sep, 0, True)]
+    
     peak_times = peaks / bvp_samprate
     ibi_ms = np.diff(peak_times)
 
     #09/05/2025 --> por ahora decidimos estas medidas
     ibi_ms_mean =  np.mean(ibi_ms)
+    logging.debug("IBI with neurokit: %.8f", ibi_ms_mean)
+
+    peaks_2, _ = find_peaks(bvp_raw, distance=0.4 * bvp_samprate)
+    peak_times = peaks_2 / bvp_samprate
+    ibi_ms = np.diff(peak_times)
+    ibi_ms_mean =  np.mean(ibi_ms)
     logging.debug("IBI with sicpy: %.8f", ibi_ms_mean)
+
     hrv_sdnn_value_ms = np.std(ibi_ms) # overall variability
     logging.debug("hrv_sdnn_value SCIPY: %.8f", hrv_sdnn_value_ms)
     hrv_rmssd_value_ms = np.sqrt(np.mean(np.diff(ibi_ms)**2))  # short-term variability
@@ -1165,6 +1343,8 @@ def grassberger_procaccia(signal, emb_dim=1, tau=1):
         return corr_dim
     except np.linalg.LinAlgError:
         return np.nan
+    
+
 def GSR_features_extr(gsr_raw, gsr_samprate, window_size):
 #    the list of available features is:
 #               - nbPeaks: number of GSR peaks per second
@@ -1188,13 +1368,47 @@ def GSR_features_extr(gsr_raw, gsr_samprate, window_size):
     signals, info = nk.eda_process(gsr_raw, sampling_rate=gsr_samprate)
 
     peaks, _ = find_peaks(gsr_raw)
-    logging.debug("GSR number of peaks option 2: %.8f", len(peaks))
-    number_of_scr_peaks = len(info["SCR_Peaks"])
-    logging.debug("GSR number of peaks: %.8f", number_of_scr_peaks)
+    time = np.arange(len(gsr_raw)) / float(samprate_gsr)
+    gsr_raw = np.asarray(gsr_raw, dtype=float)
+
+    plt.figure(figsize=(14, 4))
+    plt.plot(time, gsr_raw, label='GSR Signal')
+    plt.plot(time[peaks], gsr_raw[peaks], 'rx', label='Detected Peaks')
+    plt.title("GSR Signal & Detected Peaks")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    #Me gusta más la salida que obtengo con mi búsqueda de picos
+    '''
+    peaks = info["SCR_Peaks"]
+    plt.figure(figsize=(14, 4))
+    plt.plot(time, gsr_raw, label='GSR Signal')
+    plt.plot(time[peaks], gsr_raw[peaks], 'rx', label='Detected Peaks')
+    plt.title("GSR Signal & Detected Peaks option 2")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    '''
+    logging.debug("GSR number of peaks: %.8f", len(peaks))
+    #number_of_scr_peaks = len(info["SCR_Peaks"])
+    #logging.debug("GSR number of peaks: %.8f", number_of_scr_peaks)
+    #TODO: RESOLVER
     amp_peaks = np.mean(info["SCR_Amplitude"]) if info["SCR_Amplitude"].size > 0 else None
-    logging.debug("GSR ampPeaks: %.8f", amp_peaks)
+    logging.debug("GSR ampPeaks before check: %.8f", amp_peaks)
+    if amp_peaks == None:
+        amp_peaks = 0
+    logging.debug("GSR ampPeaks after check: %.8f", amp_peaks)
+    #TODO: RESOLVER
     rise_time_mean = np.mean(info["SCR_RiseTime"]) if info["SCR_RiseTime"].size > 0 else None
-    logging.debug("GSR rise time: %.8f", rise_time_mean)
+    logging.debug("GSR rise time before: %.8f", rise_time_mean)
+    if rise_time_mean == None:
+        rise_time_mean = 0
+    logging.debug("GSR rise time after: %.8f", rise_time_mean)
 
     scr_peaks = info['SCR_Peaks']
     recovtime = np.mean(np.nan_to_num(info["SCR_Recovery"], nan=0)) if np.nan_to_num(info["SCR_Recovery"], nan=0).size > 0 else None
@@ -1296,21 +1510,14 @@ def GSR_features_extr(gsr_raw, gsr_samprate, window_size):
     #corDim = correlationDimension(rawSignal, eLag, eDim, NumPoints=100)
     #corr_dim = nolds.corr_dim(gsr_raw, emb_dim = 1)
 
-    # CorrInt implements correlation dimension estimation
-    #COMPLICADO HACERLO FUNCIONAR, HAY QUE FORZAR MUCHO
-    '''
-    estimator = CorrInt()
-    gsr_array = np.array(gsr_raw).reshape(-1, 1)
-    corr_dim = estimator.fit(gsr_array).dimension_
-    '''
-    print("=== GSR Signal Diagnostics ===")
-    print(f"Length: {len(gsr_raw)}")
-    print(f"Min: {np.min(gsr_raw):.6f}")
-    print(f"Max: {np.max(gsr_raw):.6f}")
-    print(f"Mean: {np.mean(gsr_raw):.6f}")
-    print(f"Std: {np.std(gsr_raw):.6f}")
-    print(f"Range: {np.max(gsr_raw) - np.min(gsr_raw):.6f}")
-    print(f"Unique values: {len(np.unique(gsr_raw))}")
+    logging.debug("GSR Signal Diagnostics for debugging") #comment or erase when not used
+    logging.debug("Length: %s", len(gsr_raw))
+    logging.debug("Min: %s", np.min(gsr_raw))
+    logging.debug("Max: %s",np.max(gsr_raw))
+    logging.debug("Mean: %s",np.mean(gsr_raw))
+    logging.debug("Std: %s", np.std(gsr_raw))
+    logging.debug("Range: %s", np.max(gsr_raw) - np.min(gsr_raw))
+    logging.debug("Unique values: %s", len(np.unique(gsr_raw)))
 
     # Try with normalization
     gsr_norm = (gsr_raw - np.mean(gsr_raw)) / (np.std(gsr_raw) + 1e-8)
@@ -1318,14 +1525,13 @@ def GSR_features_extr(gsr_raw, gsr_samprate, window_size):
     try:
         cd = nolds.corr_dim(gsr_norm, emb_dim=2)
         sample_ent = nolds.sampen(gsr_raw)
-        print(f"\nCorrelation Dimension (normalized): {cd}")
-        print(f"\nSample Entropy: {sample_ent}")
+        logging.debug("Correlation Dimension (normalized): %s", cd)
+        logging.debug("Sample Entropy: %s", sample_ent)
     except Exception as e:
         print(f"\nError: {e}")
    # corr_dim = grassberger_procaccia(gsr_raw, emb_dim=1)
-    logging.debug("CorrDim: %.8f", cd)
     
-    gsr_features = (number_of_scr_peaks, amp_peaks,rise_time_mean, recovtime,aup,gsr_mean, gsr_std,
+    gsr_features = (len(peaks), amp_peaks,rise_time_mean, recovtime,aup,gsr_mean, gsr_std,
                     q1, q3, sp0005, sp0515,sp_energyRatio,dfa_gsr,recurrence_rate,determinism,longest_diagonal_line,entropy_diagonal_lines,
                     laminarity,trapping_time,cd)
  
@@ -1545,7 +1751,7 @@ if __name__ == '__main__':
             samprate_bvp = 100
             samprate_gsr_initial = 10
             samprate_skt_initial = 5
-            samprate_gsr = 5 #probar a 5 ausencia de errores QUIZÁ 5????
+            samprate_gsr = 5 #probado a 10 también
             samprate_skt = 5
             #CON LOS DATOS SIN PROCESAR NI NADA
             with open(f"{folder_path}.txt", "a") as file1:
@@ -1657,6 +1863,7 @@ if __name__ == '__main__':
             # GSR processing
             gsr_sig_cpy= gsr_vector_file[start_gsr:stop_gsr]
             gsr_features, gsr_names = GSR_features_extr(gsr_sig_cpy, samprate_gsr, window_size)
+            #debug_GSR_features(gsr_sig_cpy, samprate_gsr)
 
             #SKT processing
             #parece que funciona con las dos frecuencias de muestro (bindi y lab)
